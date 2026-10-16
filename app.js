@@ -1,4 +1,4 @@
-/* Ticket Desk — vanilla JavaScript + IndexedDB */
+/* Ticket Desk — vanilla JavaScript + safe delegated UI events */
 (() => {
 'use strict';
 const DEPTS = [
