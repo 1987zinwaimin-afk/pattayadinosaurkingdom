@@ -19,3 +19,22 @@
 /* Mobile navigation closes when the dimmed area outside the drawer is tapped */
 .sidebar-backdrop{display:none}
 @media(max-width:760px){.sidebar-backdrop.open{display:block;position:fixed;inset:0;width:100%;height:100%;padding:0;border:0;border-radius:0;background:rgba(8,18,35,.42);z-index:9;cursor:pointer}.sidebar{z-index:10}}
+
+/* Firebase Gmail owner sign-in gate */
+body.auth-pending .app-shell,body.auth-pending .toast-region,body.auth-pending .modal{display:none!important}
+.auth-gate{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at top right,#253d60 0,#101d35 48%,#081326 100%);color:#f7f8fb}
+body.auth-pending .auth-gate{display:flex}
+.auth-card{width:min(100%,440px);background:#fff;border:1px solid rgba(244,234,216,.8);border-radius:24px;padding:30px 24px;box-shadow:0 22px 70px rgba(0,0,0,.28);color:#17243b;text-align:center}
+.auth-brand{width:58px;height:58px;border-radius:16px;background:#c9a96e;color:#101d35;font-size:32px;font-weight:800;display:grid;place-items:center;margin:0 auto 18px}
+.auth-kicker{font-size:11px;letter-spacing:2px;color:#9a783f;font-weight:700;margin:0 0 8px}
+.auth-card h1{font-size:25px;line-height:1.2;margin:0 0 12px}
+.auth-description{color:#697386;line-height:1.6;margin:0 0 22px}
+.auth-google-button{width:100%;min-height:48px;border:1px solid #d9dee7;border-radius:12px;background:#fff;color:#1b2433;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;margin:10px 0}
+.auth-google-button:disabled{opacity:.6;cursor:wait}
+.google-g{font-size:21px;font-weight:800;color:#4285f4}
+.auth-status{font-size:13px;line-height:1.5;color:#697386;margin:14px 0 0}
+.auth-status.error{color:#b42318}
+.auth-link-existing{margin-top:18px;text-align:left;border-top:1px solid #e5e9f0;padding-top:16px}
+.auth-link-existing p{font-size:13px;line-height:1.5;color:#697386}
+.auth-link-existing label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}
+.auth-link-existing input{width:100%;border:1px solid #d5dbe5;border-radius:10px;padding:12px;color:#17243b;background:#fff}
