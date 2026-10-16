@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 420" role="img" aria-label="Dinosaur Kingdom Pattaya scenic landmark with dinosaur, waterfall and palm trees">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#4d9dd4"/><stop offset=".55" stop-color="#b6d9e7"/><stop offset="1" stop-color="#f0d69c"/></linearGradient>
+ <linearGradient id="jungle" x2="0" y2="1"><stop stop-color="#286e49"/><stop offset="1" stop-color="#082d2b"/></linearGradient>
+ <linearGradient id="rock" x2="0" y2="1"><stop stop-color="#887b62"/><stop offset="1" stop-color="#343b3b"/></linearGradient>
+ <linearGradient id="water" x2="0" y2="1"><stop stop-color="#e4f6ff"/><stop offset="1" stop-color="#319cc5"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffe7a2"/><stop offset="1" stop-color="#b78332"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+<rect width="1400" height="420" fill="url(#sky)"/>
+<g fill="#fff" opacity=".42"><ellipse cx="180" cy="75" rx="105" ry="22"/><ellipse cx="250" cy="67" rx="80" ry="25"/><ellipse cx="1080" cy="55" rx="130" ry="26"/><ellipse cx="1160" cy="48" rx="76" ry="22"/></g>
+<path d="M0 235 L100 190 170 215 265 155 355 225 450 190 535 230 620 165 720 225 810 180 900 220 1010 155 1100 215 1210 175 1400 235 V420 H0Z" fill="#6f9e84" opacity=".85"/>
+<path d="M0 280 Q150 220 300 280 T600 270 T900 275 T1200 265 T1400 280 V420 H0Z" fill="url(#jungle)"/>
+<g fill="#0c4537"><path d="M0 420V160q40 10 55 70l25 190Z"/><path d="M1340 420V135q-45 30-48 95l-15 190Z"/><path d="M90 420V230q35 5 40 55l20 135Z"/><path d="M1260 420V220q-34 15-38 55l-14 145Z"/></g>
+<!-- waterfall and tropical cliffs -->
+<path d="M1040 120 L1230 120 1275 265 1200 320 1025 280Z" fill="url(#rock)"/>
+<path d="M1112 125 L1188 125 1180 250 1162 300 1142 252Z" fill="url(#water)"/>
+<path d="M1134 127 L1150 127 1145 250 1136 275Z" fill="#fff" opacity=".8"/>
+<path d="M1095 270 Q1155 290 1218 265 L1265 320 Q1170 345 1055 310Z" fill="#d7edf0" opacity=".6"/>
+<!-- palms -->
+<g stroke="#4d3826" stroke-width="10" stroke-linecap="round" fill="none"><path d="M120 420 Q130 290 155 135"/><path d="M1310 420 Q1280 290 1255 120"/><path d="M280 420 Q285 330 305 220"/></g>
+<g fill="#155a39"><path d="M155 135 Q70 70 35 115 Q93 103 151 145 Q87 142 63 190 Q116 166 158 151 Q139 211 174 213 Q185 173 164 148 Q235 168 257 133 Q206 130 162 138 Q216 86 190 70 Q166 88 155 135Z"/><path d="M1255 120 Q1170 65 1130 105 Q1190 100 1250 130 Q1190 135 1170 180 Q1220 160 1255 140 Q1240 205 1275 205 Q1290 165 1265 132 Q1330 165 1370 125 Q1310 125 1260 120 Q1300 80 1280 60 Q1260 80 1255 120Z"/><path d="M305 220 Q240 170 215 202 Q265 202 302 228 Q258 230 244 262 Q280 248 305 238 Q300 285 327 286 Q339 252 316 230 Q370 248 390 218 Q345 220 310 218 Q345 185 328 170 Q310 186 305 220Z"/></g>
+<!-- stone landmark sign -->
+<ellipse cx="700" cy="346" rx="365" ry="38" fill="#031b20" opacity=".6" filter="url(#shadow)"/>
+<path d="M350 330 L385 180 445 145 955 145 1015 180 1050 330 1000 365 400 365Z" fill="#4a4d49" stroke="#d4b778" stroke-width="7"/>
+<path d="M390 320 L420 195 465 170 935 170 980 195 1010 320 970 345 430 345Z" fill="url(#rock)" stroke="#a99b7c" stroke-width="4"/>
+<g fill="#b7aa8a" opacity=".6"><path d="M435 195l35 -12 12 20 -40 15Z"/><path d="M900 193l33 5 11 22 -44 -4Z"/><path d="M450 300l26 -15 20 14 -35 15Z"/><path d="M915 300l32 -12 18 19 -36 13Z"/></g>
+<text x="700" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="61" font-weight="bold" fill="#071a35" stroke="#071a35" stroke-width="5" paint-order="stroke">DINOSAUR</text>
+<text x="700" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="61" font-weight="bold" fill="url(#gold)">DINOSAUR</text>
+<text x="700" y="300" text-anchor="middle" font-family="Georgia,serif" font-size="64" font-weight="bold" fill="#071a35" stroke="#071a35" stroke-width="5" paint-order="stroke">KINGDOM</text>
+<text x="700" y="300" text-anchor="middle" font-family="Georgia,serif" font-size="64" font-weight="bold" fill="url(#gold)">KINGDOM</text>
+<text x="700" y="332" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="bold" letter-spacing="9" fill="#ffdfa0">PATTAYA</text>
+<!-- sauropod on left -->
+<g fill="#4a514b" stroke="#273c35" stroke-width="5" stroke-linejoin="round">
+<ellipse cx="180" cy="302" rx="82" ry="36"/><path d="M225 300 Q275 258 280 211 Q282 170 303 132 Q316 112 333 124 Q345 139 327 152 Q309 161 313 191 Q324 254 285 317Z"/><path d="M122 322 L115 385 142 385 160 324Z"/><path d="M185 325 L188 385 215 385 215 316Z"/><path d="M231 318 L251 382 276 382 262 302Z"/><path d="M104 293 Q65 279 42 297 Q70 315 113 313Z"/>
+</g><circle cx="328" cy="132" r="4" fill="#f7d994"/>
+<!-- birds -->
+<g stroke="#1b4c54" stroke-width="4" fill="none" stroke-linecap="round"><path d="M510 70q14 -18 28 0q14 -18 28 0"/><path d="M900 82q12 -15 24 0q12 -15 24 0"/><path d="M960 55q10 -12 20 0q10 -12 20 0"/></g>
+<rect x="8" y="8" width="1384" height="404" rx="24" fill="none" stroke="#f4d487" stroke-width="6"/>
+</svg>
