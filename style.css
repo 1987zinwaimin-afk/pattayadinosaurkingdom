@@ -15,3 +15,7 @@
 .ticket-album .album-department{font-family:Arial,"Noto Sans Thai",sans-serif;font-weight:700;text-shadow:0 2px 4px #000}
 .ticket-album .album-date{display:inline-block;margin-top:8px;padding:5px 9px;border-radius:20px;background:rgba(4,18,36,.78);color:#fff0c5;text-shadow:none}
 @media(max-width:480px){.ticket-album .album-header{min-height:175px;padding:12px 10px 12px;background-position:center center}.ticket-album .album-brand{max-width:95%}.ticket-album .album-kicker{font-size:8px;letter-spacing:1px}.ticket-album .album-header h1{font-size:19px}.ticket-album .album-department{font-size:12px}}
+
+/* Mobile navigation closes when the dimmed area outside the drawer is tapped */
+.sidebar-backdrop{display:none}
+@media(max-width:760px){.sidebar-backdrop.open{display:block;position:fixed;inset:0;width:100%;height:100%;padding:0;border:0;border-radius:0;background:rgba(8,18,35,.42);z-index:9;cursor:pointer}.sidebar{z-index:10}}
