@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101d35">
+  <title>Ticket Desk — Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">T</div><div><strong>Ticket Desk</strong><small data-i18n="workspace">Management workspace</small></div></div>
+      <nav id="sideNav" aria-label="Main navigation"></nav>
+      <div class="sidebar-foot"><span class="status-dot"></span><span data-i18n="localStorage">Local storage enabled</span></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-button mobile-menu" id="menuToggle" aria-label="Open menu">☰</button>
+        <div class="top-title"><span data-i18n="workspace">Management workspace</span><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="top-actions"><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
+      </header>
+      <div id="appContent" class="content" aria-live="polite"></div>
+      <footer class="footer"><span>Ticket Desk</span><span data-i18n="localOnly">Data is stored on this device unless you export a backup.</span></footer>
+    </main>
+  </div>
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+  <dialog id="modal" class="modal"><form id="modalForm" method="dialog"><div id="modalContent"></div></form></dialog>
+  <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
+  <script src="app.js"></script>
+</body>
+</html>
