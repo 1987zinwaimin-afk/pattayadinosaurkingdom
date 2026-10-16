@@ -10,6 +10,22 @@
   <link rel="stylesheet" href="style.css?v=album20261016f">
 </head>
 <body>
+  <section id="ownerAuthGate" class="auth-gate" aria-live="polite">
+    <div class="auth-card">
+      <div class="auth-brand">T</div>
+      <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
+      <h1>Ticket Desk Owner Login</h1>
+      <p class="auth-description">Connect your authorized Gmail account to open the ticket management website.</p>
+      <button type="button" id="googleOwnerLogin" class="auth-google-button"><span class="google-g">G</span> Continue with Google</button>
+      <p id="authStatus" class="auth-status" role="status">Sign in with the owner Gmail account to continue.</p>
+      <div id="linkExistingAccount" class="auth-link-existing" hidden>
+        <p>This Gmail already has an Email/Password account. Sign in with the password you set in Firebase, then connect Google.</p>
+        <label for="ownerEmail">Owner email</label><input id="ownerEmail" type="email" autocomplete="username" value="1987zinwaimin@gmail.com">
+        <label for="ownerPassword">Firebase password</label><input id="ownerPassword" type="password" autocomplete="current-password" placeholder="Enter your Firebase password">
+        <button type="button" id="linkGoogleAccount" class="auth-google-button">Sign in and connect Google</button>
+      </div>
+    </div>
+  </section>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand"><div class="brand-mark">T</div><div><strong>Ticket Desk</strong><small data-i18n="workspace">Management workspace</small></div></div>
@@ -30,6 +46,7 @@
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
   <dialog id="modal" class="modal"><form id="modalForm" method="dialog"><div id="modalContent"></div></form></dialog>
   <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
-  <script src="app.js?v=album20261016e"></script>
+  <script type="module" src="firebase-auth.js?v=ownerlogin20261016a"></script>
+  <script src="app.js?v=ownerlogin20261016a"></script>
 </body>
 </html>
