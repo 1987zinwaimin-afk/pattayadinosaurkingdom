@@ -46,7 +46,7 @@
       <header class="topbar">
         <button class="icon-button mobile-menu" id="menuToggle" aria-label="Open menu">☰</button>
         <div class="top-title"><span data-i18n="workspace">Management workspace</span><h1 id="pageTitle">Dashboard</h1></div>
-        <div class="top-actions"><button type="button" id="installAppButton" class="install-app-button" aria-label="Download here and install app">⬇ <span>Download here</span></button><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
+        <div class="top-actions"><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
       </header>
       <div id="appContent" class="content" aria-live="polite"></div>
       <footer class="footer"><span>Ticket Desk</span><span data-i18n="localOnly">Data is stored on this device unless you export a backup.</span></footer>
@@ -55,8 +55,8 @@
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
   <dialog id="modal" class="modal"><form id="modalForm" method="dialog"><div id="modalContent"></div></form></dialog>
   <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
-  <script src="app.js?v=album-department-fix-20261018c"></script>
-  <script type="module" src="firebase-auth.js?v=owner-login-config-20261018d"></script>
-  <script src="pwa.js?v=installapp20261017a"></script>
+  <script src="app.js?v=settings-install-20261018d"></script>
+  <script type="module" src="firebase-auth.js?v=manual-owner-email-20261018d"></script>
+  <script src="pwa.js?v=settings-install-20261018d"></script>
 </body>
 </html>
