@@ -38,3 +38,13 @@ body.auth-pending .auth-gate{display:flex}
 .auth-link-existing p{font-size:13px;line-height:1.5;color:#697386}
 .auth-link-existing label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}
 .auth-link-existing input{width:100%;border:1px solid #d5dbe5;border-radius:10px;padding:12px;color:#17243b;background:#fff}
+
+/* Option 7: scenic landmark + separate ticket-album title panel */
+.ticket-album .album-header{height:clamp(150px,24vw,245px);min-height:0;padding:0;border:2px solid #d6ad57;border-radius:14px 14px 0 0;background:linear-gradient(90deg,rgba(4,18,36,.05),rgba(4,18,36,0)),url("dinosaur-kingdom-hero.svg") center 52%/cover no-repeat;box-shadow:none}
+.ticket-album .album-report-heading{display:flex;align-items:center;gap:14px;margin:0 0 12px;padding:12px 14px;background:#071a35;border:2px solid #d6ad57;border-top:0;border-radius:0 0 14px 14px;color:#fff}
+.ticket-album .album-report-icon{width:58px;height:58px;flex:0 0 58px;display:grid;place-items:center;border:2px solid #f4d487;border-radius:12px;color:#f4d487;font-size:34px}
+.ticket-album .album-report-copy{min-width:0}
+.ticket-album .album-report-copy h1{margin:0 0 5px;color:#f4d487;font:700 clamp(18px,3vw,28px) Georgia,serif;line-height:1.1}
+.ticket-album .album-report-copy .album-department{font-size:14px}
+.ticket-album .album-report-copy .album-date{margin-top:5px;font-size:12px}
+@media(max-width:480px){.ticket-album .album-header{height:150px}.ticket-album .album-report-heading{gap:10px;padding:10px}.ticket-album .album-report-icon{width:46px;height:46px;flex-basis:46px;font-size:27px}.ticket-album .album-report-copy h1{font-size:17px}}
