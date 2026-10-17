@@ -31,7 +31,7 @@ jobs:
           const shellCount = (html.match(/class="app-shell"/g) || []).length;
           if (shellCount !== 1) throw new Error('Expected exactly one app-shell wrapper; found ' + shellCount);
           if (!html.includes('firebase-auth.js')) throw new Error('Firebase auth module is not loaded');
-          const app = (await import('node:fs')).readFileSync('app.js', 'utf8');
+          const app = fs.readFileSync('app.js', 'utf8');
           if (!app.includes("put('images',{id:imageId,departmentId:deptId,data:pendingImage")) throw new Error('New image records must include departmentId for cloud access rules.');
           console.log('Login gate and app shell checks passed.');
           NODE
