@@ -54,6 +54,11 @@ window.ticketDeskAdmin = {
     if (!["approved", "rejected", "pending"].includes(status)) throw new Error("Invalid status");
     await updateDoc(doc(db, "staffProfiles", uid), { status, reviewedAt: serverTimestamp() });
   },
+  async setStaffDepartment(uid, department) {
+    requireOwner();
+    if (!["sales", "entry", "playing", "event", "leader"].includes(department)) throw new Error("Invalid department");
+    await updateDoc(doc(db, "staffProfiles", uid), { department, reviewedAt: serverTimestamp() });
+  },
   async hasDeletePassword() {
     requireOwner();
     const snap = await getDoc(doc(db, "ownerSettings", "deleteProtection"));
