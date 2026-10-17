@@ -88,7 +88,38 @@ function validQty(v){return v!==''&&Number.isInteger(Number(v))&&Number(v)>=0;}
 async function readAndResizeImage(file){if(file.size>25*1024*1024)throw Error('too large');const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const max=1200,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);const type='image/jpeg';resolve(canvas.toDataURL(type,.72));};img.onerror=reject;img.src=data;});}
 async function saveQuantity(ticketId,value){if(String(value??'').trim()==='')return;if(!validQty(value)){toast(tr('invalidQty'),'error');return;}const ticket=await get('tickets',ticketId);if(!ticket)return;const id=`${ticketId}__${selectedDate}`,existing=await get('daily',id),added=Number(value),total=Number(existing?.quantity||0)+added;const now=new Date().toISOString();await put('daily',{id,ticketId,departmentId:ticket.departmentId,date:selectedDate,quantity:total,notes:ticket.notes||'',updatedAt:now});const input=$(`#qty-${ticketId}`);if(input){input.value='';input.placeholder=String(total);}const totalEl=$('#deptTotal');if(totalEl){const st=await deptStats(ticket.departmentId,selectedDate);totalEl.textContent=fmtNum(st.total);}toast((lang==='th'?'Added. Total: ':'Added. Total: ')+fmtNum(total));}
 async function resetQuantities(deptId){if(!confirmBox(tr('confirmReset')))return;for(const r of await dayRecords(deptId,selectedDate))await del('daily',r.id);toast(tr('qtySaved'));renderPage();}
-async function saveReport(deptId,forceReplace=false,asNew=false){try{let ts=await realTickets(deptId);if(!ts.length){const candidates=[];for(const candidate of DEPTS){if(candidate.id===deptId)continue;const candidateTickets=await realTickets(candidate.id);if(candidateTickets.length)candidates.push({id:candidate.id,tickets:candidateTickets});}if(candidates.length===1){deptId=candidates[0].id;ts=candidates[0].tickets;toast(lang==='th'?'แผนกที่เลือกไม่มีประเภทตั๋ว ระบบเปลี่ยนไปใช้แผนกที่มีรายการตั๋วโดยอัตโนมัติ':'The selected department has no named tickets. Switched automatically to the department that contains your ticket list.');}else{toast(lang==='th'?'ไม่พบประเภทตั๋วในแผนกที่เลือก กรุณาเปิดแผนกที่มีรายการตั๋วและบันทึกรายงาน':'No named tickets were found in the selected department. Open the department containing your ticket list and save its report.','error');return;}}const existing=(await all('reports')).filter(r=>r.departmentId===deptId&&r.reportDate===selectedDate).sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));let mode='new';if(existing.length&&!forceReplace&&!asNew){const choose=window.confirm(`${tr('duplicate')}\n\nOK = ${tr('replace')}\nCancel = ${tr('newVersion')}`);if(choose){if(!confirmBox(tr('reportReplacedConfirm')))return;mode='replace';}else mode='newVersion';}else if(forceReplace)mode='replace';const snapshots=[];for(const t of ts){const q=await qtyFor(t.id,selectedDate);snapshots.push({ticketId:t.id,name:t.name,imageData:t.imageId?await imageData(t.imageId):null,quantity:q,notes:t.notes||'',inventory:t.inventory??null});}const total=snapshots.reduce((sum,t)=>sum+(Number(t.quantity)||0),0),now=new Date().toISOString();if(mode==='replace'&&existing[0])await del('reports',existing[0].id);const version=existing.length?(Math.max(...existing.map(r=>Number(r.reportVersion)||1))+1):1;const report={id:uid(),departmentId:deptId,reportDate:selectedDate,createdAt:now,ticketSnapshots:snapshots,totalQuantity:total,ticketTypeCount:snapshots.length,reportVersion:version,notes:'',snapshotSchema:1};await put('reports',report);const saved=await get('reports',report.id);if(!saved)throw new Error('Report write could not be verified');toast(mode==='replace'?tr('reportReplaced'):tr('reportSaved'));setPage('reports');await openReport(report.id);}catch(err){console.error('Save Album failed:',err);toast((tr('storageError')||'Storage failed')+': '+(err?.message||String(err)),'error');}}
+async function saveReport(deptId,forceReplace=false,asNew=false){try{
+ const selectedDept=dept(deptId);
+ const ts=await realTickets(deptId);
+ // A report must always use the ticket definitions and images from the selected department.
+ // Never silently substitute another department when this department has no named tickets.
+ if(!ts.length){
+   toast(lang==='th'
+     ? 'แผนกนี้ยังไม่มีประเภทตั๋วที่ตั้งชื่อไว้ กรุณาเพิ่มหรือกู้คืนข้อมูลของแผนกนี้ก่อนบันทึกรายงาน'
+     : 'This department has no named ticket types. Add or restore this department’s ticket list before saving its report.','error');
+   return;
+ }
+ const existing=(await all('reports')).filter(r=>r.departmentId===deptId&&r.reportDate===selectedDate).sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+ let mode='new';
+ if(existing.length&&!forceReplace&&!asNew){
+   const choose=window.confirm(`${tr('duplicate')}\n\nOK = ${tr('replace')}\nCancel = ${tr('newVersion')}`);
+   if(choose){if(!confirmBox(tr('reportReplacedConfirm')))return;mode='replace';}else mode='newVersion';
+ }else if(forceReplace)mode='replace';
+ const snapshots=[];
+ for(const t of ts){
+   const q=await qtyFor(t.id,selectedDate);
+   const ownImage=t.imageId?await imageData(t.imageId):null;
+   snapshots.push({ticketId:t.id,name:t.name,imageData:ownImage,quantity:q,notes:t.notes||'',inventory:t.inventory??null});
+ }
+ const total=snapshots.reduce((sum,t)=>sum+(Number(t.quantity)||0),0),now=new Date().toISOString();
+ if(mode==='replace'&&existing[0])await del('reports',existing[0].id);
+ const version=existing.length?(Math.max(...existing.map(r=>Number(r.reportVersion)||1))+1):1;
+ const report={id:uid(),departmentId:selectedDept.id,reportDate:selectedDate,createdAt:now,ticketSnapshots:snapshots,totalQuantity:total,ticketTypeCount:snapshots.length,reportVersion:version,notes:'',snapshotSchema:2};
+ await put('reports',report);
+ const saved=await get('reports',report.id);
+ if(!saved)throw new Error('Report write could not be verified');
+ toast(mode==='replace'?tr('reportReplaced'):tr('reportSaved'));setPage('reports');await openReport(report.id);
+ }catch(err){console.error('Save Album failed:',err);toast((tr('storageError')||'Storage failed')+': '+(err?.message||String(err)),'error');}}
 const albumHeroPath='./1792253599844.jpg';let albumHeroDataUrl='';async function loadAlbumHeroDataUrl(){if(albumHeroDataUrl)return albumHeroDataUrl;try{const response=await fetch(new URL(albumHeroPath+'?v=20261017',document.baseURI));if(response.ok){const blob=await response.blob();albumHeroDataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=reject;reader.readAsDataURL(blob);});}}catch(error){console.warn('Could not embed report header image',error);}return albumHeroDataUrl;}
 function albumMarkup(r){
  const heroSrc=albumHeroDataUrl||new URL(albumHeroPath+'?v=20261017',document.baseURI).href;
