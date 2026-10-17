@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut, signInWithEmailAndPassword, linkWithCredential } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAk6QIHerhCUWdGAj_zTYc03vLOO8UlG8c",
+  apiKey: "AIzaSyAk6QIHerhCUWdGAj_zTYc03vLOO8ULG8c",
   authDomain: "pattaya-dinosaur-ticket-desk.firebaseapp.com",
   projectId: "pattaya-dinosaur-ticket-desk",
   storageBucket: "pattaya-dinosaur-ticket-desk.firebasestorage.app",
