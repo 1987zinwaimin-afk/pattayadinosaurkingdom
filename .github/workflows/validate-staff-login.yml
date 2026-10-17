@@ -69,7 +69,7 @@ jobs:
           for (const collection of ['tickets', 'daily', 'reports', 'images']) {
             const start = rules.indexOf('match /' + collection + '/{');
             if (start < 0) throw new Error('Missing Firestore rules for ' + collection + '.');
-            const end = rules.indexOf('\\n    match /', start + 1);
+            const end = rules.indexOf('\n    match /', start + 1);
             const block = rules.slice(start, end < 0 ? rules.length : end);
             if (!block.includes('resource.data.departmentId') || !block.includes('request.resource.data.departmentId')) {
               throw new Error('Firestore ' + collection + ' rules do not match app.js departmentId schema.');
