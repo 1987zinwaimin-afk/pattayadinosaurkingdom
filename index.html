@@ -4,10 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101d35">
+  <meta name="description" content="Pattaya Dinosaur Kingdom Ticket Desk daily ticket management and reports.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./app-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./app-icon.svg">
   <title>Ticket Desk — Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=option7hero20261017c">
+  <link rel="stylesheet" href="style.css?v=installapp20261017a">
 </head>
 <body>
   <div class="app-shell">
@@ -21,7 +25,7 @@
       <header class="topbar">
         <button class="icon-button mobile-menu" id="menuToggle" aria-label="Open menu">☰</button>
         <div class="top-title"><span data-i18n="workspace">Management workspace</span><h1 id="pageTitle">Dashboard</h1></div>
-        <div class="top-actions"><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
+        <div class="top-actions"><button type="button" id="installAppButton" class="install-app-button" aria-label="Download here and install app">⬇ <span>Download here</span></button><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
       </header>
       <div id="appContent" class="content" aria-live="polite"></div>
       <footer class="footer"><span>Ticket Desk</span><span data-i18n="localOnly">Data is stored on this device unless you export a backup.</span></footer>
@@ -30,6 +34,7 @@
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
   <dialog id="modal" class="modal"><form id="modalForm" method="dialog"><div id="modalContent"></div></form></dialog>
   <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
-  <script src="app.js?v=option7hero20261017c"></script>
+  <script src="app.js?v=installapp20261017a"></script>
+  <script src="pwa.js?v=installapp20261017a"></script>
 </body>
 </html>
