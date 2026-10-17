@@ -24,6 +24,8 @@ const $$ = s => [...document.querySelectorAll(s)];
 const tr = key => (T[lang] && T[lang][key]) || T.en[key] || key;
 const tx = obj => typeof obj === 'string' ? obj : (obj?.[lang] || obj?.en || '');
 function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+let lastAppDate=localDate();
+function syncAppDate(){const today=localDate();if(today===lastAppDate)return;lastAppDate=today;selectedDate=today;reportFrom='';reportTo='';if(document.visibilityState==='visible')renderPage();}
 function uid(){return crypto?.randomUUID ? crypto.randomUUID() : 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmtDate(d){if(!d)return '—';try{return new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-GB',{year:'numeric',month:'short',day:'numeric'}).format(new Date(d+'T12:00:00'));}catch{return d;}}
@@ -106,6 +108,6 @@ document.addEventListener('input',e=>{if(e.target.id==='ticketSearch'){searchTex
 const sidebar=$('#sidebar'),menuToggle=$('#menuToggle'),sidebarBackdrop=$('#sidebarBackdrop');const closeMobileMenu=()=>{sidebar.classList.remove('open');sidebarBackdrop?.classList.remove('open');menuToggle?.setAttribute('aria-expanded','false');};const openMobileMenu=()=>{sidebar.classList.add('open');sidebarBackdrop?.classList.add('open');menuToggle?.setAttribute('aria-expanded','true');};menuToggle?.setAttribute('aria-expanded','false');menuToggle.onclick=()=>sidebar.classList.contains('open')?closeMobileMenu():openMobileMenu();sidebarBackdrop?.addEventListener('click',closeMobileMenu);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileMenu();});document.addEventListener('click',e=>{if(window.matchMedia('(max-width: 760px)').matches&&sidebar.classList.contains('open')&&!sidebar.contains(e.target)&&!menuToggle.contains(e.target))closeMobileMenu();});
 $('#backupFileInput').addEventListener('change',async e=>{if(e.target.files?.[0])await importBackup(e.target.files[0]);e.target.value='';});
 }
-async function init(){try{await openDB();await seedSlots();$('#languageSelect').value=lang;setupEvents();$('#sideNav').innerHTML=navHTML();await renderDashboard();}catch(e){console.error(e);$('#appContent').innerHTML=`<div class="notice">${esc(tr('storageError'))}<br><small>${esc(e?.message||String(e))}</small></div>`;}}
+async function init(){try{await openDB();await seedSlots();lastAppDate=localDate();selectedDate=lastAppDate;$('#languageSelect').value=lang;setupEvents();document.addEventListener('visibilitychange',syncAppDate);window.addEventListener('focus',syncAppDate);window.addEventListener('pageshow',syncAppDate);$('#sideNav').innerHTML=navHTML();await renderDashboard();}catch(e){console.error(e);$('#appContent').innerHTML=`<div class="notice">${esc(tr('storageError'))}<br><small>${esc(e?.message||String(e))}</small></div>`;}}
 init();
 })();
