@@ -64,5 +64,17 @@ jobs:
           if (!rules.includes('match /ownerSettings/{settingId}') || !rules.includes('allow read, write: if isOwner();')) {
             throw new Error('Owner Delete Password settings are not Owner-only in Firestore rules.');
           }
-          console.log('Destructive-action guards, Owner settings rules, and staff role checks passed.');
+          for (const collection of ['tickets', 'daily', 'reports', 'images']) {
+            const start = rules.indexOf('match /' + collection + '/{');
+            if (start < 0) throw new Error('Missing Firestore rules for ' + collection + '.');
+            const end = rules.indexOf('\\n    match /', start + 1);
+            const block = rules.slice(start, end < 0 ? rules.length : end);
+            if (!block.includes('resource.data.departmentId') || !block.includes('request.resource.data.departmentId')) {
+              throw new Error('Firestore ' + collection + ' rules do not match app.js departmentId schema.');
+            }
+          }
+          if (rules.includes('resource.data.department is string') || rules.includes('request.resource.data.department)')) {
+            throw new Error('Found stale department field checks in cloud data rules.');
+          }
+          console.log('Destructive-action guards, Owner settings rules, staff roles, and departmentId schema checks passed.');
           NODE
