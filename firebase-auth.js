@@ -17,6 +17,13 @@ const statusEl = document.getElementById("authStatus");
 const loginBtn = document.getElementById("ownerLoginButton");
 const emailInput = document.getElementById("ownerEmail");
 const passwordInput = document.getElementById("ownerPassword");
+// Never prefill or restore the Owner Gmail from browser form history.
+function clearOwnerEmail() {
+  if (emailInput) emailInput.value = "";
+}
+clearOwnerEmail();
+window.addEventListener("pageshow", clearOwnerEmail);
+window.addEventListener("pagehide", clearOwnerEmail);
 
 function status(message, isError = false) {
   statusEl.textContent = message;
