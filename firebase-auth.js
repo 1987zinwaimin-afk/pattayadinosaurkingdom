@@ -34,7 +34,7 @@ function randomSalt() {
 function bytesToBase64Url(bytes) {
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 async function derivePasswordHash(password, saltText) {
   const enc = new TextEncoder();
