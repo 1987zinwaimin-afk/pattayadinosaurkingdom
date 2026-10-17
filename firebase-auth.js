@@ -19,16 +19,68 @@ const OWNER_EMAIL = "1987zinwaimin@gmail.com".toLowerCase();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+function requireOwner() {
+  if (!auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER_EMAIL || auth.currentUser.isAnonymous) {
+    throw new Error("Owner login required");
+  }
+}
+function bytesToHex(bytes) {
+  return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, "0")).join("");
+}
+function randomSalt() {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return bytesToBase64Url(bytes);
+}
+function bytesToBase64Url(bytes) {
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
+}
+async function derivePasswordHash(password, saltText) {
+  const enc = new TextEncoder();
+  const material = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
+  const salt = Uint8Array.from(atob(saltText.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((saltText.length + 3) % 4)), c => c.charCodeAt(0));
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 310000, hash: "SHA-256" }, material, 256);
+  return bytesToHex(bits);
+}
 window.ticketDeskAdmin = {
   async listStaff() {
-    if (!auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER_EMAIL) throw new Error("Owner login required");
+    requireOwner();
     const snap = await getDocs(collection(db, "staffProfiles"));
     return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
   },
   async setStaffStatus(uid, status) {
-    if (!auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER_EMAIL) throw new Error("Owner login required");
+    requireOwner();
     if (!["approved", "rejected", "pending"].includes(status)) throw new Error("Invalid status");
     await updateDoc(doc(db, "staffProfiles", uid), { status, reviewedAt: serverTimestamp() });
+  },
+  async hasDeletePassword() {
+    requireOwner();
+    const snap = await getDoc(doc(db, "ownerSettings", "deleteProtection"));
+    return snap.exists() && typeof snap.data().salt === "string" && typeof snap.data().hash === "string";
+  },
+  async setDeletePassword(password) {
+    requireOwner();
+    if (typeof password !== "string" || password.length < 8 || password.length > 128) {
+      throw new Error("Password must be 8–128 characters.");
+    }
+    const salt = randomSalt();
+    const hash = await derivePasswordHash(password, salt);
+    await setDoc(doc(db, "ownerSettings", "deleteProtection"), {
+      salt, hash, algorithm: "PBKDF2-SHA256", iterations: 310000, updatedAt: serverTimestamp()
+    });
+  },
+  async verifyDeletePassword(password) {
+    requireOwner();
+    const snap = await getDoc(doc(db, "ownerSettings", "deleteProtection"));
+    if (!snap.exists()) throw new Error("Set an Owner Delete Password in Owner Database first.");
+    const data = snap.data();
+    if (data.algorithm !== "PBKDF2-SHA256" || typeof data.salt !== "string" || typeof data.hash !== "string") {
+      throw new Error("Owner Delete Password settings are invalid.");
+    }
+    const actual = await derivePasswordHash(String(password || ""), data.salt);
+    if (actual !== data.hash) return false;
+    return true;
   }
 };
 const gate = document.getElementById("ownerAuthGate");
