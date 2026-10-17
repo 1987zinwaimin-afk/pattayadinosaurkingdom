@@ -43,6 +43,7 @@ onAuthStateChanged(auth, user => {
   if (user) allowOwner(user);
   else showGate();
 });
+document.getElementById("ownerLoginForm").addEventListener("submit", e => e.preventDefault());
 loginBtn.addEventListener("click", async () => {
   const email = emailInput.value.trim().toLowerCase();
   const password = passwordInput.value;
