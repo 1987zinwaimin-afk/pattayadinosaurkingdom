@@ -2,12 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAk6QIHerhCUWdGAj_zTYc03vLOO8UlG8c",
+  apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
   authDomain: "pattaya-dinosaur-ticket-desk.firebaseapp.com",
   projectId: "pattaya-dinosaur-ticket-desk",
   storageBucket: "pattaya-dinosaur-ticket-desk.firebasestorage.app",
   messagingSenderId: "386652978138",
-  appId: "1:386652978138:web:10e955888dab1ef37cdee3"
+  appId: "1:386652978138:web:32c00c1b19caacda7cdee3"
 };
 const OWNER_EMAIL = "1987zinwaimin@gmail.com".toLowerCase();
 const app = initializeApp(firebaseConfig);
