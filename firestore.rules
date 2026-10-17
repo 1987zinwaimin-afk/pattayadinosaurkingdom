@@ -20,14 +20,14 @@ service cloud.firestore {
     function profile() {
       return get(profilePath(request.auth.uid)).data;
     }
-    function canUseDepartment(department) {
+    function canUseDepartment(departmentId) {
       return isOwner()
         || (hasApprovedProfile()
           && (profile().department == 'leader'
-            || profile().department == department));
+            || profile().department == departmentId));
     }
-    function validDepartment(department) {
-      return department in ['sales', 'entry', 'playing', 'event'];
+    function validDepartment(departmentId) {
+      return departmentId in ['sales', 'entry', 'playing', 'event'];
     }
 
     // Staff submit a pending profile. Only the Owner can approve/change roles.
@@ -44,57 +44,72 @@ service cloud.firestore {
       allow update, delete: if isOwner();
     }
 
-    // Cloud ticket records are scoped by department. Staff/Leader cannot delete.
+    // Match the app's existing local schema: ticket records use departmentId.
+    // Staff/Leader can read and write only their approved department; only Owner can delete.
     match /tickets/{ticketId} {
       allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
+        || (resource.data.departmentId is string
+          && canUseDepartment(resource.data.departmentId));
       allow create: if isOwner()
         || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
+          && validDepartment(request.resource.data.departmentId)
+          && canUseDepartment(request.resource.data.departmentId));
       allow update: if isOwner()
         || (hasApprovedProfile()
-          && validDepartment(resource.data.department)
-          && request.resource.data.department == resource.data.department
-          && canUseDepartment(resource.data.department));
+          && validDepartment(resource.data.departmentId)
+          && request.resource.data.departmentId == resource.data.departmentId
+          && canUseDepartment(resource.data.departmentId));
       allow delete: if isOwner();
     }
 
-    // Daily quantities and report data follow the same department boundary.
+    // Daily quantity and report documents also use departmentId in app.js.
     match /daily/{recordId} {
       allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create, update: if isOwner()
+        || (resource.data.departmentId is string
+          && canUseDepartment(resource.data.departmentId));
+      allow create: if isOwner()
         || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
+          && validDepartment(request.resource.data.departmentId)
+          && canUseDepartment(request.resource.data.departmentId));
+      allow update: if isOwner()
+        || (hasApprovedProfile()
+          && validDepartment(resource.data.departmentId)
+          && request.resource.data.departmentId == resource.data.departmentId
+          && canUseDepartment(resource.data.departmentId));
       allow delete: if isOwner();
     }
     match /reports/{reportId} {
       allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create, update: if isOwner()
+        || (resource.data.departmentId is string
+          && canUseDepartment(resource.data.departmentId));
+      allow create: if isOwner()
         || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
+          && validDepartment(request.resource.data.departmentId)
+          && canUseDepartment(request.resource.data.departmentId));
+      allow update: if isOwner()
+        || (hasApprovedProfile()
+          && validDepartment(resource.data.departmentId)
+          && request.resource.data.departmentId == resource.data.departmentId
+          && canUseDepartment(resource.data.departmentId));
       allow delete: if isOwner();
     }
     match /images/{imageId} {
       allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create, update: if isOwner()
+        || (resource.data.departmentId is string
+          && canUseDepartment(resource.data.departmentId));
+      allow create: if isOwner()
         || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
+          && validDepartment(request.resource.data.departmentId)
+          && canUseDepartment(request.resource.data.departmentId));
+      allow update: if isOwner()
+        || (hasApprovedProfile()
+          && validDepartment(resource.data.departmentId)
+          && request.resource.data.departmentId == resource.data.departmentId
+          && canUseDepartment(resource.data.departmentId));
       allow delete: if isOwner();
     }
 
     // Owner-only settings such as the separate delete-protection password hash.
-    // The password hash is never readable by staff accounts.
     match /ownerSettings/{settingId} {
       allow read, write: if isOwner();
     }
