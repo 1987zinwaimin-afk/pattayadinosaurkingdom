@@ -78,5 +78,17 @@ jobs:
           if (rules.includes('resource.data.department is string') || rules.includes('request.resource.data.department)')) {
             throw new Error('Found stale department field checks in cloud data rules.');
           }
-          console.log('Destructive-action guards, Owner settings rules, staff roles, and departmentId schema checks passed.');
+          if (!app.includes('async function replaceAllStoresAtomic(replacement)')) {
+            throw new Error('Backup restore must use the atomic multi-store replacement helper.');
+          }
+          if (!app.includes("db.transaction(STORE_NAMES,'readwrite')")) {
+            throw new Error('Backup restore must replace all IndexedDB stores in one transaction.');
+          }
+          if (!app.includes('await replaceAllStoresAtomic(data)')) {
+            throw new Error('Backup restore bypasses the atomic replacement helper.');
+          }
+          if (app.includes("for(const s of ['tickets','daily','reports','images'])await clearStore(s);for(const s of ['tickets','daily','reports','images'])for(const item of data[s])await put(s,item);")) {
+            throw new Error('Unsafe sequential clear-and-repopulate backup restore is still present.');
+          }
+          console.log('Destructive-action guards, Owner settings rules, staff roles, departmentId schema, and atomic backup restore checks passed.');
           NODE
