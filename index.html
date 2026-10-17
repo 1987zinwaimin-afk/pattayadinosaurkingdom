@@ -18,20 +18,41 @@
     <div class="auth-card">
       <div class="auth-brand">T</div>
       <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
-      <h1 id="ownerAuthTitle">Owner Login</h1>
-      <p class="auth-description">Firebase account ဖြင့် Owner အဖြစ် ဝင်ပါ။ သတ်မှတ်ထားသော Owner Gmail တစ်ခုတည်းကိုသာ ခွင့်ပြုထားသည်။</p>
-      <form id="ownerLoginForm" autocomplete="on">
+      <h1 id="ownerAuthTitle">Staff / Owner Login</h1>
+      <p class="auth-description">Staff များသည် Gmail မလိုဘဲ အမည်နှင့် Department ဖြင့် ဝင်ပါ။ Owner သည် သတ်မှတ်ထားသော Gmail ဖြင့် ဝင်ပါ။</p>
+      <div class="auth-mode-switch">
+        <button type="button" class="btn btn-secondary" id="staffModeButton">Staff Login</button>
+        <button type="button" class="btn btn-secondary" id="ownerModeButton">Owner Login</button>
+      </div>
+      <form id="staffLoginForm" autocomplete="off">
+        <div class="field" style="text-align:left;margin-bottom:12px">
+          <label for="staffName">အမည် / Staff name</label>
+          <input id="staffName" type="text" maxlength="80" placeholder="Enter your name" required style="width:100%">
+        </div>
+        <div class="field" style="text-align:left;margin-bottom:14px">
+          <label for="staffDepartment">Department</label>
+          <select id="staffDepartment" required style="width:100%;min-height:46px">
+            <option value="sales">Sale Department</option>
+            <option value="entry">Entry Department</option>
+            <option value="playing">Playing Department</option>
+            <option value="event">Event Department</option>
+            <option value="leader">Leader</option>
+          </select>
+        </div>
+        <button type="submit" id="staffLoginButton" class="btn btn-primary" style="width:100%;min-height:48px">Login as Staff</button>
+      </form>
+      <form id="ownerLoginForm" autocomplete="off" hidden>
         <div class="field" style="text-align:left;margin-bottom:12px">
           <label for="ownerEmail">Owner Gmail</label>
-          <input id="ownerEmail" type="email" name="owner-login-email" value="" placeholder="Enter Owner Gmail" autocomplete="off" autocapitalize="none" spellcheck="false" required style="width:100%">
+          <input id="ownerEmail" type="email" name="owner-login-email" value="" placeholder="Enter Owner Gmail" autocomplete="off" autocapitalize="none" spellcheck="false" style="width:100%">
         </div>
         <div class="field" style="text-align:left;margin-bottom:14px">
           <label for="ownerPassword">Firebase Password</label>
-          <input id="ownerPassword" type="password" autocomplete="current-password" required style="width:100%">
+          <input id="ownerPassword" type="password" autocomplete="current-password" style="width:100%">
         </div>
         <button type="submit" id="ownerLoginButton" class="btn btn-primary" style="width:100%;min-height:48px">Login as Owner</button>
       </form>
-      <p id="authStatus" class="auth-status" role="status" aria-live="polite">Firebase Authentication ကို စစ်ဆေးနေပါသည်…</p>
+      <p id="authStatus" class="auth-status" role="status" aria-live="polite">Checking sign-in status…</p>
     </div>
   </section>
   <div class="app-shell">
