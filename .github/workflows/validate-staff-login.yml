@@ -58,7 +58,7 @@ jobs:
           if (auth.includes('old.name !== name || old.department !== department')) {
             throw new Error('Login form can override/block the Owner-approved staff role.');
           }
-          if (!auth.includes('if (![\\"sales\\", \\"entry\\", \\"playing\\", \\"event\\", \\"leader\\"].includes(department))')) {
+          if (!auth.includes('if (!["sales", "entry", "playing", "event", "leader"].includes(department))')) {
             throw new Error('Owner role editor does not accept the Leader role.');
           }
           if (!rules.includes('match /ownerSettings/{settingId}') || !rules.includes('allow read, write: if isOwner();')) {
