@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 420" role="img" aria-label="Dinosaur Kingdom Pattaya scenic landmark with dinosaur, waterfall and palm trees">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 420" role="img" aria-label="Pattaya Dinosaur Kingdom scenic landmark with dinosaur, waterfall and palm trees">
 <defs>
  <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#4d9dd4"/><stop offset=".55" stop-color="#b6d9e7"/><stop offset="1" stop-color="#f0d69c"/></linearGradient>
  <linearGradient id="jungle" x2="0" y2="1"><stop stop-color="#286e49"/><stop offset="1" stop-color="#082d2b"/></linearGradient>
@@ -25,11 +25,11 @@
 <path d="M350 330 L385 180 445 145 955 145 1015 180 1050 330 1000 365 400 365Z" fill="#4a4d49" stroke="#d4b778" stroke-width="7"/>
 <path d="M390 320 L420 195 465 170 935 170 980 195 1010 320 970 345 430 345Z" fill="url(#rock)" stroke="#a99b7c" stroke-width="4"/>
 <g fill="#b7aa8a" opacity=".6"><path d="M435 195l35 -12 12 20 -40 15Z"/><path d="M900 193l33 5 11 22 -44 -4Z"/><path d="M450 300l26 -15 20 14 -35 15Z"/><path d="M915 300l32 -12 18 19 -36 13Z"/></g>
-<text x="700" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="61" font-weight="bold" fill="#071a35" stroke="#071a35" stroke-width="5" paint-order="stroke">DINOSAUR</text>
-<text x="700" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="61" font-weight="bold" fill="url(#gold)">DINOSAUR</text>
+<text x="700" y="215" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="bold" fill="#071a35" stroke="#071a35" stroke-width="5" paint-order="stroke">PATTAYA</text>
+<text x="700" y="215" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="bold" fill="url(#gold)">PATTAYA</text>
 <text x="700" y="300" text-anchor="middle" font-family="Georgia,serif" font-size="64" font-weight="bold" fill="#071a35" stroke="#071a35" stroke-width="5" paint-order="stroke">KINGDOM</text>
 <text x="700" y="300" text-anchor="middle" font-family="Georgia,serif" font-size="64" font-weight="bold" fill="url(#gold)">KINGDOM</text>
-<text x="700" y="332" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="bold" letter-spacing="9" fill="#ffdfa0">PATTAYA</text>
+
 <!-- sauropod on left -->
 <g fill="#4a514b" stroke="#273c35" stroke-width="5" stroke-linejoin="round">
 <ellipse cx="180" cy="302" rx="82" ry="36"/><path d="M225 300 Q275 258 280 211 Q282 170 303 132 Q316 112 333 124 Q345 139 327 152 Q309 161 313 191 Q324 254 285 317Z"/><path d="M122 322 L115 385 142 385 160 324Z"/><path d="M185 325 L188 385 215 385 215 316Z"/><path d="M231 318 L251 382 276 382 262 302Z"/><path d="M104 293 Q65 279 42 297 Q70 315 113 313Z"/>
