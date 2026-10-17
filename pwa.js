@@ -1,18 +1,26 @@
 (() => {
   "use strict";
   let installPrompt = null;
-  const button = document.getElementById("installAppButton");
   const isInstalled = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  if (isInstalled() && button) {
-    button.innerHTML = "✓ <span>App installed</span>";
-    button.disabled = true;
-    button.setAttribute("aria-label", "App already installed");
+  function updateInstallButton(button) {
+    if (!button) return;
+    if (isInstalled()) {
+      button.innerHTML = "✓ <span>App installed</span>";
+      button.disabled = true;
+      button.setAttribute("aria-label", "App already installed");
+    } else {
+      button.disabled = false;
+    }
   }
   window.addEventListener("beforeinstallprompt", event => {
     event.preventDefault();
     installPrompt = event;
   });
-  if (button) button.addEventListener("click", async () => {
+  // Settings content is rendered dynamically, so use delegated click handling.
+  document.addEventListener("click", async event => {
+    const button = event.target.closest("#installAppButton");
+    if (!button) return;
+    updateInstallButton(button);
     if (isInstalled()) {
       alert("Ticket Desk is already installed on your home screen.");
       return;
@@ -23,6 +31,7 @@
       installPrompt = null;
       if (choice && choice.outcome === "accepted") {
         button.innerHTML = "✓ <span>App installed</span>";
+        button.disabled = true;
       }
       return;
     }
