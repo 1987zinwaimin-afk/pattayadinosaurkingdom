@@ -19,7 +19,7 @@ jobs:
       - name: Check app JavaScript syntax
         run: node --check app.js
       - name: Check Firebase module syntax
-        run: node --check firebase-auth.js
+        run: node --input-type=module --check < firebase-auth.js
       - name: Check HTML shell and auth gate
         run: |
           node --input-type=module <<'NODE'
