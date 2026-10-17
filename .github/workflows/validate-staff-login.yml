@@ -33,3 +33,36 @@ jobs:
           if (!html.includes('firebase-auth.js')) throw new Error('Firebase auth module is not loaded');
           console.log('Login gate and app shell checks passed.');
           NODE
+
+      - name: Check Owner action guards and staff role handling
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const app = fs.readFileSync('app.js', 'utf8');
+          const auth = fs.readFileSync('firebase-auth.js', 'utf8');
+          const rules = fs.readFileSync('firestore.rules', 'utf8');
+          const requiredGuards = [
+            ["ticket deletion", "if(!await requireOwnerAction('Only Owner can delete tickets.'))return;"],
+            ["saved report deletion", "if(!await requireOwnerAction('Only Owner can delete saved reports.'))return;"],
+            ["daily quantity reset", "if(!await requireOwnerAction('Only Owner can reset daily quantities.'))return;"],
+            ["single quantity clear", "if(clearQty){if(!await requireOwnerAction('Only Owner can clear ticket quantities.'))return;"],
+            ["backup restore", "async function importBackup(file){if(!await requireOwnerAction('Only Owner can restore a backup.'))return;"]
+          ];
+          for (const [label, token] of requiredGuards) {
+            if (!app.includes(token)) throw new Error('Missing Owner Delete Password guard: ' + label);
+          }
+          if (!app.includes("async function deleteReport(id){if(!await requireOwnerAction('Only Owner can delete saved reports.'))return;")) {
+            throw new Error('Saved report deletion is not protected.');
+          }
+          if (!auth.includes('if (old.name !== name)')) throw new Error('Existing staff name validation is missing.');
+          if (auth.includes('old.name !== name || old.department !== department')) {
+            throw new Error('Login form can override/block the Owner-approved staff role.');
+          }
+          if (!auth.includes('["sales", "entry", "playing", "event", "leader"].includes(department)')) {
+            throw new Error('Owner role editor does not accept the Leader role.');
+          }
+          if (!rules.includes('match /ownerSettings/{settingId}') || !rules.includes('allow read, write: if isOwner();')) {
+            throw new Error('Owner Delete Password settings are not Owner-only in Firestore rules.');
+          }
+          console.log('Destructive-action guards, Owner settings rules, and staff role checks passed.');
+          NODE
