@@ -61,3 +61,15 @@ body.auth-pending .auth-gate{display:flex}
 .install-app-button:hover{background:#1b2c4a}
 .install-app-button:focus-visible{outline:3px solid #e5c16d;outline-offset:2px}
 @media(max-width:480px){.topbar{padding:12px}.top-actions{gap:6px}.install-app-button{padding:8px 9px;min-height:38px;font-size:12px}.language-label{display:none}.top-actions select{padding:8px 5px;max-width:96px}}
+
+/* Safer ticket actions: Edit stays prominent; Delete is tucked into More. */
+.ticket-actions{align-items:stretch;gap:8px;position:relative}
+.ticket-actions .ticket-edit-button{flex:1;min-height:42px;font-size:13px}
+.ticket-more{position:relative;flex:0 0 auto}
+.ticket-more>summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:4px;min-height:42px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--navy);font-weight:700;cursor:pointer;user-select:none}
+.ticket-more>summary::-webkit-details-marker{display:none}
+.ticket-more[open]>summary{background:#f5f7fb;border-color:#b9c4d4}
+.ticket-more-menu{position:absolute;right:0;bottom:calc(100% + 7px);z-index:8;min-width:130px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px #09152b24}
+.ticket-delete-option{display:block;width:100%;padding:11px 12px;border:0;border-radius:7px;background:#fff;color:var(--red);text-align:left;font-weight:700;cursor:pointer}
+.ticket-delete-option:active,.ticket-delete-option:hover{background:#fff0ee}
+@media(max-width:760px){.ticket-actions .ticket-edit-button{min-height:42px;font-size:12px}.ticket-more>summary{min-height:42px;padding:0 10px;font-size:11px}.ticket-more-menu{min-width:124px}}
