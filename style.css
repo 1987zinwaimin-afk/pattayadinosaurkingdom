@@ -48,3 +48,10 @@ body.auth-pending .auth-gate{display:flex}
 .ticket-album .album-report-copy .album-department{font-size:14px}
 .ticket-album .album-report-copy .album-date{margin-top:5px;font-size:12px}
 @media(max-width:480px){.ticket-album .album-header{height:150px}.ticket-album .album-report-heading{gap:10px;padding:10px}.ticket-album .album-report-icon{width:46px;height:46px;flex-basis:46px;font-size:27px}.ticket-album .album-report-copy h1{font-size:17px}}
+
+/* Option 7: use a real image element so Save as Image and Print capture the scenic banner reliably */
+.ticket-album .album-header{position:relative;display:block;height:clamp(150px,25vw,250px);min-height:150px;padding:0!important;overflow:hidden;border:2px solid #d6ad57;border-radius:14px 14px 0 0;background:#071a35!important;}
+.ticket-album .album-header .album-hero-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center 52%;}
+.ticket-album .album-header .album-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,18,36,0) 55%,rgba(4,18,36,.2));pointer-events:none;}
+.ticket-album .album-report-heading{margin-top:0;border-radius:0 0 14px 14px;}
+@media(max-width:480px){.ticket-album .album-header{height:165px;min-height:165px;}}
