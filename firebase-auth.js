@@ -186,8 +186,10 @@ staffBtn.addEventListener("click", async () => {
     const snap = await getDoc(ref);
     if (snap.exists()) {
       const old = snap.data();
-      if (old.name !== name || old.department !== department) {
-        status("ဒီ Browser မှာ အခြား Staff Profile ရှိပြီးသားပါ။ Owner ထံမှ Profile ပြင်ဆင်ပေးရန် တောင်းဆိုပါ။", true);
+      // The saved Firestore profile is authoritative. Owner may change a staff
+      // member's department/Leader role, so do not compare it with the login form.
+      if (old.name !== name) {
+        status("ဒီ Browser မှာ သိမ်းထားတဲ့ Staff အမည်နဲ့ မကိုက်ညီပါ။ Owner ထံမှ Profile ကို စစ်ဆေးပေးရန် တောင်းဆိုပါ။", true);
         return;
       }
       await routeUser(user);
