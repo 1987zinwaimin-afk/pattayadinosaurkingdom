@@ -212,3 +212,8 @@ h1{font-size:21px}
  .qty-input{width:70px}
  .ticket-actions .ticket-edit-button{font-size:11px}
 }
+
+.auth-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 18px}
+.auth-mode-switch .btn{min-height:42px}
+.auth-card [hidden]{display:none!important}
+.auth-card select{border:1px solid #d5dbe5;border-radius:10px;padding:12px;color:#17243b;background:#fff}
