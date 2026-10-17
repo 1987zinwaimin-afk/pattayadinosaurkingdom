@@ -1,0 +1,35 @@
+name: Validate staff login changes
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [staff-login-foundation]
+
+jobs:
+  syntax-and-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check app JavaScript syntax
+        run: node --check app.js
+      - name: Check Firebase module syntax
+        run: node --check firebase-auth.js
+      - name: Check HTML shell and auth gate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const html = fs.readFileSync('index.html', 'utf8');
+          for (const id of ['ownerAuthGate', 'staffLoginForm', 'ownerLoginForm', 'staffDepartment', 'appContent']) {
+            if (!html.includes('id="' + id + '"')) throw new Error('Missing required element: ' + id);
+          }
+          const shellCount = (html.match(/class="app-shell"/g) || []).length;
+          if (shellCount !== 1) throw new Error('Expected exactly one app-shell wrapper; found ' + shellCount);
+          if (!html.includes('firebase-auth.js')) throw new Error('Firebase auth module is not loaded');
+          console.log('Login gate and app shell checks passed.');
+          NODE
