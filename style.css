@@ -82,3 +82,33 @@ body.auth-pending .auth-gate{display:flex}
 .ticket-album .album-header .album-hero-tagline{font-size:clamp(8px,1.35vw,12px);font-weight:800;letter-spacing:clamp(1px,.3vw,3px);margin-top:10px;color:#fff}
 @media(max-width:480px){.ticket-album .album-header .album-hero-brand{padding:12px}.ticket-album .album-header .album-hero-brand strong{font-size:25px}.ticket-album .album-header .album-hero-brand b{font-size:19px}.ticket-album .album-header .album-hero-tagline{font-size:8px;letter-spacing:1px}}
 @media print{.ticket-album .album-header .album-hero-brand{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+
+/* Option 2: compact report layout with two-column ticket cards */
+.ticket-album .album-header{height:150px!important;min-height:150px!important;border-radius:14px 14px 0 0!important}
+.ticket-album .album-hero-brand{padding:14px!important}
+.ticket-album .album-hero-kicker{font-size:9px!important;letter-spacing:2px!important}
+.ticket-album .album-hero-brand strong{font-size:30px!important}
+.ticket-album .album-hero-brand b{font-size:24px!important}
+.ticket-album .album-hero-tagline{font-size:8px!important;letter-spacing:1px!important;margin-top:5px!important}
+.ticket-album .album-report-heading{padding:8px 12px!important;margin-bottom:8px!important}
+.ticket-album .album-report-icon{width:42px!important;height:42px!important;flex-basis:42px!important;font-size:24px!important}
+.ticket-album .album-department{font-size:16px!important}
+.ticket-album .album-date{margin-top:4px!important;font-size:12px!important}
+.ticket-album .album-total-card{margin:8px 0!important;padding:10px!important;grid-template-columns:44px 1fr 1fr!important;gap:8px!important}
+.ticket-album .album-total-icon{font-size:25px!important}
+.ticket-album .album-total-number strong{font-size:36px!important}
+.ticket-album .album-total-number span{font-size:10px!important}
+.ticket-album .album-total-meta{font-size:10px!important}
+.ticket-album .album-section-title{margin:8px 0!important}
+.ticket-album .album-ticket-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.ticket-album .album-ticket{grid-template-columns:minmax(0,40%) minmax(0,1fr) 40px!important;gap:5px!important;padding:5px!important;min-height:74px!important;border-radius:10px!important}
+.ticket-album .album-ticket-image{height:62px!important}
+.ticket-album .album-ticket-name{font-size:12px!important;overflow-wrap:anywhere!important}
+.ticket-album .album-ticket-notes{display:none!important}
+.ticket-album .album-ticket-qty{padding:5px 1px!important}
+.ticket-album .album-ticket-qty span{font-size:7px!important}
+.ticket-album .album-ticket-qty strong{font-size:19px!important}
+.ticket-album .album-grand-total{margin-top:9px!important;padding:7px!important;font-size:13px!important}
+.ticket-album .album-grand-total strong{font-size:30px!important}
+.ticket-album .album-footer{margin-top:8px!important;font-size:10px!important}
+@media(max-width:420px){.ticket-album{padding:8px!important}.ticket-album .album-header{height:125px!important;min-height:125px!important}.ticket-album .album-hero-brand strong{font-size:24px!important}.ticket-album .album-hero-brand b{font-size:19px!important}.ticket-album .album-ticket{grid-template-columns:minmax(0,36%) minmax(0,1fr) 36px!important;gap:4px!important;padding:4px!important}.ticket-album .album-ticket-image{height:56px!important}.ticket-album .album-ticket-name{font-size:10px!important}.ticket-album .album-ticket-qty strong{font-size:16px!important}.ticket-album .album-total-card{grid-template-columns:32px 1fr 1fr!important;padding:7px!important}.ticket-album .album-total-number strong{font-size:30px!important}}
