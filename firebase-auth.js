@@ -4,7 +4,7 @@ import {
   signInAnonymously
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, getDocs, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -19,6 +19,18 @@ const OWNER_EMAIL = "1987zinwaimin@gmail.com".toLowerCase();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+window.ticketDeskAdmin = {
+  async listStaff() {
+    if (!auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER_EMAIL) throw new Error("Owner login required");
+    const snap = await getDocs(collection(db, "staffProfiles"));
+    return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  },
+  async setStaffStatus(uid, status) {
+    if (!auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER_EMAIL) throw new Error("Owner login required");
+    if (!["approved", "rejected", "pending"].includes(status)) throw new Error("Invalid status");
+    await updateDoc(doc(db, "staffProfiles", uid), { status, reviewedAt: serverTimestamp() });
+  }
+};
 const gate = document.getElementById("ownerAuthGate");
 const statusEl = document.getElementById("authStatus");
 const ownerForm = document.getElementById("ownerLoginForm");
