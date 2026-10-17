@@ -112,3 +112,103 @@ body.auth-pending .auth-gate{display:flex}
 .ticket-album .album-grand-total strong{font-size:30px!important}
 .ticket-album .album-footer{margin-top:8px!important;font-size:10px!important}
 @media(max-width:420px){.ticket-album{padding:8px!important}.ticket-album .album-header{height:125px!important;min-height:125px!important}.ticket-album .album-hero-brand strong{font-size:24px!important}.ticket-album .album-hero-brand b{font-size:19px!important}.ticket-album .album-ticket{grid-template-columns:minmax(0,36%) minmax(0,1fr) 36px!important;gap:4px!important;padding:4px!important}.ticket-album .album-ticket-image{height:56px!important}.ticket-album .album-ticket-name{font-size:10px!important}.ticket-album .album-ticket-qty strong{font-size:16px!important}.ticket-album .album-total-card{grid-template-columns:32px 1fr 1fr!important;padding:7px!important}.ticket-album .album-total-number strong{font-size:30px!important}}
+
+
+/* Compact premium refresh — global app UI only; report/album styling remains intact */
+:root{--shadow:0 5px 18px rgba(17,32,57,.055)}
+body{font-size:13.5px;background:#f3f6fb}
+.sidebar{padding:18px 13px;width:238px}
+.brand{padding:0 8px 22px;gap:9px}
+.brand-mark{width:36px;height:36px;border-radius:11px;font-size:20px}
+.nav-item{padding:10px 11px;gap:10px;margin:2px 0;border-radius:9px}
+.main{margin-left:238px}
+.topbar{height:78px;padding:14px 24px}
+h1{font-size:21px}
+.content{padding:22px 24px;max-width:1540px}
+.footer{padding:12px 24px}
+.page-head{margin-bottom:16px;gap:12px}
+.page-head h2{font-size:18px}
+.page-head p{margin-top:5px;line-height:1.45}
+.stats-grid{gap:12px;margin-bottom:16px}
+.stat-card{padding:15px;border-radius:13px}
+.stat-icon{width:32px;height:32px;border-radius:9px}
+.stat-number{font-size:25px;margin-top:10px}
+.dashboard-grid{gap:12px}
+.department-card{padding:15px;border-radius:13px}
+.dept-count{font-size:23px;margin:10px 0 2px}
+.ticket-preview-row{margin:10px 0;min-height:44px}
+.mini-ticket{width:50px;height:42px}
+.panel{padding:16px;margin-bottom:14px;border-radius:13px}
+.panel-head{margin-bottom:12px}
+.form-grid{gap:12px}
+.field{gap:5px}
+.field input,.field select,.field textarea,.search-input,.date-input{padding:9px 10px;border-radius:8px}
+.toolbar{margin-bottom:13px;gap:8px}
+.toolbar-left,.toolbar-right,.actions{gap:7px}
+.btn{padding:9px 12px;border-radius:8px}
+.btn-small{padding:6px 8px}
+.ticket-grid{gap:12px}
+.ticket-card{border-radius:13px}
+.ticket-image-wrap{height:138px}
+.ticket-image-wrap img{padding:8px}
+.ticket-body{padding:11px;gap:9px}
+.ticket-name{font-size:14px;line-height:1.35}
+.quantity-row{gap:7px}
+.qty-input{min-height:40px;padding:8px 9px;border-radius:9px}
+.ticket-actions{gap:7px}
+.ticket-actions .ticket-edit-button,.ticket-more>summary{min-height:39px}
+.report-card{border-radius:13px}
+@media(max-width:1150px){
+ .main{margin-left:238px}
+ .content{padding:18px}
+ .topbar{padding:12px 18px}
+ .ticket-grid{gap:10px}
+ .ticket-image-wrap{height:125px}
+ .ticket-body{padding:10px}
+}
+@media(max-width:760px){
+ .sidebar{width:270px;padding:20px 14px}
+ .main{margin-left:0}
+ .topbar{height:auto;min-height:68px;padding:10px 12px;gap:8px}
+ .top-title{min-width:0}
+ .top-title h1{font-size:clamp(16px,4.5vw,20px);line-height:1.18;margin-top:0}
+ .content{padding:14px 12px}
+ .footer{padding:12px}
+ .page-head{margin-bottom:13px;align-items:center}
+ .page-head h2{font-size:17px}
+ .stats-grid{gap:9px;margin-bottom:12px}
+ .stat-card{padding:11px;border-radius:12px}
+ .stat-number{font-size:22px;margin-top:7px}
+ .stat-sub{font-size:10px}
+ .dashboard-grid{gap:10px}
+ .department-card{padding:12px}
+ .dept-count{font-size:21px}
+ .panel{padding:12px;margin-bottom:11px}
+ .panel-head{gap:8px;margin-bottom:10px}
+ .form-grid{gap:10px}
+ .toolbar{gap:7px;margin-bottom:11px}
+ .toolbar-left,.toolbar-right{gap:7px}
+ .search-input{width:100%;min-width:0}
+ .ticket-grid{gap:9px}
+ .ticket-image-wrap{height:112px}
+ .ticket-image-wrap img{padding:6px}
+ .ticket-body{padding:9px;gap:8px}
+ .ticket-name{font-size:13px;line-height:1.3}
+ .ticket-id{font-size:9px}
+ .quantity-row{align-items:center;gap:5px}
+ .quantity-row label{font-size:11px}
+ .qty-input{width:82px;min-height:38px;padding:7px 6px;font-size:15px}
+ .ticket-actions{gap:6px}
+ .ticket-actions .ticket-edit-button,.ticket-more>summary{min-height:39px}
+ .ticket-more>summary{padding:0 9px}
+ .btn{padding:8px 10px}
+}
+@media(max-width:380px){
+ .content{padding:11px 9px}
+ .ticket-grid{gap:7px}
+ .ticket-image-wrap{height:96px}
+ .ticket-body{padding:8px;gap:7px}
+ .ticket-name{font-size:12px}
+ .qty-input{width:70px}
+ .ticket-actions .ticket-edit-button{font-size:11px}
+}
