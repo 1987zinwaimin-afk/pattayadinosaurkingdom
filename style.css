@@ -55,3 +55,9 @@ body.auth-pending .auth-gate{display:flex}
 .ticket-album .album-header .album-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,18,36,0) 55%,rgba(4,18,36,.2));pointer-events:none;}
 .ticket-album .album-report-heading{margin-top:0;border-radius:0 0 14px 14px;}
 @media(max-width:480px){.ticket-album .album-header{height:165px;min-height:165px;}}
+
+/* Installable app: Download here */
+.install-app-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 13px;border:1px solid #c9a96e;border-radius:10px;background:#101d35;color:#ffe5a1;font-weight:800;white-space:nowrap;box-shadow:0 3px 10px rgba(16,29,53,.12)}
+.install-app-button:hover{background:#1b2c4a}
+.install-app-button:focus-visible{outline:3px solid #e5c16d;outline-offset:2px}
+@media(max-width:480px){.topbar{padding:12px}.top-actions{gap:6px}.install-app-button{padding:8px 9px;min-height:38px;font-size:12px}.language-label{display:none}.top-actions select{padding:8px 5px;max-width:96px}}
