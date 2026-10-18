@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getFirestore, collection, doc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
@@ -306,6 +306,20 @@ function startStaff() {
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
 onAuthStateChanged(auth, user => {
+  // Staff identity takes priority over any restored Owner session on this browser.
+  // Never initialize Owner cloud listeners while a Staff session is active.
+  if (staffSession()) {
+    if (user && !user.isAnonymous) {
+      signOut(auth).catch(err => syncStatus(`Could not separate Staff/Owner auth: ${err?.code || err?.message || "unknown error"}`, true));
+      return;
+    }
+    if (user?.isAnonymous) { startStaff(); return; }
+    if (!signingInAnonymously) {
+      signingInAnonymously = true;
+      signInAnonymously(auth).then(() => startStaff()).catch(err => syncStatus(`Staff cloud authentication failed: ${err?.code || err?.message || "unknown error"}`, true)).finally(() => { signingInAnonymously = false; });
+    }
+    return;
+  }
   if (user?.email?.toLowerCase() === OWNER) {
     (async () => {
       try {
