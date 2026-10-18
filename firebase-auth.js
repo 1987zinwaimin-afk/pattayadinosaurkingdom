@@ -35,7 +35,7 @@ function staffSession() {
     return value && typeof value.name === "string" && ["sales", "entry", "playing", "event", "leader"].includes(value.department) ? value : null;
   } catch { return null; }
 }
-function showGate() {
+// If a Staff session exists, hide the Owner gate synchronously instead of waiting for Firebase restore.\nif (staffSession()) { gate.hidden = true; document.body.classList.remove("auth-pending"); }\nfunction showGate() {
   document.body.classList.add("auth-pending");
   gate.hidden = false;
 }
@@ -60,7 +60,7 @@ function allowOwner(user) {
 // Keep Owner signed in on this device/browser after the first successful login.
 setPersistence(auth, browserLocalPersistence).then(() => {
   onAuthStateChanged(auth, user => {
-    if (staffSession()) { allowStaff(); return; }
+    if (staffSession()) {\n      // A saved Staff session must never inherit an Owner Firebase session.\n      if (user && !user.isAnonymous) { signOut(auth).then(() => allowStaff()).catch(error => { console.error("Could not separate Staff and Owner sessions:", error); allowStaff(); }); return; }\n      allowStaff(); return;\n    }
     if (user) allowOwner(user);
     else showGate();
   });
