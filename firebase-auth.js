@@ -56,7 +56,7 @@ window.ticketDeskAdmin = {
   },
   async setStaffDepartment(uid, department) {
     requireOwner();
-    if (!["sales", "entry", "playing", "event", "leader"].includes(department)) throw new Error("Invalid department");
+    if (!["sales", "entry", "playing", "event"].includes(department)) throw new Error("Invalid department");
     await updateDoc(doc(db, "staffProfiles", uid), { department, reviewedAt: serverTimestamp() });
   },
   async hasDeletePassword() {
@@ -157,7 +157,7 @@ async function routeUser(user) {
       console.warn("Could not read local staff session", error);
     }
     if (!profile || typeof profile.name !== "string" ||
-        !["sales", "entry", "playing", "event", "leader"].includes(profile.department)) {
+        !["sales", "entry", "playing", "event"].includes(profile.department)) {
       denyApp("အမည်နဲ့ Department ကိုရွေးပြီး Login ဝင်ပါ။");
       return;
     }
