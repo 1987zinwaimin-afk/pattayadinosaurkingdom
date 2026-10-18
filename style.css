@@ -212,3 +212,5 @@ h1{font-size:21px}
  .qty-input{width:70px}
  .ticket-actions .ticket-edit-button{font-size:11px}
 }
+
+.logout-button{white-space:nowrap;min-height:40px}@media(max-width:760px){.top-actions{gap:7px}.logout-button{padding:9px 10px;font-size:12px}}
