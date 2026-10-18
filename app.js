@@ -69,14 +69,37 @@ async function replaceAllStoresAtomic(replacement){
     });
     return;
   }
-  const previous={};
-  for(const name of STORE_NAMES)previous[name]=fallbackRead(name);
+  // localStorage has no multi-key transaction. Stage serialization first, then
+  // write all keys with best-effort rollback; do not mutate memory until success.
+  const serialized={};
+  for(const name of STORE_NAMES)serialized[name]=JSON.stringify(replacement[name]);
+  const previousRaw={};
   try{
-    for(const name of STORE_NAMES)fallbackWrite(name,replacement[name]);
+    for(const name of STORE_NAMES)previousRaw[name]=localStorage.getItem(fallbackKey(name));
   }catch(err){
-    for(const name of STORE_NAMES)fallbackWrite(name,previous[name]);
-    throw err;
+    // If localStorage is unavailable, keep the current in-memory snapshot until
+    // every replacement array is ready, then swap the references synchronously.
+    const staged={};
+    for(const name of STORE_NAMES)staged[name]=replacement[name].slice();
+    for(const name of STORE_NAMES)memoryStore[name]=staged[name];
+    return;
   }
+  const written=[];
+  try{
+    for(const name of STORE_NAMES){
+      localStorage.setItem(fallbackKey(name),serialized[name]);
+      written.push(name);
+    }
+  }catch(err){
+    for(const name of written.reverse()){
+      try{
+        if(previousRaw[name]===null)localStorage.removeItem(fallbackKey(name));
+        else localStorage.setItem(fallbackKey(name),previousRaw[name]);
+      }catch(rollbackError){console.error('Could not fully roll back localStorage backup restore for',name,rollbackError);}
+    }
+    throw new Error('Backup restore failed; the previous data was preserved where browser storage allowed rollback. Export a backup and retry with more storage space.');
+  }
+  for(const name of STORE_NAMES)memoryStore[name]=replacement[name].slice();
 }
 async function seedSlots(){const ts=await all('tickets');for(const d of DEPTS){const have=ts.filter(t=>t.departmentId===d.id);if(have.length<18){for(let i=have.length;i<18;i++)await put('tickets',{id:uid(),departmentId:d.id,name:'',imageId:null,notes:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),slot:true,slotNumber:i+1});}}}
 async function ticketsFor(deptId){return (await all('tickets')).filter(t=>t.departmentId===deptId).sort((a,b)=>(a.slotNumber||9999)-(b.slotNumber||9999)||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));}
