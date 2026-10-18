@@ -123,7 +123,8 @@ async function publishOwnerCatalog() {
       console.warn("Ticket image is too large to sync safely; preserving any existing cloud record:", ticket.name);
       continue;
     }
-    await setDoc(doc(db, "sharedTicketCatalog", id), {
+    const catalogRef = doc(db, "sharedTicketCatalog", id);
+    const nextRecord = {
       catalogId: id,
       sourceTicketId: String(ticket.id),
       departmentId: ticket.departmentId,
@@ -131,9 +132,16 @@ async function publishOwnerCatalog() {
       notes: String(ticket.notes || "").slice(0, 1000),
       slotNumber: Number.isInteger(ticket.slotNumber) ? ticket.slotNumber : null,
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
-      imageData,
-      updatedAt: new Date().toISOString()
-    });
+      imageData
+    };
+    const previous = await getDocs(collection(db, "sharedTicketCatalog"));
+    const previousDoc = previous.docs.find(d => d.id === id);
+    const previousRecord = previousDoc?.data();
+    const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
+    const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
+    if (!unchanged) {
+      await setDoc(catalogRef, { ...nextRecord, updatedAt: new Date().toISOString() });
+    }
   }
   // Compare with the actual cloud catalog so deletions propagate after Owner reloads too.
   const existingSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
