@@ -11,10 +11,16 @@
   "theme_color": "#101d35",
   "icons": [
     {
-      "src": "./app-icon.svg?v=20261018-logo2",
+      "src": "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
