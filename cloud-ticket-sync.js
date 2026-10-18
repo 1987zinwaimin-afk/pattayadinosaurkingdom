@@ -162,8 +162,9 @@ function queueCatalogPublish(event) {
     }
     return;
   }
+  // A saved ticket must reach Firestore immediately; do not rely on the next page load.
   clearTimeout(publishTimer);
-  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 600);
+  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 100);
 }
 async function applyCatalog(snapshot) {
   await waitForLocalStore();
