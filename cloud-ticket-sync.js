@@ -110,6 +110,7 @@ async function applyCatalog(snapshot) {
   const store = window.ticketdeskLocalStore;
   const localTickets = await store.all("tickets");
   const remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+  let catalogChanged = false;
   const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
   for (const remote of remoteRecords) {
     if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
@@ -124,7 +125,7 @@ async function applyCatalog(snapshot) {
       const updated = { ...local, sharedCatalogId: remote.cloudDocId, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
       else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
-      await store.put("tickets", updated);
+      if (JSON.stringify(local) !== JSON.stringify(updated)) { await store.put("tickets", updated); catalogChanged = true; }
     } else {
       const created = {
         id: `shared-${remote.cloudDocId}`, sharedCatalogId: remote.cloudDocId,
@@ -136,6 +137,7 @@ async function applyCatalog(snapshot) {
       };
       await store.put("tickets", created);
       localTickets.push(created);
+      catalogChanged = true;
     }
   }
   // Remove only ticket entries that were explicitly linked to the Owner's shared catalog.
@@ -143,11 +145,14 @@ async function applyCatalog(snapshot) {
     if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
       if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
       await store.del("tickets", local.id);
+      catalogChanged = true;
     }
   }
   lastCatalogIds = nextIds;
-  window.ticketdeskLocalStore.refresh?.();
-  document.dispatchEvent(new Event("ticketdesk-cloud-catalog-updated"));
+  if (catalogChanged) {
+    window.ticketdeskLocalStore.refresh?.();
+    document.dispatchEvent(new Event("ticketdesk-cloud-catalog-updated"));
+  }
 }
 function dailyDocId(departmentId, ticketId, date) {
   return `${departmentId}__${ticketId}__${date}`.replaceAll("/", "_");
@@ -179,21 +184,31 @@ async function applyDaily(snapshot) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const tickets = await store.all("tickets");
+  let dailyChanged = false;
   for (const d of snapshot.docs) {
     const remote = d.data();
     if (!DEPTS.includes(remote.departmentId) || !remote.date || !remote.ticketId) continue;
     const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
     if (!ticket) continue;
     const id = `${ticket.id}__${remote.date}`;
-    await store.put("daily", {
+    const nextRecord = {
       id, ticketId: ticket.id, departmentId: remote.departmentId, date: remote.date,
       quantity: Math.max(0, Math.trunc(Number(remote.quantity) || 0)),
       notes: remote.notes || "", updatedAt: remote.updatedAt || new Date().toISOString(),
       sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
-    });
+    };
+    const current = await store.get("daily", id);
+    if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
+        String(current.notes || "") !== nextRecord.notes ||
+        String(current.updatedAt || "") !== nextRecord.updatedAt) {
+      await store.put("daily", nextRecord);
+      dailyChanged = true;
+    }
   }
-  window.ticketdeskLocalStore.refresh?.();
-  document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
+  if (dailyChanged) {
+    window.ticketdeskLocalStore.refresh?.();
+    document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
+  }
 }
 function startOwner() {
   if (role === "owner") return;
