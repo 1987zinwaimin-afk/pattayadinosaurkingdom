@@ -1,5 +1,5 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-leader-login-v42";
-const APP_SHELL = ["./", "./index.html", "./style.css?v=leader-pin-inline-fix-20261019b", "./app.js?v=fixed-leader-password-0735-20261019a", "./firebase-auth.js?v=separate-staff-owner-auth-20261019a", "./cloud-ticket-sync.js?v=shared-leader-password-20261019b", "./pwa.js", "./manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
+const CACHE_NAME = "pattaya-dinosaur-kingdom-leader-login-v43";
+const APP_SHELL = ["./", "./index.html", "./style.css?v=leader-pin-flex-fix-20261019c", "./app.js?v=fixed-leader-password-0735-20261019a", "./firebase-auth.js?v=separate-staff-owner-auth-20261019a", "./cloud-ticket-sync.js?v=shared-leader-password-20261019b", "./pwa.js", "./manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
