@@ -154,7 +154,7 @@ async function publishDaily(record) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
-  const catalogTicketId = ticket?.sharedCatalogId || (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId));
+  const catalogTicketId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId)));
   await setDoc(doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date)), {
     id: dailyDocId(record.departmentId, catalogTicketId, record.date),
     ticketId: catalogTicketId,
