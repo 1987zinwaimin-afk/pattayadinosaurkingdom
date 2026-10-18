@@ -115,6 +115,20 @@ service cloud.firestore {
       allow create, update, delete: if isOwner();
     }
 
+    match /sharedDaily/{recordId} {
+      allow read: if isOwner();
+      allow create, update: if signedIn()
+        && request.resource.data.keys().hasOnly(['id', 'ticketId', 'departmentId', 'date', 'quantity', 'notes', 'updatedAt', 'sourceUid', 'sourceName'])
+        && request.resource.data.departmentId in ['sales', 'entry', 'playing', 'event']
+        && request.resource.data.ticketId is string
+        && request.resource.data.date is string
+        && request.resource.data.quantity is int
+        && request.resource.data.quantity >= 0
+        && request.resource.data.sourceUid == request.auth.uid
+        && request.resource.data.sourceName is string;
+      allow delete: if isOwner();
+    }
+
     // Deny every unlisted collection by default.
     match /{document=**} {
       allow read, write: if false;
