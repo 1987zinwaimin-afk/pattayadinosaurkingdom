@@ -90,5 +90,8 @@ jobs:
           if (app.includes("for(const s of ['tickets','daily','reports','images'])await clearStore(s);for(const s of ['tickets','daily','reports','images'])for(const item of data[s])await put(s,item);")) {
             throw new Error('Unsafe sequential clear-and-repopulate backup restore is still present.');
           }
+          if (!app.includes("catch(storageError){console.warn('Could not persist language preference after backup restore:',storageError);}")) {
+            throw new Error('Backup restore must not report failure if only language preference persistence fails after data restore.');
+          }
           console.log('Destructive-action guards, Owner settings rules, staff roles, departmentId schema, and atomic backup restore checks passed.');
           NODE
