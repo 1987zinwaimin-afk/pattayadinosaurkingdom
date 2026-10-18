@@ -4,96 +4,43 @@ service cloud.firestore {
     function signedIn() {
       return request.auth != null;
     }
+
     function isOwner() {
       return signedIn()
         && request.auth.token.email == '1987zinwaimin@gmail.com'
-        && request.auth.token.email_verified == true;
-    }
-    function profilePath(uid) {
-      return /databases/$(database)/documents/staffProfiles/$(uid);
-    }
-    function hasApprovedProfile() {
-      return signedIn()
-        && exists(profilePath(request.auth.uid))
-        && get(profilePath(request.auth.uid)).data.status == 'approved';
-    }
-    function profile() {
-      return get(profilePath(request.auth.uid)).data;
-    }
-    function canUseDepartment(department) {
-      return isOwner()
-        || (hasApprovedProfile()
-          && (profile().department == 'leader'
-            || profile().department == department));
-    }
-    function validDepartment(department) {
-      return department in ['sales', 'entry', 'playing', 'event'];
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
-    // Staff submit a pending profile. Only the Owner can approve/change roles.
+    // Staff profiles are used only by the Owner's account management screen.
+    // Staff can create their own pending profile, but cannot approve or change roles.
     match /staffProfiles/{uid} {
       allow create: if signedIn()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['name', 'department', 'status', 'createdAt'])
+        && request.resource.data.keys().hasOnly([
+          'name', 'department', 'status', 'createdAt'
+        ])
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 1
         && request.resource.data.name.size() <= 80
-        && request.resource.data.department in ['sales', 'entry', 'playing', 'event', 'leader']
+        && request.resource.data.department in [
+          'sales', 'entry', 'playing', 'event', 'leader'
+        ]
         && request.resource.data.status == 'pending';
-      allow read: if isOwner() || (signedIn() && request.auth.uid == uid);
+
+      allow read: if isOwner()
+        || (signedIn() && request.auth.uid == uid);
+
       allow update, delete: if isOwner();
     }
 
-    // Cloud ticket records are scoped by department. Staff/Leader cannot delete.
-    match /tickets/{ticketId} {
-      allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create: if isOwner()
-        || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
-      allow update: if isOwner()
-        || (hasApprovedProfile()
-          && validDepartment(resource.data.department)
-          && request.resource.data.department == resource.data.department
-          && canUseDepartment(resource.data.department));
-      allow delete: if isOwner();
+    // The Owner-only delete-password hash/salt lives in this collection.
+    match /ownerSettings/{settingId} {
+      allow read, write: if isOwner();
     }
 
-    // Daily quantities and report data follow the same department boundary.
-    match /daily/{recordId} {
-      allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create, update: if isOwner()
-        || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
-      allow delete: if isOwner();
-    }
-    match /reports/{reportId} {
-      allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create, update: if isOwner()
-        || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
-      allow delete: if isOwner();
-    }
-    match /images/{imageId} {
-      allow read: if isOwner()
-        || (resource.data.department is string
-          && canUseDepartment(resource.data.department));
-      allow create, update: if isOwner()
-        || (hasApprovedProfile()
-          && validDepartment(request.resource.data.department)
-          && canUseDepartment(request.resource.data.department));
-      allow delete: if isOwner();
-    }
-
-    // Deny every unlisted collection by default.
+    // This version of the app stores tickets, images, quantities and reports
+    // in this browser's local storage. Do not pretend those are cloud collections.
+    // Deny all other Firestore paths until a verified cloud-sync schema is deployed.
     match /{document=**} {
       allow read, write: if false;
     }

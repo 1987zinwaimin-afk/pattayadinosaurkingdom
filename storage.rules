@@ -1,0 +1,47 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner() {
+      return signedIn()
+        && request.auth.token.email == '1987zinwaimin@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+    function hasApprovedProfile() {
+      return signedIn()
+        && firestore.get(/databases/(default)/documents/staffProfiles/$(request.auth.uid)).data.status == 'approved';
+    }
+    function canUseDepartment(departmentId) {
+      return isOwner()
+        || (hasApprovedProfile()
+          && (firestore.get(/databases/(default)/documents/staffProfiles/$(request.auth.uid)).data.department == 'leader'
+            || firestore.get(/databases/(default)/documents/staffProfiles/$(request.auth.uid)).data.department == departmentId));
+    }
+    function validDepartment(departmentId) {
+      return departmentId in ['sales', 'entry', 'playing', 'event'];
+    }
+    function validImageUpload() {
+      return request.resource != null
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType is string
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Future cloud image path: ticket-images/{departmentId}/{imageId}.
+    // These rules are not active until explicitly published in Firebase Console/CLI.
+    match /ticket-images/{departmentId}/{imageId} {
+      allow read: if validDepartment(departmentId) && canUseDepartment(departmentId);
+      allow create, update: if validDepartment(departmentId)
+        && canUseDepartment(departmentId)
+        && validImageUpload();
+      allow delete: if isOwner();
+    }
+
+    // Deny access to all other Storage paths by default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

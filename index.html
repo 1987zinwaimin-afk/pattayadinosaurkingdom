@@ -11,30 +11,50 @@
   <title>Ticket Desk — Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=compact-premium-20261017a">
+  <link rel="stylesheet" href="style.css?v=staff-login-share-link-bilingual-20261018f">
 </head>
 <body class="auth-pending">
   <section class="auth-gate" id="ownerAuthGate" aria-labelledby="ownerAuthTitle">
     <div class="auth-card">
       <div class="auth-brand">T</div>
       <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
-      <h1 id="ownerAuthTitle">Owner Login</h1>
-      <p class="auth-description">Firebase account ဖြင့် Owner အဖြစ် ဝင်ပါ။ သတ်မှတ်ထားသော Owner Gmail တစ်ခုတည်းကိုသာ ခွင့်ပြုထားသည်။</p>
-      <form id="ownerLoginForm" autocomplete="on">
+      <div class="auth-language-row"><label for="authLanguageSelect" data-auth-i18n="language">Language</label><select id="authLanguageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
+      <h1 id="ownerAuthTitle" data-auth-i18n="loginTitle">Staff / Owner Login</h1>
+      <p class="auth-description" data-auth-i18n="loginDescription">Staff can enter with their name and department. Owner uses a separate login.</p>
+      <div class="auth-mode-switch">
+        <button type="button" class="btn btn-secondary" id="staffModeButton" data-auth-i18n="staffLogin">Staff Login</button>
+        <button type="button" class="btn btn-secondary" id="ownerModeButton" data-auth-i18n="ownerLogin">Owner Login</button>
+      </div>
+      <form id="staffLoginForm" autocomplete="off">
         <div class="field" style="text-align:left;margin-bottom:12px">
-          <label for="ownerEmail">Owner Gmail</label>
-          <input id="ownerEmail" type="email" name="owner-login-email" value="" placeholder="Enter Owner Gmail" autocomplete="off" autocapitalize="none" spellcheck="false" required style="width:100%">
+          <label for="staffName" data-auth-i18n="staffName">Staff name</label>
+          <input id="staffName" type="text" maxlength="80" placeholder="Enter your name" data-auth-placeholder="enterName" required style="width:100%">
         </div>
         <div class="field" style="text-align:left;margin-bottom:14px">
-          <label for="ownerPassword">Firebase Password</label>
-          <input id="ownerPassword" type="password" autocomplete="current-password" required style="width:100%">
+          <label for="staffDepartment" data-auth-i18n="department">Department</label>
+          <select id="staffDepartment" required style="width:100%;min-height:46px">
+            <option value="sales" data-auth-i18n="sales">Sales Department</option>
+            <option value="entry" data-auth-i18n="entry">Entry Department</option>
+            <option value="playing" data-auth-i18n="playing">Playing Department</option>
+            <option value="event" data-auth-i18n="event">Event Department</option>
+          </select>
         </div>
-        <button type="submit" id="ownerLoginButton" class="btn btn-primary" style="width:100%;min-height:48px">Login as Owner</button>
+        <button type="submit" id="staffLoginButton" class="btn btn-primary" data-auth-i18n="loginAsStaff" style="width:100%;min-height:48px">Login as Staff</button>
       </form>
-      <p id="authStatus" class="auth-status" role="status" aria-live="polite">Firebase Authentication ကို စစ်ဆေးနေပါသည်…</p>
+      <form id="ownerLoginForm" autocomplete="off" hidden>
+        <div class="field" style="text-align:left;margin-bottom:12px">
+          <label for="ownerEmail" data-auth-i18n="ownerGmail">Owner Gmail</label>
+          <input id="ownerEmail" type="email" name="owner-login-email" value="" placeholder="Enter Owner Gmail" data-auth-placeholder="enterOwnerGmail" autocomplete="off" autocapitalize="none" spellcheck="false" style="width:100%">
+        </div>
+        <div class="field" style="text-align:left;margin-bottom:14px">
+          <label for="ownerPassword" data-auth-i18n="firebasePassword">Firebase Password</label>
+          <input id="ownerPassword" type="password" autocomplete="current-password" style="width:100%">
+        </div>
+        <button type="submit" id="ownerLoginButton" class="btn btn-primary" data-auth-i18n="loginAsOwner" style="width:100%;min-height:48px">Login as Owner</button>
+      </form>
+      <p id="authStatus" class="auth-status" role="status" aria-live="polite" data-auth-i18n="checking">Checking sign-in status…</p>
     </div>
   </section>
-  <div class="app-shell">
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand"><div class="brand-mark">T</div><div><strong>Ticket Desk</strong><small data-i18n="workspace">Management workspace</small></div></div>
@@ -46,7 +66,7 @@
       <header class="topbar">
         <button class="icon-button mobile-menu" id="menuToggle" aria-label="Open menu">☰</button>
         <div class="top-title"><span data-i18n="workspace">Management workspace</span><h1 id="pageTitle">Dashboard</h1></div>
-        <div class="top-actions"><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
+        <div class="top-actions"><button type="button" id="logoutButton" class="btn btn-secondary logout-button" data-i18n="logout">Log out</button><label class="language-label" for="languageSelect" data-i18n="language">Language</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="th">ภาษาไทย</option></select></div>
       </header>
       <div id="appContent" class="content" aria-live="polite"></div>
       <footer class="footer"><span>Ticket Desk</span><span data-i18n="localOnly">Data is stored on this device unless you export a backup.</span></footer>
@@ -55,8 +75,8 @@
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
   <dialog id="modal" class="modal"><form id="modalForm" method="dialog"><div id="modalContent"></div></form></dialog>
   <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
-  <script src="app.js?v=one-tap-save-album-20261018f"></script>
-  <script type="module" src="firebase-auth.js?v=manual-owner-email-20261018d"></script>
+  <script src="app.js?v=staff-data-page-20261018a"></script>
+  <script type="module" src="firebase-auth.js?v=staff-login-share-link-bilingual-20261018f"></script>
   <script src="pwa.js?v=settings-install-20261018d"></script>
 </body>
 </html>

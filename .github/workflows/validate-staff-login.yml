@@ -1,0 +1,115 @@
+name: Validate staff login changes
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [staff-login-foundation]
+
+jobs:
+  syntax-and-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check app JavaScript syntax
+        run: node --check app.js
+      - name: Check Firebase module syntax
+        run: node --input-type=module --check < firebase-auth.js
+      - name: Check HTML shell and auth gate
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const html = fs.readFileSync('index.html', 'utf8');
+          for (const id of ['ownerAuthGate', 'staffLoginForm', 'ownerLoginForm', 'staffDepartment', 'appContent']) {
+            if (!html.includes('id="' + id + '"')) throw new Error('Missing required element: ' + id);
+          }
+          const shellCount = (html.match(/class="app-shell"/g) || []).length;
+          if (shellCount !== 1) throw new Error('Expected exactly one app-shell wrapper; found ' + shellCount);
+          if (!html.includes('firebase-auth.js')) throw new Error('Firebase auth module is not loaded');
+          const app = fs.readFileSync('app.js', 'utf8');
+          if (!app.includes("put('images',{id:imageId,departmentId:deptId,data:pendingImage")) throw new Error('New image records must include departmentId for cloud access rules.');
+          console.log('Login gate and app shell checks passed.');
+          NODE
+
+      - name: Check Owner action guards and staff role handling
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const app = fs.readFileSync('app.js', 'utf8');
+          const auth = fs.readFileSync('firebase-auth.js', 'utf8');
+          const rules = fs.readFileSync('firestore.rules', 'utf8');
+          const storageRules = fs.readFileSync('storage.rules', 'utf8');
+          const requiredGuards = [
+            ["ticket deletion", "if(!await requireOwnerAction('Only Owner can delete tickets.'))return;"],
+            ["saved report deletion", "if(!await requireOwnerAction('Only Owner can delete saved reports.'))return;"],
+            ["daily quantity reset", "if(!await requireOwnerAction('Only Owner can reset daily quantities.'))return;"],
+            ["single quantity clear", "if(clearQty){if(!await requireOwnerAction('Only Owner can clear ticket quantities.'))return;"],
+            ["backup restore", "async function importBackup(file){if(!await requireOwnerAction('Only Owner can restore a backup.'))return;"]
+          ];
+          for (const [label, token] of requiredGuards) {
+            if (!app.includes(token)) throw new Error('Missing Owner Delete Password guard: ' + label);
+          }
+          if (!app.includes("async function deleteReport(id){if(!await requireOwnerAction('Only Owner can delete saved reports.'))return;")) {
+            throw new Error('Saved report deletion is not protected.');
+          }
+          const resetStart = app.indexOf('async function resetQuantities(deptId)');
+          const resetEnd = app.indexOf('async function saveReport', resetStart);
+          const resetBlock = app.slice(resetStart, resetEnd);
+          if (resetStart < 0 || resetEnd < 0 || resetBlock.indexOf('if(!isOwnerAccess())') < 0 || resetBlock.indexOf('if(!await requireOwnerAction(') < resetBlock.indexOf('if(!isOwnerAccess())')) {
+            throw new Error('Quantity reset must reject non-Owners before requesting the Owner Delete Password.');
+          }
+          if (!auth.includes('localStorage.setItem("ticketdesk-local-staff-profile"')) {
+            throw new Error('Staff login must save the selected name and department for immediate local access.');
+          }
+          if (!auth.includes('allowApp(user, localProfile)')) {
+            throw new Error('Staff login must enter the app immediately without waiting for Owner approval.');
+          }
+          if (auth.includes('Owner အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါတယ်')) {
+            throw new Error('Staff login must not block access pending Owner approval.');
+          }
+          if (!auth.includes('localStorage.removeItem("ticketdesk-local-staff-profile")')) {
+            throw new Error('Logout must clear the local staff profile.');
+          }
+          if (!auth.includes('if (!["sales", "entry", "playing", "event", "leader"].includes(department))')) {
+            throw new Error('Owner role editor does not accept the Leader role.');
+          }
+          if (!rules.includes('match /ownerSettings/{settingId}') || !rules.includes('allow read, write: if isOwner();')) {
+            throw new Error('Owner Delete Password settings are not Owner-only in Firestore rules.');
+          }
+          for (const collection of ['tickets', 'daily', 'reports', 'images']) {
+            const start = rules.indexOf('match /' + collection + '/{');
+            if (start < 0) throw new Error('Missing Firestore rules for ' + collection + '.');
+            const end = rules.indexOf('\n    match /', start + 1);
+            const block = rules.slice(start, end < 0 ? rules.length : end);
+            if (!block.includes('resource.data.departmentId') || !block.includes('request.resource.data.departmentId')) {
+              throw new Error('Firestore ' + collection + ' rules do not match app.js departmentId schema.');
+            }
+          }
+          if (rules.includes('resource.data.department is string') || rules.includes('request.resource.data.department)')) {
+            throw new Error('Found stale department field checks in cloud data rules.');
+          }
+          if (!app.includes('async function replaceAllStoresAtomic(replacement)')) {
+            throw new Error('Backup restore must use the atomic multi-store replacement helper.');
+          }
+          if (!app.includes("db.transaction(STORE_NAMES,'readwrite')")) {
+            throw new Error('Backup restore must replace all IndexedDB stores in one transaction.');
+          }
+          if (!app.includes('await replaceAllStoresAtomic(data)')) {
+            throw new Error('Backup restore bypasses the atomic replacement helper.');
+          }
+          if (app.includes("for(const s of ['tickets','daily','reports','images'])await clearStore(s);for(const s of ['tickets','daily','reports','images'])for(const item of data[s])await put(s,item);")) {
+            throw new Error('Unsafe sequential clear-and-repopulate backup restore is still present.');
+          }
+          if (!app.includes("catch(storageError){console.warn('Could not persist language preference after backup restore:',storageError);}")) {
+            throw new Error('Backup restore must not report failure if only language preference persistence fails after data restore.');
+          }
+          if (!storageRules.includes("match /ticket-images/{departmentId}/{imageId}")) throw new Error('Missing department-scoped Firebase Storage image path.');
+          if (!storageRules.includes('request.resource.size <= 5 * 1024 * 1024') || !storageRules.includes("request.resource.contentType.matches('image/.*')")) throw new Error('Storage image upload type/size limits are missing.');
+          if (!storageRules.includes('allow delete: if isOwner();') || !storageRules.includes('allow read, write: if false;')) throw new Error('Storage must restrict image deletion to Owner and deny unlisted paths.');
+          console.log('Destructive-action guards, Owner settings rules, staff roles, departmentId schema, atomic backup restore, and image Storage rules checks passed.');
+          NODE
