@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Pattaya Dinosaur Kingdom Ticket Desk",
-  "short_name": "Ticket Desk",
-  "description": "Pattaya Dinosaur Kingdom daily ticket management and reports",
+  "name": "Pattaya Dinosaur Kingdom",
+  "short_name": "Dinosaur Kingdom",
+  "description": "Pattaya Dinosaur Kingdom ticket management",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -10,6 +10,11 @@
   "background_color": "#101d35",
   "theme_color": "#101d35",
   "icons": [
-    { "src": "./app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "./app-icon.svg?v=20261018-logo1",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
