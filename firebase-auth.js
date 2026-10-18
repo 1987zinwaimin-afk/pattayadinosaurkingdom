@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -57,10 +57,17 @@ function allowOwner(user) {
     detail: { email: user.email, uid: user.uid }
   }));
 }
-onAuthStateChanged(auth, user => {
-  if (staffSession()) { allowStaff(); return; }
-  if (user) allowOwner(user);
-  else showGate();
+// Keep Owner signed in on this device/browser after the first successful login.
+setPersistence(auth, browserLocalPersistence).then(() => {
+  onAuthStateChanged(auth, user => {
+    if (staffSession()) { allowStaff(); return; }
+    if (user) allowOwner(user);
+    else showGate();
+  });
+}).catch(error => {
+  console.error("Could not restore Firebase session:", error);
+  showGate();
+  status("Firebase Authentication ကို စစ်ဆေးမရပါ။ Internet ကိုစစ်ပြီး ပြန်ဖွင့်ပါ။", true);
 });
 document.getElementById("ownerLoginForm").addEventListener("submit", e => e.preventDefault());
 loginBtn.addEventListener("click", async () => {
