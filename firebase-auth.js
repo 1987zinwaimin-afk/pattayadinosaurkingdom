@@ -94,6 +94,7 @@ const ownerForm = document.getElementById("ownerLoginForm");
 const staffForm = document.getElementById("staffLoginForm");
 const ownerBtn = document.getElementById("ownerLoginButton");
 const staffBtn = document.getElementById("staffLoginButton");
+const logoutBtn = document.getElementById("logoutButton");
 const emailInput = document.getElementById("ownerEmail");
 const passwordInput = document.getElementById("ownerPassword");
 const nameInput = document.getElementById("staffName");
@@ -236,5 +237,26 @@ ownerBtn.addEventListener("click", async () => {
   }
 });
 passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") ownerBtn.click(); });
+logoutBtn?.addEventListener("click", async () => {
+  if (!auth.currentUser) {
+    denyApp("Staff Login သို့မဟုတ် Owner Login ကိုရွေးပါ။");
+    setMode("staff");
+    return;
+  }
+  logoutBtn.disabled = true;
+  logoutBtn.textContent = "Signing out…";
+  try {
+    await signOut(auth);
+    window.ticketDeskAccess = null;
+    setMode("staff");
+    denyApp("အကောင့်မှ ထွက်ပြီးပါပြီ။ ပြန်ဝင်ရန် Login ကိုရွေးပါ။");
+  } catch (error) {
+    console.error("Sign out failed", error);
+    status("Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပြီး ထပ်ကြိုးစားပါ။", true);
+  } finally {
+    logoutBtn.disabled = false;
+    logoutBtn.textContent = "Log out";
+  }
+});
 onAuthStateChanged(auth, routeUser);
 setMode("staff");
