@@ -1,5 +1,5 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-hideempty-v11";
-const APP_SHELL = ["./", "./index.html", "./style.css?v=shared-catalog-20261018b", "./app.js?v=hide-empty-tickets-20261018a", "./firebase-auth.js?v=shared-catalog-20261018a", "./cloud-ticket-sync.js?v=shared-catalog-20261018c", "./pwa.js", "./manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
+const CACHE_NAME = "pattaya-dinosaur-kingdom-cloudsync-v12";
+const APP_SHELL = ["./", "./index.html", "./style.css?v=shared-catalog-20261018b", "./app.js?v=hide-empty-tickets-20261018a", "./firebase-auth.js?v=shared-catalog-20261018a", "./cloud-ticket-sync.js?v=cloud-sync-status-20261019a", "./pwa.js", "./manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
