@@ -29,9 +29,20 @@ function status(message, isError = false) {
   statusEl.textContent = message;
   statusEl.classList.toggle("error", isError);
 }
+function staffSession() {
+  try {
+    const value = JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1") || "null");
+    return value && typeof value.name === "string" && ["sales", "entry", "playing", "event", "leader"].includes(value.department) ? value : null;
+  } catch { return null; }
+}
 function showGate() {
   document.body.classList.add("auth-pending");
   gate.hidden = false;
+}
+function allowStaff() {
+  gate.hidden = true;
+  document.body.classList.remove("auth-pending");
+  document.dispatchEvent(new CustomEvent("ticketdesk-staff-authenticated", { detail: staffSession() }));
 }
 function allowOwner(user) {
   if (!user || !user.email || user.email.toLowerCase() !== OWNER_EMAIL) {
@@ -47,6 +58,7 @@ function allowOwner(user) {
   }));
 }
 onAuthStateChanged(auth, user => {
+  if (staffSession()) { allowStaff(); return; }
   if (user) allowOwner(user);
   else showGate();
 });
@@ -90,7 +102,9 @@ passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn
 const logoutButton = document.getElementById('logoutButton');
 if (logoutButton) logoutButton.addEventListener('click', async () => {
   logoutButton.disabled = true;
-  try { await signOut(auth); window.location.reload(); }
-  catch (error) { console.error('Logout failed', error); status('Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပါ။', true); }
+  try {
+    if (staffSession()) { localStorage.removeItem('ticketdesk-staff-session-v1'); window.location.href = './staff-portal.html'; return; }
+    await signOut(auth); window.location.reload();
+  } catch (error) { console.error('Logout failed', error); status('Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပါ။', true); }
   finally { logoutButton.disabled = false; }
 });
