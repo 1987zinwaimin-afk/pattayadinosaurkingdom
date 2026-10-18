@@ -57,6 +57,12 @@ jobs:
           if (!app.includes("async function deleteReport(id){if(!await requireOwnerAction('Only Owner can delete saved reports.'))return;")) {
             throw new Error('Saved report deletion is not protected.');
           }
+          const resetStart = app.indexOf('async function resetQuantities(deptId)');
+          const resetEnd = app.indexOf('async function saveReport', resetStart);
+          const resetBlock = app.slice(resetStart, resetEnd);
+          if (resetStart < 0 || resetEnd < 0 || resetBlock.indexOf('if(!isOwnerAccess())') < 0 || resetBlock.indexOf('if(!await requireOwnerAction(') < resetBlock.indexOf('if(!isOwnerAccess())')) {
+            throw new Error('Quantity reset must reject non-Owners before requesting the Owner Delete Password.');
+          }
           if (!auth.includes('if (old.name !== name)')) throw new Error('Existing staff name validation is missing.');
           if (auth.includes('old.name !== name || old.department !== department')) {
             throw new Error('Login form can override/block the Owner-approved staff role.');
