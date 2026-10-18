@@ -25,6 +25,7 @@ service firebase.storage {
     function validImageUpload() {
       return request.resource != null
         && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType is string
         && request.resource.contentType.matches('image/.*');
     }
 
