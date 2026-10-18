@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDocs, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -14,11 +14,14 @@ const app = getApps().find(x => x.name === "[DEFAULT]") || initializeApp(cfg);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const OWNER = "1987zinwaimin@gmail.com";
+const DEPTS = ["sales", "entry", "playing", "event"];
 let role = "";
-let unsubscribe = null;
-let publishTimer = null;
 let started = false;
 let signingInAnonymously = false;
+let publishTimer = null;
+let stopCatalog = null;
+let stopDaily = null;
+let lastCatalogIds = new Set();
 
 function staffSession() {
   try {
@@ -30,8 +33,10 @@ function waitForLocalStore() {
   if (window.ticketdeskStoreReady && window.ticketdeskLocalStore) return Promise.resolve();
   return new Promise(resolve => document.addEventListener("ticketdesk-local-store-ready", resolve, { once: true }));
 }
-function catalogId(ticket) {
-  return ticket.slotNumber ? `${ticket.departmentId}__slot__${ticket.slotNumber}` : `${ticket.departmentId}__ticket__${ticket.id}`;
+function slotCatalogId(ticket) {
+  return Number.isInteger(ticket.slotNumber) && ticket.slotNumber > 0
+    ? `${ticket.departmentId}__slot__${ticket.slotNumber}`
+    : `${ticket.departmentId}__ticket__${ticket.id}`;
 }
 async function imageFor(ticket) {
   if (!ticket.imageId) return null;
@@ -39,110 +44,157 @@ async function imageFor(ticket) {
   return image?.data || null;
 }
 async function publishOwnerCatalog() {
-  if (role !== "owner" || !auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER) return;
+  if (role !== "owner" || auth.currentUser?.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
-  const tickets = (await store.all("tickets")).filter(t => t && t.departmentId && String(t.name || "").trim());
+  const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
+  const desired = new Set();
   for (const ticket of tickets) {
+    const id = slotCatalogId(ticket);
+    if (!String(ticket.name || "").trim()) continue;
     const imageData = await imageFor(ticket);
-    // Firestore documents are limited to 1 MiB. Never attempt to write an oversized image.
     if (imageData && imageData.length > 760000) {
-      console.warn("Shared image too large for safe Firestore sync; use a smaller ticket image:", ticket.name);
+      console.warn("Ticket image is too large to sync safely:", ticket.name);
       continue;
     }
-    const payload = {
+    desired.add(id);
+    await setDoc(doc(db, "sharedTicketCatalog", id), {
+      catalogId: id,
+      sourceTicketId: String(ticket.id),
       departmentId: ticket.departmentId,
-      catalogId: catalogId(ticket),
       name: String(ticket.name || "").slice(0, 160),
       notes: String(ticket.notes || "").slice(0, 1000),
       slotNumber: Number.isInteger(ticket.slotNumber) ? ticket.slotNumber : null,
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData,
       updatedAt: new Date().toISOString()
-    };
-    await setDoc(doc(db, "sharedTicketCatalog", payload.catalogId), payload);
+    });
   }
-  console.info("Owner ticket catalog published to Firebase.");
+  // Delete stale catalog records so Owner deletions propagate to every Staff device.
+  for (const oldId of lastCatalogIds) {
+    if (!desired.has(oldId)) await deleteDoc(doc(db, "sharedTicketCatalog", oldId));
+  }
+  lastCatalogIds = desired;
+  console.info("Shared ticket catalog published.");
 }
-function queuePublish() {
+function queueCatalogPublish() {
   if (role !== "owner") return;
   clearTimeout(publishTimer);
-  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => console.error("Could not publish shared ticket catalog:", err)), 500);
+  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => console.error("Catalog publish failed:", err)), 600);
 }
 async function applyCatalog(snapshot) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const localTickets = await store.all("tickets");
-  const records = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
-  for (const remote of records) {
-    if (!["sales", "entry", "playing", "event"].includes(remote.departmentId) || !remote.name) continue;
-    let local = null;
-    if (Number.isInteger(remote.slotNumber)) {
+  const remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+  const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
+  for (const remote of remoteRecords) {
+    if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
+    let local = localTickets.find(t => t.sharedCatalogId === remote.cloudDocId);
+    if (!local && Number.isInteger(remote.slotNumber)) {
       local = localTickets.find(t => t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber);
     }
-    if (!local) {
-      local = localTickets.find(t => t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
-    }
+    if (!local) local = localTickets.find(t => t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
-    if (remote.imageData) {
-      await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
-    }
+    if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
-      const updated = { ...local, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      const updated = { ...local, sharedCatalogId: remote.cloudDocId, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
-      else if (String(local.imageId || "").startsWith("shared-img-")) {
-        await store.del("images", local.imageId);
-        updated.imageId = null;
-      }
+      else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       await store.put("tickets", updated);
     } else {
-      const newTicket = {
-        id: `shared-${remote.cloudDocId}`,
-        departmentId: remote.departmentId,
-        name: remote.name,
-        notes: remote.notes || "",
-        inventory: remote.inventory ?? null,
-        imageId: remote.imageData ? sharedImageId : null,
-        slot: false,
-        slotNumber: remote.slotNumber ?? undefined,
-        createdAt: remote.updatedAt || new Date().toISOString(),
-        updatedAt: remote.updatedAt || new Date().toISOString(),
+      const created = {
+        id: `shared-${remote.cloudDocId}`, sharedCatalogId: remote.cloudDocId,
+        departmentId: remote.departmentId, name: remote.name, notes: remote.notes || "",
+        inventory: remote.inventory ?? null, imageId: remote.imageData ? sharedImageId : null,
+        slot: false, slotNumber: remote.slotNumber ?? undefined,
+        createdAt: remote.updatedAt || new Date().toISOString(), updatedAt: remote.updatedAt || new Date().toISOString(),
         sharedFromOwner: true
       };
-      await store.put("tickets", newTicket);
-      localTickets.push(newTicket);
+      await store.put("tickets", created);
+      localTickets.push(created);
     }
   }
+  // Remove only ticket entries that were explicitly linked to the Owner's shared catalog.
+  for (const local of localTickets) {
+    if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
+      if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
+      await store.del("tickets", local.id);
+    }
+  }
+  lastCatalogIds = nextIds;
   window.ticketdeskLocalStore.refresh?.();
   document.dispatchEvent(new Event("ticketdesk-cloud-catalog-updated"));
 }
-function startStaffSync() {
-  if (started || !auth.currentUser) return;
-  started = true;
-  role = "staff";
-  unsubscribe = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => {
-    applyCatalog(snapshot).catch(err => console.error("Could not apply shared ticket catalog:", err));
-  }, err => console.error("Shared ticket catalog read failed:", err));
+function dailyDocId(departmentId, ticketId, date) {
+  return `${departmentId}__${ticketId}__${date}`.replaceAll("/", "_");
 }
-function startOwnerSync() {
-  role = "owner";
-  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
-  started = true;
-  publishOwnerCatalog().catch(err => console.error("Could not publish shared ticket catalog:", err));
-  document.addEventListener("ticketdesk-local-ticket-changed", queuePublish);
+async function publishDaily(record) {
+  if (!auth.currentUser || !record || !DEPTS.includes(record.departmentId) || !record.date || !record.ticketId) return;
+  await waitForLocalStore();
+  const store = window.ticketdeskLocalStore;
+  const ticket = await store.get("tickets", record.ticketId);
+  const catalogTicketId = ticket?.sharedCatalogId || (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId));
+  await setDoc(doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date)), {
+    id: dailyDocId(record.departmentId, catalogTicketId, record.date),
+    ticketId: catalogTicketId,
+    departmentId: record.departmentId,
+    date: record.date,
+    quantity: Math.max(0, Math.trunc(Number(record.quantity) || 0)),
+    notes: String(record.notes || "").slice(0, 1000),
+    updatedAt: record.updatedAt || new Date().toISOString(),
+    sourceUid: auth.currentUser.uid,
+    sourceName: staffSession()?.name || auth.currentUser.email || "Owner"
+  });
+}
+async function publishReset(detail) {
+  if (!detail || !Array.isArray(detail.records)) return;
+  for (const rec of detail.records) await publishDaily({ ...rec, quantity: 0, updatedAt: new Date().toISOString() });
+}
+async function applyDaily(snapshot) {
+  if (role !== "owner") return;
+  await waitForLocalStore();
+  const store = window.ticketdeskLocalStore;
+  const tickets = await store.all("tickets");
+  for (const d of snapshot.docs) {
+    const remote = d.data();
+    if (!DEPTS.includes(remote.departmentId) || !remote.date || !remote.ticketId) continue;
+    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
+    if (!ticket) continue;
+    const id = `${ticket.id}__${remote.date}`;
+    await store.put("daily", {
+      id, ticketId: ticket.id, departmentId: remote.departmentId, date: remote.date,
+      quantity: Math.max(0, Math.trunc(Number(remote.quantity) || 0)),
+      notes: remote.notes || "", updatedAt: remote.updatedAt || new Date().toISOString(),
+      sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
+    });
+  }
+  window.ticketdeskLocalStore.refresh?.();
+  document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
+}
+function startOwner() {
+  if (role === "owner") return;
+  role = "owner"; started = true;
+  document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
+  document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
+  waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => console.error("Initial catalog sync failed:", err));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => console.error("Owner daily sync failed:", err)), err => console.error("Owner daily sync listener failed:", err));
+}
+function startStaff() {
+  if (started || !auth.currentUser) return;
+  role = "staff"; started = true;
+  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => applyCatalog(snapshot).catch(err => console.error("Staff catalog sync failed:", err)), err => console.error("Staff catalog listener failed:", err));
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
+  document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
 onAuthStateChanged(auth, user => {
-  if (user?.email?.toLowerCase() === OWNER && user.emailVerified) {
-    if (role !== "owner") startOwnerSync();
-    return;
-  }
+  if (user?.email?.toLowerCase() === OWNER && user.emailVerified) { startOwner(); return; }
   if (staffSession() && (!user || user.isAnonymous)) {
-    if (user) { startStaffSync(); return; }
+    if (user) { startStaff(); return; }
     if (!signingInAnonymously) {
       signingInAnonymously = true;
-      signInAnonymously(auth).then(() => startStaffSync()).catch(err => {
-        console.error("Staff cloud sync authentication failed:", err);
-      }).finally(() => { signingInAnonymously = false; });
+      signInAnonymously(auth).then(() => startStaff()).catch(err => console.error("Staff cloud sync authentication failed:", err)).finally(() => { signingInAnonymously = false; });
     }
   }
 });
