@@ -1,5 +1,5 @@
-const CACHE_NAME = "pattaya-ticket-desk-v1";
-const APP_SHELL = ["./", "./index.html", "./style.css", "./app.js", "./pwa.js", "./manifest.webmanifest", "./app-icon.svg"];
+const CACHE_NAME = "pattaya-ticket-desk-v2";
+const APP_SHELL = ["./", "./index.html", "./style.css?v=staff-data-main-20261018b", "./app.js?v=staff-data-main-20261018c", "./pwa.js", "./manifest.webmanifest", "./app-icon.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
