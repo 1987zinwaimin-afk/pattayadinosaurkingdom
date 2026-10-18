@@ -221,7 +221,7 @@ async function routeUser(user) {
 }
 document.getElementById("staffModeButton").addEventListener("click", () => setMode("staff"));
 document.getElementById("ownerModeButton").addEventListener("click", () => { if (!staffOnlyLink) setMode("owner"); });
-authLanguageSelect?.addEventListener("change", () => { try { localStorage.setItem("ticketdesk-language", authLanguageSelect.value); } catch {} applyAuthLanguage(); });
+authLanguageSelect?.addEventListener("change", () => { try { localStorage.setItem("ticketdesk-language", authLanguageSelect.value); } catch {} applyAuthLanguage(); window.dispatchEvent(new CustomEvent("ticketdesk-language-changed", {detail: authLanguageSelect.value})); });
 ownerForm.addEventListener("submit", e => e.preventDefault());
 staffForm.addEventListener("submit", e => e.preventDefault());
 
@@ -299,6 +299,7 @@ logoutBtn?.addEventListener("click", async () => {
   }
 });
 if (staffOnlyLink) {
+  gate.classList.add("staff-only-gate");
   document.getElementById("ownerModeButton").hidden = true;
   document.getElementById("ownerLoginForm").hidden = true;
   document.getElementById("ownerAuthTitle").textContent = authT("loginTitle");
