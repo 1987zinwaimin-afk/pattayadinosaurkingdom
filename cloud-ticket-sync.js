@@ -23,6 +23,20 @@ let stopCatalog = null;
 let stopDaily = null;
 let lastCatalogIds = new Set();
 
+function syncStatus(message, isError = false) {
+  console[isError ? "error" : "info"]("[Ticket Desk Cloud Sync]", message);
+  const foot = document.querySelector(".sidebar-foot");
+  if (foot) {
+    foot.dataset.cloudSync = isError ? "error" : "ok";
+    foot.title = message;
+    const label = foot.querySelector("[data-i18n]");
+    if (label) label.textContent = message;
+  }
+  window.dispatchEvent(new CustomEvent("ticketdesk-cloud-sync-status", {
+    detail: { message, error: isError }
+  }));
+}
+
 function staffSession() {
   try {
     const s = JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1") || "null");
@@ -81,7 +95,7 @@ async function publishOwnerCatalog() {
     if (!desired.has(existing.id)) await deleteDoc(doc(db, "sharedTicketCatalog", existing.id));
   }
   lastCatalogIds = desired;
-  console.info("Shared ticket catalog published.");
+  syncStatus(`Cloud sync complete: ${desired.size} named ticket types published.`);
 }
 function queueCatalogPublish() {
   if (role !== "owner") return;
@@ -184,8 +198,8 @@ function startOwner() {
   document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
-  waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => console.error("Initial catalog sync failed:", err));
-  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => console.error("Owner daily sync failed:", err)), err => console.error("Owner daily sync listener failed:", err));
+  syncStatus("Owner connected; preparing ticket catalog sync…");\n  waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
 function startStaff() {
   if (started || !auth.currentUser) return;
@@ -195,7 +209,7 @@ function startStaff() {
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
 onAuthStateChanged(auth, user => {
-  if (user?.email?.toLowerCase() === OWNER && user.emailVerified) { startOwner(); return; }
+  if (user?.email?.toLowerCase() === OWNER) {\n    user.reload().then(() => {\n      if (auth.currentUser?.email?.toLowerCase() === OWNER && auth.currentUser.emailVerified) startOwner();\n      else syncStatus("Owner email verification is not confirmed by Firebase yet.", true);\n    }).catch(err => syncStatus(`Owner authentication check failed: ${err?.code || err?.message || "unknown error"}`, true));\n    return;\n  }
   if (staffSession() && (!user || user.isAnonymous)) {
     if (user) { startStaff(); return; }
     if (!signingInAnonymously) {
