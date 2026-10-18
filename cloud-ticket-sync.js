@@ -211,10 +211,25 @@ function startStaff() {
 }
 onAuthStateChanged(auth, user => {
   if (user?.email?.toLowerCase() === OWNER) {
-    user.reload().then(() => {
-      if (auth.currentUser?.email?.toLowerCase() === OWNER && auth.currentUser.emailVerified) startOwner();
-      else syncStatus("Owner email verification is not confirmed by Firebase yet.", true);
-    }).catch(err => syncStatus(`Owner authentication check failed: ${err?.code || err?.message || "unknown error"}`, true));
+    (async () => {
+      try {
+        await user.reload();
+        const refreshed = auth.currentUser;
+        if (!refreshed || refreshed.email?.toLowerCase() !== OWNER) {
+          syncStatus(`Owner account mismatch: Firebase signed in as ${refreshed?.email || "unknown account"}.`, true);
+          return;
+        }
+        await refreshed.getIdToken(true);
+        await refreshed.reload();
+        if (auth.currentUser?.emailVerified) {
+          startOwner();
+        } else {
+          syncStatus(`Firebase reports emailVerified=false for ${auth.currentUser?.email || OWNER}. Sign out and sign in again after confirming this exact account in Firebase Authentication.`, true);
+        }
+      } catch (err) {
+        syncStatus(`Owner authentication refresh failed: ${err?.code || err?.message || "unknown error"}`, true);
+      }
+    })();
     return;
   }
   if (staffSession() && (!user || user.isAnonymous)) {
