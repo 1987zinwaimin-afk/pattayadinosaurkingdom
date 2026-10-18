@@ -1,8 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="108" fill="#101d35"/>
-<rect x="20" y="20" width="472" height="472" rx="92" fill="none" stroke="#d6ad57" stroke-width="12"/>
-<path d="M102 340h308v48H102z" fill="#d6ad57"/>
-<path d="M130 300c0-76 49-135 121-135 53 0 88 26 104 72l-40 18c-12-27-31-41-61-41-43 0-74 37-74 86z" fill="#f4d487"/>
-<path d="M280 184l40-43 15 33 40-5-17 35 26 25-42 2-15 36-20-35-41-4 27-25z" fill="#f4d487"/>
-<text x="256" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="44" font-weight="800" fill="#f4d487">TICKET</text>
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#0788ee"/><stop offset="1" stop-color="#ffd56c"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff27a"/><stop offset="1" stop-color="#f27b08"/></linearGradient></defs>
+<rect width="512" height="512" rx="92" fill="url(#sky)"/>
+<circle cx="408" cy="104" r="42" fill="#fff4b4" opacity=".95"/>
+<path d="M0 300 68 214l38 42 50-86 44 76 58-65 61 94 54-61 76 82 63-37v253H0Z" fill="#1a593c"/>
+<path d="M0 350q70-72 145-14t150-6 217 2v180H0Z" fill="#0c402f"/>
+<g fill="#287447"><path d="M0 250 35 150l35 100zM30 276 76 160l40 116zM400 270l44-120 43 120z"/></g>
+<path d="M103 284c-9-62 14-110 54-142l-3-41 43 21 38-42 14 51c42 11 70 45 79 89l44 28-48 21-21 45H154Z" fill="#87522b" stroke="#392b22" stroke-width="9" stroke-linejoin="round"/>
+<path d="M164 178q35-43 79-22l30 20-31 16-41-3-17 27z" fill="#c58b48"/>
+<path d="M187 180q24-26 47-9l-4 20-33 6z" fill="#fff0c5"/><circle cx="211" cy="180" r="10" fill="#ffca22"/><circle cx="214" cy="180" r="4" fill="#171717"/>
+<path d="M170 220q61-25 112 6l-12 32q-49-13-93 3z" fill="#2b211b"/><path d="M183 235l16 2-7 18-13-2zM212 231l16 2-5 20-14-3zM242 234l16 2-4 18-14-2z" fill="#fff2d4"/>
+<path d="M60 327h392l-15 137H75Z" fill="#3a2015" stroke="#e5ad32" stroke-width="7" stroke-linejoin="round"/>
+<text x="256" y="369" text-anchor="middle" font-family="Arial,sans-serif" font-size="39" font-weight="900" fill="url(#gold)" stroke="#522a10" stroke-width="2" paint-order="stroke">PATTAYA</text>
+<text x="256" y="412" text-anchor="middle" font-family="Arial,sans-serif" font-size="31" font-weight="900" fill="#f8e3b4" stroke="#522a10" stroke-width="2" paint-order="stroke">DINOSAUR</text>
+<text x="256" y="447" text-anchor="middle" font-family="Arial,sans-serif" font-size="33" font-weight="900" fill="url(#gold)" stroke="#522a10" stroke-width="2" paint-order="stroke">KINGDOM</text>
 </svg>
