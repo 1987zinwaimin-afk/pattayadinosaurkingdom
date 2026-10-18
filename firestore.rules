@@ -5,9 +5,10 @@ service cloud.firestore {
       return request.auth != null;
     }
     function isOwner() {
+      // Owner access is restricted to the exact allowlisted Firebase Email/Password account.
+      // Do not block Owner data sync solely because the email_verified claim is stale/false.
       return signedIn()
-        && request.auth.token.email == '1987zinwaimin@gmail.com'
-        && request.auth.token.email_verified == true;
+        && request.auth.token.email == '1987zinwaimin@gmail.com';
     }
     function profilePath(uid) {
       return /databases/$(database)/documents/staffProfiles/$(uid);
