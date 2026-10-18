@@ -198,7 +198,8 @@ function startOwner() {
   document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
-  syncStatus("Owner connected; preparing ticket catalog sync…");\n  waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  syncStatus("Owner connected; preparing ticket catalog sync…");
+  waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
 function startStaff() {
@@ -209,7 +210,13 @@ function startStaff() {
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
 onAuthStateChanged(auth, user => {
-  if (user?.email?.toLowerCase() === OWNER) {\n    user.reload().then(() => {\n      if (auth.currentUser?.email?.toLowerCase() === OWNER && auth.currentUser.emailVerified) startOwner();\n      else syncStatus("Owner email verification is not confirmed by Firebase yet.", true);\n    }).catch(err => syncStatus(`Owner authentication check failed: ${err?.code || err?.message || "unknown error"}`, true));\n    return;\n  }
+  if (user?.email?.toLowerCase() === OWNER) {
+    user.reload().then(() => {
+      if (auth.currentUser?.email?.toLowerCase() === OWNER && auth.currentUser.emailVerified) startOwner();
+      else syncStatus("Owner email verification is not confirmed by Firebase yet.", true);
+    }).catch(err => syncStatus(`Owner authentication check failed: ${err?.code || err?.message || "unknown error"}`, true));
+    return;
+  }
   if (staffSession() && (!user || user.isAnonymous)) {
     if (user) { startStaff(); return; }
     if (!signingInAnonymously) {
