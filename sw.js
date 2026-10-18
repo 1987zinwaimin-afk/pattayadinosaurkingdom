@@ -1,5 +1,5 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-monthly-report-v31";
-const APP_SHELL = ["./", "./index.html", "./style.css?v=shared-catalog-20261018b", "./app.js?v=monthly-report-fix-20261019a", "./firebase-auth.js?v=separate-staff-owner-auth-20261019a", "./cloud-ticket-sync.js?v=separate-staff-owner-auth-20261019a", "./pwa.js", "./manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
+const CACHE_NAME = "pattaya-dinosaur-kingdom-monthly-excel-v32";
+const APP_SHELL = ["./", "./index.html", "./style.css?v=shared-catalog-20261018b", "./app.js?v=monthly-excel-daily-breakdown-20261019b", "./firebase-auth.js?v=separate-staff-owner-auth-20261019a", "./cloud-ticket-sync.js?v=separate-staff-owner-auth-20261019a", "./pwa.js", "./manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
