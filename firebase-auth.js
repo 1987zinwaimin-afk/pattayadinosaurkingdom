@@ -255,7 +255,7 @@ logoutBtn?.addEventListener("click", async () => {
     status("Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပြီး ထပ်ကြိုးစားပါ။", true);
   } finally {
     logoutBtn.disabled = false;
-    logoutBtn.textContent = "Log out";
+    logoutBtn.textContent = document.documentElement.lang === "th" ? "ออกจากระบบ" : "Log out";
   }
 });
 onAuthStateChanged(auth, routeUser);
