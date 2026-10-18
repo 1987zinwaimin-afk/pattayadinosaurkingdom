@@ -40,6 +40,6 @@ form.addEventListener("submit",async e=>{
   status.textContent="Login successful. Opening your department…";status.hidden=false;status.className="notice";window.location.href="./index.html";
  }catch(err){
   console.error("Staff login failed",err);
-  status.textContent=(department==="leader"?w.approvalWrong:w.err)+" ("+(err?.code||"network")+")";status.hidden=false;status.className="notice error";
+  status.textContent=(department==="leader"&&err?.code==="permission-denied"?"Firebase permission denied: publish the current firestore.rules rules to the live Firestore database, then try again.":(department==="leader"&&err?.code==="unavailable"?"Cannot reach Firebase. Check internet and try again.":(department==="leader"?w.approvalWrong:w.err)))+" ("+(err?.code||"network")+")";status.hidden=false;status.className="notice error";
  }finally{button.disabled=false;button.textContent=w.submit;}
 });
