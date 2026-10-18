@@ -6,8 +6,7 @@ service cloud.firestore {
     }
     function isOwner() {
       return signedIn()
-        && request.auth.token.email != null
-        && request.auth.token.email.lower() == '1987zinwaimin@gmail.com';
+        && request.auth.token.email == '1987zinwaimin@gmail.com';
     }
     function profilePath(uid) {
       return /databases/$(database)/documents/staffProfiles/$(uid);
