@@ -122,9 +122,37 @@ const nameInput = document.getElementById("staffName");
 const deptInput = document.getElementById("staffDepartment");
 let loginMode = "staff";
 let handlingAuth = false;
+const staffOnlyLink = new URLSearchParams(window.location.search).get("staff") === "1";
+const authLanguageSelect = document.getElementById("authLanguageSelect");
+const AUTH_COPY = {
+en:{loginTitle:"Staff Login",loginDescription:"Enter your name and choose your department to continue.",staffLogin:"Staff Login",ownerLogin:"Owner Login",staffName:"Staff name",enterName:"Enter your name",department:"Department",sales:"Sales Department",entry:"Entry Department",playing:"Playing Department",event:"Event Department",loginAsStaff:"Login as Staff",ownerGmail:"Owner Gmail",enterOwnerGmail:"Enter Owner Gmail",firebasePassword:"Firebase Password",loginAsOwner:"Login as Owner",checking:"Choose your name and department to log in.",staffReady:"Choose your name and department, then log in.",ownerReady:"Enter the Owner Gmail and Firebase password.",staffSuccess:"Staff login successful.",ownerRequired:"Only the configured Owner Gmail can sign in here.",ownerInvalid:"Owner login failed. Check the Gmail, password, and Firebase Authentication settings.",staffFailed:"Staff login failed. Check Firebase Anonymous Authentication settings.",networkError:"Could not verify login. Check your connection and Firebase settings.",signedOut:"You have signed out. Choose Staff Login to continue.",fillName:"Enter your name.",ownerPasswordRequired:"Enter the Firebase password.",ownerDomain:"Add this website domain in Firebase Authentication → Settings → Authorized domains.",staffOnly:"Staff access only. Enter your name and choose a department."},
+th:{loginTitle:"เข้าสู่ระบบพนักงาน",loginDescription:"กรอกชื่อและเลือกแผนกเพื่อเข้าสู่ระบบ",staffLogin:"เข้าสู่ระบบพนักงาน",ownerLogin:"เข้าสู่ระบบเจ้าของ",staffName:"ชื่อพนักงาน",enterName:"กรอกชื่อของคุณ",department:"แผนก",sales:"แผนกจำหน่ายตั๋ว",entry:"แผนกตั๋วเข้า",playing:"แผนกตั๋วเล่น",event:"แผนกกิจกรรม",loginAsStaff:"เข้าสู่ระบบพนักงาน",ownerGmail:"Gmail เจ้าของ",enterOwnerGmail:"กรอก Gmail เจ้าของ",firebasePassword:"รหัสผ่าน Firebase",loginAsOwner:"เข้าสู่ระบบเจ้าของ",checking:"เลือกชื่อและแผนกเพื่อเข้าสู่ระบบ",staffReady:"เลือกชื่อและแผนก แล้วกดเข้าสู่ระบบ",ownerReady:"กรอก Gmail และรหัสผ่าน Firebase ของเจ้าของ",staffSuccess:"เข้าสู่ระบบพนักงานสำเร็จ",ownerRequired:"อนุญาตเฉพาะ Gmail ของเจ้าของที่กำหนดไว้เท่านั้น",ownerInvalid:"เข้าสู่ระบบเจ้าของไม่สำเร็จ กรุณาตรวจสอบ Gmail รหัสผ่าน และ Firebase Authentication",staffFailed:"เข้าสู่ระบบพนักงานไม่สำเร็จ กรุณาตรวจสอบ Anonymous Authentication ใน Firebase",networkError:"ตรวจสอบการเข้าสู่ระบบไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตและการตั้งค่า Firebase",signedOut:"ออกจากระบบแล้ว เลือกเข้าสู่ระบบพนักงานเพื่อดำเนินการต่อ",fillName:"กรุณากรอกชื่อ",ownerPasswordRequired:"กรุณากรอกรหัสผ่าน Firebase",ownerDomain:"เพิ่มโดเมนเว็บไซต์นี้ใน Firebase Authentication → Settings → Authorized domains",staffOnly:"สำหรับพนักงานเท่านั้น กรุณากรอกชื่อและเลือกแผนก"}
+};
+function authLang(){try{return localStorage.getItem("ticketdesk-language")==="th"?"th":"en";}catch{return "en";}}
+function authT(key){return AUTH_COPY[authLang()][key]||AUTH_COPY.en[key]||key;}
+function applyAuthLanguage(){
+ const language=authLang();document.documentElement.lang=language;if(authLanguageSelect)authLanguageSelect.value=language;
+ document.querySelectorAll("[data-auth-i18n]").forEach(el=>{const key=el.dataset.authI18n;if(AUTH_COPY[language][key])el.textContent=AUTH_COPY[language][key];});
+ document.querySelectorAll("[data-auth-placeholder]").forEach(el=>{const key=el.dataset.authPlaceholder;if(AUTH_COPY[language][key])el.placeholder=AUTH_COPY[language][key];});
+ if(statusEl&&!statusEl.classList.contains("error"))statusEl.textContent=authT(staffOnlyLink?"staffOnly":loginMode==="owner"?"ownerReady":"staffReady");
+}
+function translatedStatus(message){
+ if(/အမည်ဖြည့်|name.*required/i.test(message))return authT("fillName");
+ if(/Owner Login မအောင်မြင်|Firebase Password.*စစ်ဆေး/i.test(message))return authT("ownerInvalid");
+ if(/ခွင့်ပြုထားသော Owner Gmail|Owner Gmail မဟုတ်|Owner အဖြစ် ခွင့်မပြု/i.test(message))return authT("ownerRequired");
+ if(/Anonymous Sign-in|Staff Login မအောင်မြင်/i.test(message))return authT("staffFailed");
+ if(/Network ကို စစ်ဆေး|Login အချက်အလက်ကို စစ်ဆေးမရ/i.test(message))return authT("networkError");
+ if(/Authorized domains/i.test(message))return authT("ownerDomain");
+ if(/Login ဝင်ပြီးပါပြီ/i.test(message))return authT("staffSuccess");
+ if(/အကောင့်မှ ထွက်ပြီးပါပြီ/i.test(message))return authT("signedOut");
+ if(/Firebase Password ထည့်ပါ/i.test(message))return authT("ownerPasswordRequired");
+ if(/အမည်နဲ့ Department ကိုရွေးပြီး Login ဝင်ပါ|Staff Login သို့မဟုတ် Owner Login ကိုရွေးပါ/i.test(message))return authT(staffOnlyLink?"staffOnly":"staffReady");
+ if(/Owner Gmail နဲ့ Firebase Password/i.test(message))return authT("ownerReady");
+ return message;
+}
 
 function status(message, isError = false) {
-  statusEl.textContent = message;
+  statusEl.textContent = translatedStatus(message);
   statusEl.classList.toggle("error", isError);
 }
 function showGate() {
@@ -137,7 +165,7 @@ function setMode(mode) {
   ownerForm.hidden = mode !== "owner";
   document.getElementById("staffModeButton").classList.toggle("btn-primary", mode === "staff");
   document.getElementById("ownerModeButton").classList.toggle("btn-primary", mode === "owner");
-  status(mode === "staff" ? "အမည်နဲ့ Department ကိုရွေးပြီး Login ဝင်ပါ။" : "Owner Gmail နဲ့ Firebase Password ကို ထည့်ပါ။");
+  status(mode === "staff" ? (staffOnlyLink ? authT("staffOnly") : authT("staffReady")) : authT("ownerReady"));
 }
 function allowApp(user, profile = null) {
   gate.hidden = true;
@@ -160,8 +188,8 @@ async function routeUser(user) {
       return;
     }
     if (user.email && user.email.toLowerCase() === OWNER_EMAIL && !user.isAnonymous) {
-      allowApp(user);
-      return;
+      if (staffOnlyLink) { await signOut(auth); denyApp(authT("staffOnly")); setMode("staff"); return; }
+      allowApp(user); return;
     }
     if (!user.isAnonymous) {
       await signOut(auth);
@@ -192,7 +220,8 @@ async function routeUser(user) {
   }
 }
 document.getElementById("staffModeButton").addEventListener("click", () => setMode("staff"));
-document.getElementById("ownerModeButton").addEventListener("click", () => setMode("owner"));
+document.getElementById("ownerModeButton").addEventListener("click", () => { if (!staffOnlyLink) setMode("owner"); });
+authLanguageSelect?.addEventListener("change", () => { try { localStorage.setItem("ticketdesk-language", authLanguageSelect.value); } catch {} applyAuthLanguage(); });
 ownerForm.addEventListener("submit", e => e.preventDefault());
 staffForm.addEventListener("submit", e => e.preventDefault());
 
@@ -269,5 +298,12 @@ logoutBtn?.addEventListener("click", async () => {
     logoutBtn.textContent = document.documentElement.lang === "th" ? "ออกจากระบบ" : "Log out";
   }
 });
-onAuthStateChanged(auth, routeUser);
+if (staffOnlyLink) {
+  document.getElementById("ownerModeButton").hidden = true;
+  document.getElementById("ownerLoginForm").hidden = true;
+  document.getElementById("ownerAuthTitle").textContent = authT("loginTitle");
+  document.querySelector(".auth-description").textContent = authT("staffOnly");
+}
+applyAuthLanguage();
 setMode("staff");
+onAuthStateChanged(auth, routeUser);
