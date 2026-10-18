@@ -217,3 +217,6 @@ h1{font-size:21px}
 
 /* Ensure native hidden fields stay hidden even when .field sets display:flex. */
 [hidden]{display:none!important}
+
+/* Four-box PIN input used for Leader check-in. */
+.pin-inputs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:340px;margin:4px auto 0;width:100%}.pin-digit{width:100%;min-width:0;height:58px;text-align:center;font-size:24px;font-weight:800;color:var(--navy);border:1px solid #dce2eb;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(17,32,57,.04)}.pin-digit:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px #c9a96e33}.pin-digit.filled{border-color:#9ab4dc;background:#f2f6fc}@media(max-width:420px){.pin-inputs{gap:8px}.pin-digit{height:52px;font-size:22px}}
