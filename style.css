@@ -225,3 +225,15 @@ h1{font-size:21px}
 
 /* Bilingual auth controls and staff-only share login */
 .auth-language-row{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-6px 0 16px;color:#697386;font-size:12px}.auth-language-row select{border:1px solid #d5dbe5;border-radius:9px;background:#fff;padding:8px 10px;color:#17243b;font-weight:600}.staff-only-gate .auth-mode-switch{grid-template-columns:1fr}.auth-card [hidden]{display:none!important}
+
+
+/* Staff Data page */
+.staff-data-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;margin-top:12px}
+.staff-data-card{margin:0;min-width:0}
+.staff-data-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.staff-data-heading h3{margin:0 0 6px;overflow-wrap:anywhere}
+.staff-data-heading .badge{flex-shrink:0}
+.staff-data-card .field{display:grid;gap:7px;margin-bottom:14px}
+.staff-data-card .date-input{width:100%;max-width:100%}
+.staff-data-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media(max-width:480px){.staff-data-heading{flex-direction:column}.staff-data-actions .btn{flex:1 1 auto}.top-actions .logout-button{min-height:38px}}
