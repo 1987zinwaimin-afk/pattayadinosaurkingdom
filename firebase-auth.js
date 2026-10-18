@@ -86,6 +86,27 @@ window.ticketDeskAdmin = {
     const actual = await derivePasswordHash(String(password || ""), data.salt);
     if (actual !== data.hash) return false;
     return true;
+  },
+  async verifyTicketDeleteAsOwner(ownerEmail, ownerLoginPassword, deletePassword) {
+    const email = String(ownerEmail || "").trim().toLowerCase();
+    if (email !== OWNER_EMAIL) return false;
+    const verifyApp = initializeApp(firebaseConfig, "ticketdesk-owner-delete-verification");
+    const verifyAuth = getAuth(verifyApp);
+    const verifyDb = getFirestore(verifyApp);
+    try {
+      const credential = await signInWithEmailAndPassword(verifyAuth, email, String(ownerLoginPassword || ""));
+      if (!credential.user.email || credential.user.email.toLowerCase() !== OWNER_EMAIL || credential.user.isAnonymous) return false;
+      const snap = await getDoc(doc(verifyDb, "ownerSettings", "deleteProtection"));
+      if (!snap.exists()) throw new Error("Owner Delete Password has not been set in Owner Database.");
+      const data = snap.data();
+      if (data.algorithm !== "PBKDF2-SHA256" || typeof data.salt !== "string" || typeof data.hash !== "string") {
+        throw new Error("Owner Delete Password settings are invalid.");
+      }
+      const actual = await derivePasswordHash(String(deletePassword || ""), data.salt);
+      return actual === data.hash;
+    } finally {
+      if (verifyAuth.currentUser) await signOut(verifyAuth);
+    }
   }
 };
 const gate = document.getElementById("ownerAuthGate");
