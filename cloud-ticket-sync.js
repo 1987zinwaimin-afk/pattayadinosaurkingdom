@@ -172,7 +172,7 @@ async function publishReset(detail) {
   for (const rec of detail.records) await publishDaily({ ...rec, quantity: 0, updatedAt: new Date().toISOString() });
 }
 async function applyDaily(snapshot) {
-  if (role !== "owner") return;
+  if (role !== "owner" && role !== "staff") return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const tickets = await store.all("tickets");
@@ -197,7 +197,7 @@ function startOwner() {
   role = "owner"; started = true;
   document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
-  document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
+  document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
   waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
@@ -205,8 +205,10 @@ function startOwner() {
 function startStaff() {
   if (started || !auth.currentUser) return;
   role = "staff"; started = true;
-  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => applyCatalog(snapshot).catch(err => console.error("Staff catalog sync failed:", err)), err => console.error("Staff catalog listener failed:", err));
-  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
+  syncStatus("Staff connected; loading shared ticket catalog…");
+  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => applyCatalog(snapshot).then(() => syncStatus(`Shared catalog loaded: ${snapshot.size} ticket types.`)).catch(err => syncStatus(`Staff catalog load failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).then(() => syncStatus(`Shared ticket quantities updated: ${snapshot.size} records.`)).catch(err => syncStatus(`Staff quantity sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
 onAuthStateChanged(auth, user => {
