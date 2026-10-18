@@ -63,9 +63,17 @@ jobs:
           if (resetStart < 0 || resetEnd < 0 || resetBlock.indexOf('if(!isOwnerAccess())') < 0 || resetBlock.indexOf('if(!await requireOwnerAction(') < resetBlock.indexOf('if(!isOwnerAccess())')) {
             throw new Error('Quantity reset must reject non-Owners before requesting the Owner Delete Password.');
           }
-          if (!auth.includes('if (old.name !== name)')) throw new Error('Existing staff name validation is missing.');
-          if (auth.includes('old.name !== name || old.department !== department')) {
-            throw new Error('Login form can override/block the Owner-approved staff role.');
+          if (!auth.includes('localStorage.setItem("ticketdesk-local-staff-profile"')) {
+            throw new Error('Staff login must save the selected name and department for immediate local access.');
+          }
+          if (!auth.includes('allowApp(user, localProfile)')) {
+            throw new Error('Staff login must enter the app immediately without waiting for Owner approval.');
+          }
+          if (auth.includes('Owner အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါတယ်')) {
+            throw new Error('Staff login must not block access pending Owner approval.');
+          }
+          if (!auth.includes('localStorage.removeItem("ticketdesk-local-staff-profile")')) {
+            throw new Error('Logout must clear the local staff profile.');
           }
           if (!auth.includes('if (!["sales", "entry", "playing", "event", "leader"].includes(department))')) {
             throw new Error('Owner role editor does not accept the Leader role.');
