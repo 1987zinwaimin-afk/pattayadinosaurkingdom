@@ -217,3 +217,8 @@ h1{font-size:21px}
 .auth-mode-switch .btn{min-height:42px}
 .auth-card [hidden]{display:none!important}
 .auth-card select{border:1px solid #d5dbe5;border-radius:10px;padding:12px;color:#17243b;background:#fff}
+
+/* Session sign-out action */
+.logout-button{white-space:nowrap;min-height:40px}
+.logout-button:disabled{opacity:.65;cursor:wait}
+@media(max-width:760px){.topbar{gap:8px;padding:14px 16px}.top-actions{gap:7px}.logout-button{padding:9px 10px;font-size:12px}.top-actions select{padding:9px 8px;max-width:112px}.language-label{display:none}}
