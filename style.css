@@ -25,7 +25,7 @@ body.auth-pending .app-shell,body.auth-pending .toast-region,body.auth-pending .
 .auth-gate{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at top right,#253d60 0,#101d35 48%,#081326 100%);color:#f7f8fb}
 body.auth-pending .auth-gate{display:flex}
 .auth-card{width:min(100%,440px);background:#fff;border:1px solid rgba(244,234,216,.8);border-radius:24px;padding:30px 24px;box-shadow:0 22px 70px rgba(0,0,0,.28);color:#17243b;text-align:center}
-.auth-brand{width:58px;height:58px;border-radius:16px;background:#c9a96e;color:#101d35;font-size:32px;font-weight:800;display:grid;place-items:center;margin:0 auto 18px}
+.auth-brand{width:96px;height:96px;object-fit:contain;border-radius:20px;display:block;margin:0 auto 18px;background:transparent;box-shadow:none;}
 .auth-kicker{font-size:11px;letter-spacing:2px;color:#9a783f;font-weight:700;margin:0 0 8px}
 .auth-card h1{font-size:25px;line-height:1.2;margin:0 0 12px}
 .auth-description{color:#697386;line-height:1.6;margin:0 0 22px}
