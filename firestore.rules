@@ -117,7 +117,8 @@ service cloud.firestore {
     }
 
     match /sharedDaily/{recordId} {
-      allow read: if isOwner();
+      // Staff sessions need live quantity updates for shared ticket records.
+      allow read: if signedIn();
       allow create, update: if signedIn()
         && request.resource.data.keys().hasOnly(['id', 'ticketId', 'departmentId', 'date', 'quantity', 'notes', 'updatedAt', 'sourceUid', 'sourceName'])
         && request.resource.data.departmentId in ['sales', 'entry', 'playing', 'event']
