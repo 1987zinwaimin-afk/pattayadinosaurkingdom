@@ -22,6 +22,7 @@ let publishTimer = null;
 let stopCatalog = null;
 let stopDaily = null;
 let lastCatalogIds = new Set();
+let explicitOwnerDeletePending = false;
 
 function syncStatus(message, isError = false) {
   console[isError ? "error" : "info"]("[Ticket Desk Cloud Sync]", message);
@@ -63,7 +64,7 @@ async function publishOwnerCatalog() {
   const store = window.ticketdeskLocalStore;
   const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
   // Never erase the cloud catalog when this browser has only empty starter slots (or no local tickets).
-  if (!tickets.some(t => String(t.name || "").trim())) {
+  if (!tickets.some(t => String(t.name || "").trim()) && !explicitOwnerDeletePending) {
     console.warn("Cloud catalog publish skipped: no named local tickets to safely reconcile.");
     return;
   }
@@ -95,10 +96,12 @@ async function publishOwnerCatalog() {
     if (!desired.has(existing.id)) await deleteDoc(doc(db, "sharedTicketCatalog", existing.id));
   }
   lastCatalogIds = desired;
+  explicitOwnerDeletePending = false;
   syncStatus(`Cloud sync complete: ${desired.size} named ticket types published.`);
 }
-function queueCatalogPublish() {
+function queueCatalogPublish(event) {
   if (role !== "owner") return;
+  if (event?.detail?.action === "delete") explicitOwnerDeletePending = true;
   clearTimeout(publishTimer);
   publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => console.error("Catalog publish failed:", err)), 600);
 }
@@ -196,6 +199,8 @@ function startOwner() {
   if (role === "owner") return;
   role = "owner"; started = true;
   document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
+  document.addEventListener("ticketdesk-cloud-catalog-updated", () => window.ticketdeskLocalStore?.refresh?.());
+  document.addEventListener("ticketdesk-cloud-daily-updated", () => window.ticketdeskLocalStore?.refresh?.());
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
