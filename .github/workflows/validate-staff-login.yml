@@ -43,6 +43,7 @@ jobs:
           const app = fs.readFileSync('app.js', 'utf8');
           const auth = fs.readFileSync('firebase-auth.js', 'utf8');
           const rules = fs.readFileSync('firestore.rules', 'utf8');
+          const storageRules = fs.readFileSync('storage.rules', 'utf8');
           const requiredGuards = [
             ["ticket deletion", "if(!await requireOwnerAction('Only Owner can delete tickets.'))return;"],
             ["saved report deletion", "if(!await requireOwnerAction('Only Owner can delete saved reports.'))return;"],
@@ -93,5 +94,8 @@ jobs:
           if (!app.includes("catch(storageError){console.warn('Could not persist language preference after backup restore:',storageError);}")) {
             throw new Error('Backup restore must not report failure if only language preference persistence fails after data restore.');
           }
-          console.log('Destructive-action guards, Owner settings rules, staff roles, departmentId schema, and atomic backup restore checks passed.');
+          if (!storageRules.includes("match /ticket-images/{departmentId}/{imageId}")) throw new Error('Missing department-scoped Firebase Storage image path.');
+          if (!storageRules.includes('request.resource.size <= 5 * 1024 * 1024') || !storageRules.includes("request.resource.contentType.matches('image/.*')")) throw new Error('Storage image upload type/size limits are missing.');
+          if (!storageRules.includes('allow delete: if isOwner();') || !storageRules.includes('allow read, write: if false;')) throw new Error('Storage must restrict image deletion to Owner and deny unlisted paths.');
+          console.log('Destructive-action guards, Owner settings rules, staff roles, departmentId schema, atomic backup restore, and image Storage rules checks passed.');
           NODE
