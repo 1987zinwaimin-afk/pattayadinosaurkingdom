@@ -147,16 +147,21 @@ async function routeUser(user) {
       denyApp("ဒီအကောင့်ကို Owner အဖြစ် ခွင့်မပြုထားပါ။", true);
       return;
     }
-    const snap = await getDoc(doc(db, "staffProfiles", user.uid));
-    if (!snap.exists()) {
-      denyApp("Staff အမည်နဲ့ Department ဖြည့်ပြီး Login နှိပ်ပါ။");
+    // Staff login is intentionally local and immediate: name + department is enough.
+    // This app currently stores ticket records in this browser, not in a shared cloud database.
+    let profile = null;
+    try {
+      const saved = localStorage.getItem("ticketdesk-local-staff-profile");
+      if (saved) profile = JSON.parse(saved);
+    } catch (error) {
+      console.warn("Could not read local staff session", error);
+    }
+    if (!profile || typeof profile.name !== "string" ||
+        !["sales", "entry", "playing", "event", "leader"].includes(profile.department)) {
+      denyApp("အမည်နဲ့ Department ကိုရွေးပြီး Login ဝင်ပါ။");
       return;
     }
-    const profile = snap.data();
-    if (profile.status !== "approved") {
-      denyApp("Owner အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါတယ်။ ခွင့်ပြုမပြီးမချင်း Ticket Data ကို အသုံးမပြုနိုင်ပါ။");
-      return;
-    }
+    profile.status = "approved";
     allowApp(user, profile);
   } catch (error) {
     console.error("Auth profile check failed", error);
@@ -183,26 +188,10 @@ staffBtn.addEventListener("click", async () => {
       user = null;
     }
     if (!user) user = (await signInAnonymously(auth)).user;
-    const ref = doc(db, "staffProfiles", user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const old = snap.data();
-      // The saved Firestore profile is authoritative. Owner may change a staff
-      // member's department/Leader role, so do not compare it with the login form.
-      if (old.name !== name) {
-        status("ဒီ Browser မှာ သိမ်းထားတဲ့ Staff အမည်နဲ့ မကိုက်ညီပါ။ Owner ထံမှ Profile ကို စစ်ဆေးပေးရန် တောင်းဆိုပါ။", true);
-        return;
-      }
-      await routeUser(user);
-      return;
-    }
-    await setDoc(ref, {
-      name,
-      department,
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
-    status("Staff အကောင့် တောင်းဆိုမှုကို ပို့ပြီးပါပြီ။ Owner အတည်ပြုပြီးမှ အသုံးပြုနိုင်ပါမယ်။");
+    const localProfile = { name, department, status: "approved" };
+    localStorage.setItem("ticketdesk-local-staff-profile", JSON.stringify(localProfile));
+    allowApp(user, localProfile);
+    status("Login ဝင်ပြီးပါပြီ။");
   } catch (error) {
     console.error("Staff sign-in failed", error);
     const msg = error?.code === "auth/operation-not-allowed"
@@ -248,6 +237,7 @@ logoutBtn?.addEventListener("click", async () => {
   try {
     await signOut(auth);
     window.ticketDeskAccess = null;
+    try { localStorage.removeItem("ticketdesk-local-staff-profile"); } catch (error) { console.warn("Could not clear local staff profile", error); }
     setMode("staff");
     denyApp("အကောင့်မှ ထွက်ပြီးပါပြီ။ ပြန်ဝင်ရန် Login ကိုရွေးပါ။");
   } catch (error) {
