@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -14,6 +14,18 @@ const app = getApps().find(x => x.name === "[DEFAULT]") || initializeApp(cfg);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const OWNER = "1987zinwaimin@gmail.com";
+const APPROVAL_DOC = doc(db, "settings", "leaderApproval");
+window.ticketdeskCloudApproval = {
+  async save(salt, hash) {
+    if (auth.currentUser?.email?.toLowerCase() !== OWNER) throw new Error("Owner sign-in required");
+    await setDoc(APPROVAL_DOC, {salt, hash, algorithm:"PBKDF2-SHA256", iterations:150000, updatedAt:new Date().toISOString(), updatedBy:OWNER});
+  },
+  async read() {
+    if (!auth.currentUser) throw new Error("Sign-in required");
+    const snap = await getDoc(APPROVAL_DOC);
+    return snap.exists() ? snap.data() : null;
+  }
+};
 const DEPTS = ["sales", "entry", "playing", "event"];
 let role = "";
 let started = false;
