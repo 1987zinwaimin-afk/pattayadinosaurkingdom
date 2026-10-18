@@ -222,3 +222,6 @@ h1{font-size:21px}
 .logout-button{white-space:nowrap;min-height:40px}
 .logout-button:disabled{opacity:.65;cursor:wait}
 @media(max-width:760px){.topbar{gap:8px;padding:14px 16px}.top-actions{gap:7px}.logout-button{padding:9px 10px;font-size:12px}.top-actions select{padding:9px 8px;max-width:112px}.language-label{display:none}}
+
+/* Bilingual auth controls and staff-only share login */
+.auth-language-row{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-6px 0 16px;color:#697386;font-size:12px}.auth-language-row select{border:1px solid #d5dbe5;border-radius:9px;background:#fff;padding:8px 10px;color:#17243b;font-weight:600}.staff-only-gate .auth-mode-switch{grid-template-columns:1fr}.auth-card [hidden]{display:none!important}
