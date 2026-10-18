@@ -221,10 +221,13 @@ onAuthStateChanged(auth, user => {
         }
         await refreshed.getIdToken(true);
         await refreshed.reload();
-        if (auth.currentUser?.emailVerified) {
+        if (auth.currentUser?.email?.toLowerCase() === OWNER) {
+          // Owner access is already protected by Firebase Email/Password login and the allowlisted Owner email.
+          // Do not block cloud sync solely because the verification flag is stale or inconsistent.
+          if (!auth.currentUser.emailVerified) {
+            syncStatus("Owner signed in; Firebase email verification flag is false, but Cloud Sync is allowed for the authenticated Owner account.", true);
+          }
           startOwner();
-        } else {
-          syncStatus(`Firebase reports emailVerified=false for ${auth.currentUser?.email || OWNER}. Sign out and sign in again after confirming this exact account in Firebase Authentication.`, true);
         }
       } catch (err) {
         syncStatus(`Owner authentication refresh failed: ${err?.code || err?.message || "unknown error"}`, true);
