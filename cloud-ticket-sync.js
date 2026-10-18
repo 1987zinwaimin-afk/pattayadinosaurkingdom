@@ -24,6 +24,51 @@ let stopDaily = null;
 let lastCatalogIds = new Set();
 let explicitOwnerDeletePending = false;
 
+// Firestore emits collection snapshots for individual document writes. Coalesce
+// rapid Owner updates and apply only the latest full snapshot to Staff.
+const SNAPSHOT_COALESCE_MS = 350;
+let catalogApplyTimer = null, dailyApplyTimer = null;
+let queuedCatalogSnapshot = null, queuedDailySnapshot = null;
+let catalogApplyRunning = false, dailyApplyRunning = false;
+
+function queueLatestSnapshot(kind, snapshot) {
+  if (kind === "catalog") {
+    queuedCatalogSnapshot = snapshot;
+    clearTimeout(catalogApplyTimer);
+    catalogApplyTimer = setTimeout(() => {
+      catalogApplyTimer = null;
+      if (catalogApplyRunning || !queuedCatalogSnapshot) return;
+      const latest = queuedCatalogSnapshot;
+      queuedCatalogSnapshot = null;
+      catalogApplyRunning = true;
+      applyCatalog(latest)
+        .then(() => syncStatus(`Shared catalog loaded: ${latest.size} ticket types.`))
+        .catch(err => syncStatus(`Staff catalog load failed: ${err?.code || err?.message || "unknown error"}`, true))
+        .finally(() => {
+          catalogApplyRunning = false;
+          if (queuedCatalogSnapshot) queueLatestSnapshot("catalog", queuedCatalogSnapshot);
+        });
+    }, SNAPSHOT_COALESCE_MS);
+    return;
+  }
+  queuedDailySnapshot = snapshot;
+  clearTimeout(dailyApplyTimer);
+  dailyApplyTimer = setTimeout(() => {
+    dailyApplyTimer = null;
+    if (dailyApplyRunning || !queuedDailySnapshot) return;
+    const latest = queuedDailySnapshot;
+    queuedDailySnapshot = null;
+    dailyApplyRunning = true;
+    applyDaily(latest)
+      .then(() => syncStatus(`Shared ticket quantities updated: ${latest.size} records.`))
+      .catch(err => syncStatus(`Staff quantity sync failed: ${err?.code || err?.message || "unknown error"}`, true))
+      .finally(() => {
+        dailyApplyRunning = false;
+        if (queuedDailySnapshot) queueLatestSnapshot("daily", queuedDailySnapshot);
+      });
+  }, SNAPSHOT_COALESCE_MS);
+}
+
 function syncStatus(message, isError = false) {
   console[isError ? "error" : "info"]("[Ticket Desk Cloud Sync]", message);
   const foot = document.querySelector(".sidebar-foot");
@@ -224,8 +269,8 @@ function startStaff() {
   if (started || !auth.currentUser) return;
   role = "staff"; started = true;
   syncStatus("Staff connected; loading shared ticket catalog…");
-  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => applyCatalog(snapshot).then(() => syncStatus(`Shared catalog loaded: ${snapshot.size} ticket types.`)).catch(err => syncStatus(`Staff catalog load failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
-  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).then(() => syncStatus(`Shared ticket quantities updated: ${snapshot.size} records.`)).catch(err => syncStatus(`Staff quantity sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
