@@ -104,7 +104,8 @@ async function imageFor(ticket) {
   return image?.data || null;
 }
 async function publishOwnerCatalog() {
-  if (role !== "owner" || auth.currentUser?.email?.toLowerCase() !== OWNER) return;
+  if (!["owner", "staff"].includes(role) || !auth.currentUser) return;
+  if (role === "owner" && auth.currentUser.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
@@ -143,19 +144,26 @@ async function publishOwnerCatalog() {
       await setDoc(catalogRef, { ...nextRecord, updatedAt: new Date().toISOString() });
     }
   }
-  // Compare with the actual cloud catalog so deletions propagate after Owner reloads too.
-  for (const existing of existingSnapshot.docs) {
-    if (!desired.has(existing.id)) await deleteDoc(doc(db, "sharedTicketCatalog", existing.id));
-  }
+  // Never infer deletions from a device's local list: Owner and Staff may have
+  // different local snapshots. Explicit deletes are sent by the delete handler.
   lastCatalogIds = desired;
   explicitOwnerDeletePending = false;
   syncStatus(`Cloud sync complete: ${desired.size} named ticket types published.`);
 }
 function queueCatalogPublish(event) {
-  if (role !== "owner") return;
-  if (event?.detail?.action === "delete") explicitOwnerDeletePending = true;
+  if (!["owner", "staff"].includes(role)) return;
+  const detail = event?.detail || {};
+  if (detail.action === "delete") {
+    const ticket = detail.ticket;
+    const cloudId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : null);
+    if (cloudId) {
+      deleteDoc(doc(db, "sharedTicketCatalog", cloudId))
+        .catch(err => syncStatus(`Ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+    }
+    return;
+  }
   clearTimeout(publishTimer);
-  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => console.error("Catalog publish failed:", err)), 600);
+  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 600);
 }
 async function applyCatalog(snapshot) {
   await waitForLocalStore();
@@ -270,6 +278,7 @@ function startOwner() {
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
   waitForLocalStore().then(() => publishOwnerCatalog()).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
 function startStaff() {
