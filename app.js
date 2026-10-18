@@ -213,7 +213,7 @@ function validateBackupData(data){
  }
  const validDept=id=>DEPTS.some(d=>d.id===id);
  for(const t of data.tickets){if(!validDept(t.departmentId)||typeof t.name!=='string')throw Error('invalid ticket record');if(t.imageId!=null&&typeof t.imageId!=='string')throw Error('invalid ticket image reference');}
- for(const r of data.daily){if(!r.ticketId||!validDept(r.departmentId)||typeof r.date!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(r.date)||!Number.isInteger(r.quantity)||r.quantity<0)throw Error('invalid daily record');}
+ for(const r of data.daily){if(!r.ticketId||!validDept(r.departmentId)||typeof r.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!Number.isInteger(r.quantity)||r.quantity<0)throw Error('invalid daily record');}
  for(const img of data.images){if((img.departmentId!=null&&!validDept(img.departmentId))||typeof img.data!=='string'||!img.data.startsWith('data:image/'))throw Error('invalid image record');}
  for(const r of data.reports){
   if(!validDept(r.departmentId)||!Array.isArray(r.ticketSnapshots))throw Error('invalid report record');
