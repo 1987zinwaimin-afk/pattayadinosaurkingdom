@@ -114,6 +114,8 @@ async function publishOwnerCatalog() {
     return;
   }
   const desired = new Set();
+  const existingSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+  const existingById = new Map(existingSnapshot.docs.map(d => [d.id, d.data()]));
   for (const ticket of tickets) {
     const id = slotCatalogId(ticket);
     if (!String(ticket.name || "").trim()) continue;
@@ -134,9 +136,7 @@ async function publishOwnerCatalog() {
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData
     };
-    const previous = await getDocs(collection(db, "sharedTicketCatalog"));
-    const previousDoc = previous.docs.find(d => d.id === id);
-    const previousRecord = previousDoc?.data();
+    const previousRecord = existingById.get(id);
     const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
     const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
     if (!unchanged) {
@@ -144,7 +144,6 @@ async function publishOwnerCatalog() {
     }
   }
   // Compare with the actual cloud catalog so deletions propagate after Owner reloads too.
-  const existingSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
   for (const existing of existingSnapshot.docs) {
     if (!desired.has(existing.id)) await deleteDoc(doc(db, "sharedTicketCatalog", existing.id));
   }
