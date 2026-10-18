@@ -93,6 +93,22 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
+
+    // Staff check-in events: any authenticated user may create only their own
+    // limited event; only the verified Owner may read the history.
+    match /staffLoginEvents/{eventId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'department', 'uid', 'createdAt', 'clientTime', 'source'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.department in ['sales', 'entry', 'playing', 'event']
+        && request.resource.data.source == 'staff-share-link';
+      allow read: if isOwner();
+      allow update, delete: if false;
+    }
+
     // Deny every unlisted collection by default.
     match /{document=**} {
       allow read, write: if false;
