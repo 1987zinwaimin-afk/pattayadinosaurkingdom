@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -70,9 +70,10 @@ async function publishOwnerCatalog() {
       updatedAt: new Date().toISOString()
     });
   }
-  // Delete stale catalog records so Owner deletions propagate to every Staff device.
-  for (const oldId of lastCatalogIds) {
-    if (!desired.has(oldId)) await deleteDoc(doc(db, "sharedTicketCatalog", oldId));
+  // Compare with the actual cloud catalog so deletions propagate after Owner reloads too.
+  const existingSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+  for (const existing of existingSnapshot.docs) {
+    if (!desired.has(existing.id)) await deleteDoc(doc(db, "sharedTicketCatalog", existing.id));
   }
   lastCatalogIds = desired;
   console.info("Shared ticket catalog published.");
