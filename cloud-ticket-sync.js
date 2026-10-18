@@ -48,16 +48,21 @@ async function publishOwnerCatalog() {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
+  // Never erase the cloud catalog when this browser has only empty starter slots (or no local tickets).
+  if (!tickets.some(t => String(t.name || "").trim())) {
+    console.warn("Cloud catalog publish skipped: no named local tickets to safely reconcile.");
+    return;
+  }
   const desired = new Set();
   for (const ticket of tickets) {
     const id = slotCatalogId(ticket);
     if (!String(ticket.name || "").trim()) continue;
+    desired.add(id);
     const imageData = await imageFor(ticket);
     if (imageData && imageData.length > 760000) {
-      console.warn("Ticket image is too large to sync safely:", ticket.name);
+      console.warn("Ticket image is too large to sync safely; preserving any existing cloud record:", ticket.name);
       continue;
     }
-    desired.add(id);
     await setDoc(doc(db, "sharedTicketCatalog", id), {
       catalogId: id,
       sourceTicketId: String(ticket.id),
