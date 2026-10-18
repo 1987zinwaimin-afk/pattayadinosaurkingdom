@@ -166,6 +166,6 @@ document.addEventListener('click',e=>{document.querySelectorAll('.ticket-more[op
 $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
 $('#backupFileInput').addEventListener('change',async e=>{if(e.target.files?.[0])await importBackup(e.target.files[0]);e.target.value='';});
 }
-async function init(){try{await openDB();await seedSlots();lastAppDate=localDate();selectedDate=lastAppDate;$('#languageSelect').value=lang;setupEvents();document.addEventListener('visibilitychange',syncAppDate);window.addEventListener('focus',syncAppDate);window.addEventListener('pageshow',syncAppDate);$('#sideNav').innerHTML=navHTML();await renderDashboard();}catch(e){console.error(e);$('#appContent').innerHTML=`<div class="notice">${esc(tr('storageError'))}<br><small>${esc(e?.message||String(e))}</small></div>`;}}
+async function init(){try{await openDB();await seedSlots();lastAppDate=localDate();selectedDate=lastAppDate;$('#languageSelect').value=lang;setupEvents();document.addEventListener('visibilitychange',syncAppDate);window.addEventListener('focus',syncAppDate);window.addEventListener('pageshow',syncAppDate);$('#sideNav').innerHTML=navHTML();const staff=currentStaffSession();if(staff){page=staff.department==='leader'?'sales':staff.department;$('#sideNav').innerHTML=navHTML();await renderPage();}else await renderDashboard();}catch(e){console.error(e);$('#appContent').innerHTML=`<div class="notice">${esc(tr('storageError'))}<br><small>${esc(e?.message||String(e))}</small></div>`;}}
 init();
 })();
