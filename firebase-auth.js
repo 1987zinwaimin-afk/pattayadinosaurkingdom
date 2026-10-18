@@ -86,3 +86,11 @@ loginBtn.addEventListener("click", async () => {
   }
 });
 passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn.click(); });
+
+const logoutButton = document.getElementById('logoutButton');
+if (logoutButton) logoutButton.addEventListener('click', async () => {
+  logoutButton.disabled = true;
+  try { await signOut(auth); window.location.reload(); }
+  catch (error) { console.error('Logout failed', error); status('Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပါ။', true); }
+  finally { logoutButton.disabled = false; }
+});
