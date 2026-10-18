@@ -131,6 +131,13 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
+    // Shared Leader approval hash: signed-in staff can retrieve the salted hash to verify
+    // the password; only the allowlisted Owner can create/update/delete it.
+    match /settings/{settingId} {
+      allow read: if signedIn() && settingId == 'leaderApproval';
+      allow create, update, delete: if isOwner() && settingId == 'leaderApproval';
+    }
+
     // Deny every unlisted collection by default.
     match /{document=**} {
       allow read, write: if false;
