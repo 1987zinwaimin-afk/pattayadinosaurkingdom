@@ -220,3 +220,19 @@ h1{font-size:21px}
 
 /* Four-box PIN input used for Leader check-in. */
 .pin-inputs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:340px;margin:4px auto 0;width:100%}.pin-digit{width:100%;min-width:0;height:58px;text-align:center;font-size:24px;font-weight:800;color:var(--navy);border:1px solid #dce2eb;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(17,32,57,.04)}.pin-digit:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px #c9a96e33}.pin-digit.filled{border-color:#9ab4dc;background:#f2f6fc}@media(max-width:420px){.pin-inputs{gap:8px}.pin-digit{height:52px;font-size:22px}}
+
+/* Professional business UI: theme and selectable device layout */
+:root[data-theme="dark"],body[data-theme="dark"]{color-scheme:dark;--ink:#edf2fb;--muted:#a9b5c8;--line:#34445d;--bg:#0c1424;--white:#172338;--gold-light:#2b3548;--green:#4bc59a;--red:#ff7b72;--shadow:0 10px 30px rgba(0,0,0,.24)}
+body[data-theme="dark"] .app-shell,body[data-theme="dark"] .main{background:var(--bg);color:var(--ink)}
+body[data-theme="dark"] .panel,body[data-theme="dark"] .topbar,body[data-theme="dark"] .content-card,body[data-theme="dark"] .modal{background:var(--white);color:var(--ink);border-color:var(--line)}
+body[data-theme="dark"] input,body[data-theme="dark"] select,body[data-theme="dark"] textarea,body[data-theme="dark"] .date-input{background:#101b2e;color:var(--ink);border-color:var(--line)}
+body[data-theme="dark"] .muted,body[data-theme="dark"] .help-text,body[data-theme="dark"] .footer{color:var(--muted)}
+body[data-theme="dark"] .summary-line{border-color:var(--line)}
+body[data-layout="laptop"] .app-shell{width:100%;max-width:none}body[data-layout="laptop"] .content{max-width:none}
+body[data-layout="phone"] .app-shell{width:min(100%,560px);margin:0 auto;min-height:100dvh}
+body[data-layout="phone"] .sidebar{width:100%;height:auto;position:fixed;left:0;right:0;top:auto;bottom:0;z-index:60;display:flex;flex-direction:column;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(15,30,55,.12)}
+body[data-layout="phone"] .sidebar .brand,body[data-layout="phone"] .sidebar .sidebar-foot,body[data-layout="phone"] .sidebar .nav-group{display:none}
+body[data-layout="phone"] .sidebar nav{display:flex;overflow-x:auto;gap:5px;align-items:stretch}
+body[data-layout="phone"] .sidebar .nav-item{flex:0 0 auto;min-width:70px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;padding:8px 10px;font-size:11px;white-space:nowrap}
+body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="phone"] .main{margin-left:0!important;width:100%;padding-bottom:100px}body[data-layout="phone"] .topbar{position:sticky;top:0;z-index:20}body[data-layout="phone"] .sidebar-backdrop{display:none}
+@media(max-width:760px){body[data-layout="laptop"] .sidebar{width:min(86vw,300px)}body[data-layout="phone"] .sidebar{width:100%}}
