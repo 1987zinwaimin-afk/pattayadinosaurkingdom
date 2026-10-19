@@ -114,21 +114,30 @@ loginBtn.addEventListener("click", async () => {
 });
 passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn.click(); });
 
+window.ticketdeskStaffCheckOut = async function(session) {
+  const current = auth.currentUser;
+  if (!session || !current?.isAnonymous || session.uid !== current.uid) {
+    throw new Error('Staff attendance session is not available. Please sign in again.');
+  }
+  await addDoc(collection(db, 'staffAttendanceEvents'), {
+    name: String(session.name || '').slice(0, 80),
+    department: session.department,
+    uid: current.uid,
+    createdAt: serverTimestamp(),
+    clientTime: new Date().toISOString(),
+    source: 'staff-share-link',
+    eventType: 'check-out'
+  });
+  localStorage.removeItem('ticketdesk-staff-session-v1');
+  await signOut(auth);
+};
 const logoutButton = document.getElementById('logoutButton');
 if (logoutButton) logoutButton.addEventListener('click', async () => {
   logoutButton.disabled = true;
   try {
     if (staffSession()) {
-      const session = staffSession();
-      if (auth.currentUser?.isAnonymous && session?.uid === auth.currentUser.uid) {
-        await addDoc(collection(db, 'staffLoginEvents'), {
-          name: String(session.name || '').slice(0, 80), department: session.department,
-          uid: auth.currentUser.uid, createdAt: serverTimestamp(),
-          clientTime: new Date().toISOString(), source: 'staff-share-link', eventType: 'check-out'
-        });
-      } else { throw new Error('Staff attendance session is not available. Please sign in again.'); }
-      localStorage.removeItem('ticketdesk-staff-session-v1');
-      await signOut(auth); window.location.href = './staff-portal.html'; return;
+      await window.ticketdeskStaffCheckOut(staffSession());
+      window.location.href = './staff-portal.html'; return;
     }
     await signOut(auth); window.location.reload();
   } catch (error) { console.error('Logout failed', error); status('Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပါ။', true); }
