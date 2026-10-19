@@ -243,3 +243,44 @@ body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="ph
 .quantity-digit{display:flex;align-items:center;justify-content:center;width:clamp(44px,13vw,64px);height:clamp(54px,11vw,76px);border:1px solid var(--line);border-radius:13px;background:#f4f6fa;color:var(--navy);font-size:clamp(24px,6vw,34px);font-weight:800;box-shadow:inset 0 1px 2px rgba(17,32,57,.05);font-variant-numeric:tabular-nums;}
 body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-color:#3b475a;}
 @media(max-width:420px){.quantity-digit-row{gap:6px}.quantity-digit{width:42px;height:54px;border-radius:10px}}
+
+
+/* Full-screen tropical login wallpaper for both Owner and Staff entry screens. */
+body.auth-pending{background:#cceeff}
+body.auth-pending .auth-gate{
+  position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;padding:28px 16px;
+  background-image:linear-gradient(180deg,rgba(8,42,82,.08),rgba(5,30,60,.12)),url('https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1800&q=85');
+  background-position:center;background-size:cover;background-repeat:no-repeat;
+}
+body.auth-pending .auth-card{
+  width:min(100%,480px);padding:clamp(22px,5vw,36px);
+  border:1px solid rgba(255,255,255,.72);border-radius:28px;
+  background:rgba(255,255,255,.91);backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);box-shadow:0 24px 70px rgba(8,35,69,.28);
+}
+body.auth-pending .auth-brand{width:clamp(104px,27vw,150px);height:clamp(104px,27vw,150px);object-fit:cover;border-radius:26px;display:block;margin:0 auto 12px;box-shadow:0 10px 26px rgba(12,43,78,.2)}
+body.auth-pending .auth-kicker{text-align:center;color:#27558a;font-size:11px;font-weight:800;letter-spacing:1.5px;margin:0 0 8px}
+body.auth-pending #ownerAuthTitle{text-align:center;font-size:clamp(28px,6vw,38px);margin:0 0 8px;color:#10294f}
+body.auth-pending .auth-description{text-align:center;color:#52657a;line-height:1.6;margin:0 0 24px}
+body.auth-pending .auth-card label{display:block;font-weight:700;color:#162d4d;margin-bottom:7px}
+body.auth-pending .auth-card input{min-height:54px;border:1px solid #d3dce8;border-radius:14px;padding:12px 15px;background:rgba(255,255,255,.97);font-size:16px}
+body.auth-pending .auth-card input:focus{outline:none;border-color:#2b69ad;box-shadow:0 0 0 4px rgba(43,105,173,.14)}
+body.auth-pending .auth-card .btn{min-height:54px;border-radius:14px;font-size:16px}
+body.auth-pending .auth-card .btn-primary{background:linear-gradient(135deg,#0e376e,#1455a0);box-shadow:0 8px 18px rgba(12,57,112,.22)}
+body.auth-pending .auth-status{text-align:center;line-height:1.5}
+body.staff-login-wallpaper{min-height:100vh;min-height:100dvh;background:#bfe8ff!important;background-image:linear-gradient(180deg,rgba(6,36,70,.04),rgba(6,36,70,.18)),url('https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1800&q=85')!important;background-position:center;background-size:cover;background-attachment:fixed}
+body.staff-login-wallpaper>main{max-width:560px!important;margin:0 auto!important;padding:24px 16px 32px!important;min-height:100vh;min-height:100dvh;display:flex;align-items:center}
+body.staff-login-wallpaper>main>.panel{width:100%;padding:clamp(20px,5vw,34px)!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:28px!important;background:rgba(255,255,255,.92)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 24px 70px rgba(8,35,69,.28)!important}
+body.staff-login-wallpaper #title{font-size:clamp(26px,6vw,36px);color:#10294f}
+body.staff-login-wallpaper #desc{text-align:center;line-height:1.6;margin-bottom:22px}
+body.staff-login-wallpaper .field label{font-size:14px;color:#162d4d}
+body.staff-login-wallpaper .field input,body.staff-login-wallpaper .field select{min-height:52px;border-radius:13px;font-size:16px}
+body.staff-login-wallpaper #submitBtn{min-height:54px;border-radius:14px;background:linear-gradient(135deg,#0e376e,#1455a0);font-size:16px;box-shadow:0 8px 18px rgba(12,57,112,.22)}
+body.staff-login-wallpaper .help-text{background:rgba(255,255,255,.72);padding:10px;border-radius:10px}
+@media(max-width:560px){
+ body.auth-pending .auth-gate{padding:18px 13px;background-position:center}
+ body.auth-pending .auth-card{border-radius:23px;padding:22px 18px}
+ body.staff-login-wallpaper>main{padding:14px 12px}
+ body.staff-login-wallpaper>main>.panel{border-radius:23px!important;padding:22px 18px!important}
+}
