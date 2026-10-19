@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -148,6 +148,7 @@ async function publishOwnerCatalog() {
     }
     const nextRecord = {
       catalogId: id,
+      deleted: false,
       sourceTicketId: String(ticket.id),
       departmentId: ticket.departmentId,
       name: String(ticket.name || "").slice(0, 160),
@@ -156,7 +157,7 @@ async function publishOwnerCatalog() {
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData
     };
-    const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
+    const fields = ["catalogId", "deleted", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
     const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
     if (!unchanged) {
       await setDoc(catalogRef, { ...nextRecord, updatedAt: new Date().toISOString() });
@@ -181,7 +182,17 @@ function queueCatalogPublish(event) {
     const ticket = detail.ticket;
     const cloudId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : null);
     if (cloudId) {
-      deleteDoc(doc(db, "sharedTicketCatalog", cloudId))
+      // Keep a tombstone instead of deleting the document outright. Staff can
+      // then distinguish an intentional Owner deletion from a partial snapshot.
+      setDoc(doc(db, "sharedTicketCatalog", cloudId), {
+        catalogId: cloudId,
+        departmentId: ticket.departmentId,
+        sourceTicketId: String(ticket.id),
+        slotNumber: Number.isInteger(ticket.slotNumber) ? ticket.slotNumber : null,
+        deleted: true,
+        deletedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true })
         .catch(err => syncStatus(`Ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
     }
     return;
@@ -208,7 +219,26 @@ async function applyCatalog(snapshot) {
   let catalogChanged = false;
   const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
   for (const remote of remoteRecords) {
-    if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
+    if (!DEPTS.includes(remote.departmentId)) continue;
+    if (remote.deleted === true) {
+      // Only an explicit Owner tombstone authorizes deleting the matching local
+      // catalog ticket. Historical daily records and saved report snapshots stay.
+      const deletedLocal = localTickets.filter(t =>
+        t.departmentId === remote.departmentId &&
+        (t.sharedCatalogId === remote.cloudDocId ||
+          (Number.isInteger(remote.slotNumber) && Number(t.slotNumber) === remote.slotNumber))
+      );
+      for (const ticket of deletedLocal) {
+        await store.del("tickets", ticket.id);
+        const sharedImageId = `shared-img-${remote.cloudDocId}`;
+        if (ticket.imageId === sharedImageId) await store.del("images", sharedImageId);
+        const index = localTickets.findIndex(t => t.id === ticket.id);
+        if (index >= 0) localTickets.splice(index, 1);
+        catalogChanged = true;
+      }
+      continue;
+    }
+    if (!remote.name) continue;
     let local = localTickets.find(t => t.sharedCatalogId === remote.cloudDocId);
     if (!local && Number.isInteger(remote.slotNumber)) {
       local = localTickets.find(t => t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber);
