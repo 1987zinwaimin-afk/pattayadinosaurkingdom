@@ -218,7 +218,7 @@ async function importBackup(file){
   if(!data||data.app!=='TicketDesk'||data.schemaVersion!==1||!stores.every(k=>Array.isArray(data[k])))throw Error('invalid backup format');
   const ids={tickets:new Set(),daily:new Set(),reports:new Set(),images:new Set()};
   for(const t of data.tickets){if(!t||typeof t.id!=='string'||!t.id||!DEPTS.some(d=>d.id===t.departmentId)||ids.tickets.has(t.id))throw Error('invalid or duplicate ticket');ids.tickets.add(t.id);}
-  for(const r of data.daily){if(!r||typeof r.id!=='string'||!r.id||!r.ticketId||!DEPTS.some(d=>d.id===r.departmentId)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(r.date)||!Number.isInteger(r.quantity)||r.quantity<0||ids.daily.has(r.id))throw Error('invalid or duplicate daily record');ids.daily.add(r.id);}
+  for(const r of data.daily){if(!r||typeof r.id!=='string'||!r.id||!r.ticketId||!DEPTS.some(d=>d.id===r.departmentId)||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!Number.isInteger(r.quantity)||r.quantity<0||ids.daily.has(r.id))throw Error('invalid or duplicate daily record');ids.daily.add(r.id);}
   for(const r of data.reports){if(!r||typeof r.id!=='string'||!r.id||!DEPTS.some(d=>d.id===r.departmentId)||!Array.isArray(r.ticketSnapshots)||ids.reports.has(r.id))throw Error('invalid or duplicate report');ids.reports.add(r.id);}
   for(const image of data.images){if(!image||typeof image.id!=='string'||!image.id||ids.images.has(image.id))throw Error('invalid or duplicate image record');ids.images.add(image.id);}
   if(!confirmBox(tr('confirmImport')))return;
