@@ -50,6 +50,7 @@ let pendingCatalogPublish = false;
 const SNAPSHOT_COALESCE_MS = 350;
 let catalogApplyTimer = null, dailyApplyTimer = null;
 let queuedCatalogSnapshot = null, queuedDailySnapshot = null;
+let latestDailySnapshot = null;
 let catalogApplyRunning = false, dailyApplyRunning = false;
 
 function queueLatestSnapshot(kind, snapshot) {
@@ -68,10 +69,16 @@ function queueLatestSnapshot(kind, snapshot) {
         .finally(() => {
           catalogApplyRunning = false;
           if (queuedCatalogSnapshot) queueLatestSnapshot("catalog", queuedCatalogSnapshot);
+          else if (latestDailySnapshot) queueLatestSnapshot("daily", latestDailySnapshot);
         });
     }, SNAPSHOT_COALESCE_MS);
     return;
   }
+  // Keep the latest complete quantity snapshot so it can be reconciled again
+  // after catalog loading. On first login, the daily listener can arrive before
+  // Staff ticket records exist locally; a one-time skipped record would never
+  // be retried if no further quantity writes happen.
+  latestDailySnapshot = snapshot;
   queuedDailySnapshot = snapshot;
   clearTimeout(dailyApplyTimer);
   dailyApplyTimer = setTimeout(() => {
