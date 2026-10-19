@@ -252,7 +252,9 @@ async function applyCatalog(snapshot) {
         dead.departmentId === remote.departmentId &&
         (dead.sourceTicketId && String(dead.sourceTicketId) === String(remote.sourceTicketId) ||
           Number.isInteger(dead.slotNumber) && Number.isInteger(remote.slotNumber) && dead.slotNumber === remote.slotNumber) &&
-        Date.parse(remote.updatedAt || "") <= Date.parse(dead.deletedAt || dead.updatedAt || "")
+        (!Number.isFinite(Date.parse(remote.updatedAt || "")) ||
+          !Number.isFinite(Date.parse(dead.deletedAt || dead.updatedAt || "")) ||
+          Date.parse(remote.updatedAt || "") <= Date.parse(dead.deletedAt || dead.updatedAt || ""))
       );
       if (blockingTombstone) {
         console.warn("[Ticket Desk Cloud Sync] Ignoring stale duplicate catalog record blocked by Owner deletion:", {
