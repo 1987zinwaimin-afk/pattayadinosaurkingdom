@@ -22,7 +22,7 @@ async function loadStaffAccounts(){
  try{
   const events=await getDocs(collection(db,"staffLoginEvents"));
   events.docs.forEach(docSnap=>{
-   const e=docSnap.data(),uid=String(e.uid||"");if(!uid)return;
+   const e=docSnap.data(),uid=String(e.uid||"");if(!uid||e.eventType==="check-out")return;
    const current=accounts.get(uid)||{uid,name:e.name||"Unnamed staff",department:e.department||"",loginCount:0,lastSeenAt:null,lastSeenClientTime:null,legacy:true};
    current.eventCount=(Number(current.eventCount)||0)+1;
    const candidate=e.createdAt||e.clientTime;
