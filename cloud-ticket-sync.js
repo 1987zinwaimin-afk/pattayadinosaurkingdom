@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -367,7 +367,32 @@ async function publishDaily(record) {
     if (canonical) catalogTicketId = canonical.cloudDocId;
   }
   const cloudRecordId = dailyDocId(record.departmentId, catalogTicketId, record.date);
-  await setDoc(doc(db, "sharedDaily", cloudRecordId), {
+  const cloudRef = doc(db, "sharedDaily", cloudRecordId);
+  const sourceName = staffSession()?.name || auth.currentUser.email || "Owner";
+  // Quantity entry is an increment, not a replacement of this device's local
+  // total. A Firestore transaction combines additions from Owner and Staff
+  // without allowing one device's stale total to overwrite the other's work.
+  if (Number.isFinite(Number(record.delta)) && Number(record.delta) > 0) {
+    const delta = Math.max(0, Math.trunc(Number(record.delta)));
+    await runTransaction(db, async transaction => {
+      const currentSnap = await transaction.get(cloudRef);
+      const current = currentSnap.exists() ? currentSnap.data() : {};
+      transaction.set(cloudRef, {
+        id: cloudRecordId,
+        ticketId: catalogTicketId,
+        departmentId: record.departmentId,
+        date: record.date,
+        quantity: Math.max(0, Math.trunc(Number(current.quantity) || 0)) + delta,
+        notes: String(record.notes || current.notes || "").slice(0, 1000),
+        updatedAt: new Date().toISOString(),
+        sourceUid: auth.currentUser.uid,
+        sourceName
+      });
+    });
+    return;
+  }
+  // Resets/clears intentionally replace the shared value with zero.
+  await setDoc(cloudRef, {
     id: cloudRecordId,
     ticketId: catalogTicketId,
     departmentId: record.departmentId,
@@ -376,7 +401,7 @@ async function publishDaily(record) {
     notes: String(record.notes || "").slice(0, 1000),
     updatedAt: record.updatedAt || new Date().toISOString(),
     sourceUid: auth.currentUser.uid,
-    sourceName: staffSession()?.name || auth.currentUser.email || "Owner"
+    sourceName
   });
 }
 async function publishReset(detail) {
