@@ -306,7 +306,7 @@ async function applyDaily(snapshot) {
     );
     // Older local records may not have sharedCatalogId populated yet.
     if (!ticket) {
-      const slotMatch = String(remote.ticketId).match(/^(sales|entry|playing|event)__slot__(\\d+)$/);
+      const slotMatch = String(remote.ticketId).match(/^(sales|entry|playing|event)__slot__(\d+)$/);
       if (slotMatch && slotMatch[1] === remote.departmentId) {
         ticket = tickets.find(t => t.departmentId === remote.departmentId && Number(t.slotNumber) === Number(slotMatch[2]));
       }
