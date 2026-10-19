@@ -1,4 +1,4 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-safe-sync-v59";
+const CACHE_NAME = "pattaya-dinosaur-kingdom-safe-sync-v60";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,7 +6,7 @@ const APP_SHELL = [
   "./language-default.js?v=english-default-migration-v2-20261019b",
   "./app.js?v=owner-delete-order-fix-20261019a",
   "./firebase-auth.js?v=separate-staff-owner-auth-20261019a",
-  "./cloud-ticket-sync.js?v=quantity-stale-snapshot-guard-20261019d",
+  "./cloud-ticket-sync.js?v=atomic-quantity-increment-20261019a",
   "./staff-history.js?v=staff-login-history-20261018a",
   "./staff-accounts.js?v=staff-account-usage-20261019a",
   "./pwa.js?v=settings-install-20261018d",
