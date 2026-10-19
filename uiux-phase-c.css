@@ -162,3 +162,63 @@ body:has(#checkinForm) .help-text { color: #758197; font-size: 12px; line-height
   .sidebar nav { scroll-snap-type: x proximity; }
   body:has(#checkinForm) main { width: min(100% - 24px, 500px) !important; margin: 20px auto !important; }
 }
+
+
+/* UI/UX Phase E — detailed Owner Dashboard and Ticket Department screens. */
+.page-head .actions .btn { min-height: 44px; }
+.stats-grid { align-items: stretch; }
+.stats-grid .stat-card { min-width: 0; }
+.dashboard-grid { align-items: stretch; }
+.dashboard-grid .department-card { min-width: 0; }
+.department-card .dept-top { align-items: flex-start; }
+.department-card .dept-title { max-width: 75%; line-height: 1.4; }
+.department-card .dept-count { line-height: 1.1; }
+.department-card .ticket-preview-row { margin: 14px 0; }
+.department-card .btn { min-height: 40px; }
+.toolbar { gap: 12px; }
+.toolbar-left, .toolbar-right { min-width: 0; }
+.toolbar .search-input { min-width: 0; }
+.ticket-grid { align-items: stretch; }
+.ticket-card { min-width: 0; transition: transform .16s ease, box-shadow .16s ease; }
+.ticket-card:focus-within { box-shadow: 0 0 0 3px rgba(22,119,238,.12), 0 8px 26px rgba(23,43,77,.07); }
+.ticket-image-wrap { min-height: 145px; }
+.ticket-image-wrap img { transition: transform .2s ease; }
+@media (hover:hover) {
+  .ticket-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(23,43,77,.09); }
+  .ticket-card:hover .ticket-image-wrap img { transform: scale(1.025); }
+}
+.ticket-body { min-width: 0; }
+.ticket-name { line-height: 1.45; }
+.ticket-id { overflow-wrap: anywhere; }
+.quantity-row { flex-wrap: wrap; }
+.qty-input { min-height: 42px; }
+.ticket-actions .btn { min-height: 40px; }
+.tag, .tag.unsaved { border-radius: 999px; padding: 5px 10px; }
+.table-wrap { border: 1px solid var(--ui-border); background: #fff; }
+table { min-width: 560px; }
+th { position: sticky; top: 0; z-index: 1; }
+.modal .field { margin-bottom: 14px; }
+.modal-footer .btn { min-width: 94px; }
+@media (max-width: 760px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .page-head .actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .page-head .actions .btn { width: 100%; white-space: normal; }
+  .toolbar { display: grid; grid-template-columns: minmax(0,1fr); }
+  .toolbar-left, .toolbar-right { display: grid; grid-template-columns: minmax(0,1fr); width: 100%; }
+  .toolbar .search-input, .toolbar .date-input { width: 100%; max-width: none; }
+  .ticket-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .ticket-image-wrap { height: clamp(105px, 29vw, 150px); min-height: 0; }
+  .ticket-body { padding: 11px; gap: 9px; }
+  .ticket-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .ticket-actions .btn { min-width: 0; padding: 8px 5px; font-size: 11px; }
+  .quantity-row { align-items: center; }
+}
+@media (max-width: 360px) {
+  .ticket-grid { grid-template-columns: 1fr; }
+  .ticket-image-wrap { height: 170px; }
+  .page-head .actions { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-card, .ticket-image-wrap img { transition: none !important; }
+}
