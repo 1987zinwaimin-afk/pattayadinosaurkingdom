@@ -137,6 +137,7 @@ if (logoutButton) logoutButton.addEventListener('click', async () => {
   try {
     if (staffSession()) {
       await window.ticketdeskStaffCheckOut(staffSession());
+      await signOut(auth);
       window.location.href = './staff-portal.html'; return;
     }
     await signOut(auth); window.location.reload();
