@@ -117,8 +117,10 @@ service cloud.firestore {
     }
 
     match /sharedDaily/{recordId} {
-      // Staff sessions need live quantity updates for shared ticket records.
+      // Signed-in staff need shared quantity reads for cross-device updates.
       allow read: if signedIn();
+      // Validate writes and bind them to the authenticated Firebase user.
+      // Department-level authorization needs a trusted role/profile, not localStorage.
       allow create, update: if signedIn()
         && request.resource.data.keys().hasOnly(['id', 'ticketId', 'departmentId', 'date', 'quantity', 'notes', 'updatedAt', 'sourceUid', 'sourceName'])
         && request.resource.data.keys().hasAll(['id', 'ticketId', 'departmentId', 'date', 'quantity', 'sourceUid', 'sourceName'])
@@ -127,7 +129,13 @@ service cloud.firestore {
         && request.resource.data.ticketId is string
         && request.resource.data.ticketId.size() > 0
         && request.resource.data.date is string
-        && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}
+        && request.resource.data.date.size() == 10
+        && request.resource.data.quantity is int
+        && request.resource.data.quantity >= 0
+        && request.resource.data.sourceUid == request.auth.uid
+        && request.resource.data.sourceName is string
+        && request.resource.data.sourceName.size() <= 80
+        && (!('notes' in request.resource.data) || (request.resource.data.notes is string && request.resource.data.notes.size() <= 1000));
       allow delete: if isOwner();
     }
 
