@@ -2,7 +2,7 @@
    Users can still choose Thai manually; their choice is then saved normally. */
 (function () {
   try {
-    const migrationKey = "ticketdesk-language-default-en-migrated-v1";
+    const migrationKey = "ticketdesk-language-default-en-migrated-v2";
     if (localStorage.getItem(migrationKey) !== "1") {
       localStorage.setItem("ticketdesk-language", "en");
       localStorage.setItem(migrationKey, "1");
