@@ -278,3 +278,35 @@ tbody tr:hover td { background: #fafcff; }
   .settings-grid { grid-template-columns: minmax(0,1fr); }
   .panel-head { flex-wrap: wrap; }
 }
+
+
+/* UI/UX Phase G — staff management, language/theme, backup and mobile controls. */
+.staff-row, .staff-card, .permission-card, .history-card { border: 1px solid var(--ui-border); border-radius: 17px; background: #fff; box-shadow: 0 5px 18px rgba(23,43,77,.045); }
+.staff-row { padding: 14px 16px; gap: 12px; }
+.staff-avatar { border: 2px solid #fff; box-shadow: 0 0 0 1px var(--ui-border); }
+.staff-name { color: var(--ui-ink); font-weight: 750; }
+.staff-meta { color: var(--ui-muted); font-size: 12px; }
+.status-active, .status-inactive, .status-pending { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 750; }
+.status-active { background: #d9f7e9; color: #087f56; }
+.status-inactive { background: #fee2e2; color: #b42318; }
+.status-pending { background: #fff0d9; color: #9a5a05; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 58px; padding: 12px 14px; border: 1px solid var(--ui-border); border-radius: 13px; background: #fff; }
+.settings-row + .settings-row { margin-top: 9px; }
+.settings-row strong { color: var(--ui-ink); }
+.settings-row p { margin: 3px 0 0; color: var(--ui-muted); font-size: 12px; line-height: 1.5; }
+.settings-row select, .settings-row input { max-width: 190px; }
+.theme-choice, .language-choice { border: 1px solid var(--ui-border); border-radius: 14px; padding: 13px; background: #fff; }
+.theme-choice:focus-within, .language-choice:focus-within { border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(22,119,238,.10); }
+.backup-panel { border: 1px solid #dbe7f7; border-radius: 18px; background: linear-gradient(140deg, #fff, #f4f8ff); padding: 18px; }
+.backup-panel .btn { min-height: 44px; }
+.danger-zone { border: 1px solid #fecaca; border-radius: 16px; padding: 16px; background: #fff8f8; }
+.danger-zone h3 { color: #b42318; }
+@media (max-width: 760px) {
+  .staff-row { align-items: flex-start; padding: 12px; }
+  .staff-row .actions, .staff-row .btn-group { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .staff-row .btn { min-width: 0; white-space: normal; padding: 8px; font-size: 12px; }
+  .settings-row { align-items: flex-start; flex-direction: column; gap: 9px; }
+  .settings-row select, .settings-row input { max-width: none; width: 100%; }
+  .backup-panel { padding: 15px; }
+  .danger-zone { padding: 13px; }
+}
