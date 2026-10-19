@@ -187,26 +187,4 @@ service cloud.firestore {
       allow read, write: if false;
     }
   }
-})
-        && request.resource.data.quantity is int
-        && request.resource.data.quantity >= 0
-        && request.resource.data.sourceUid == request.auth.uid
-        && request.resource.data.sourceName is string
-        && request.resource.data.sourceName.size() <= 80
-        && (!('notes' in request.resource.data) || (request.resource.data.notes is string && request.resource.data.notes.size() <= 1000));
-      allow delete: if isOwner();
-    }
-
-    // Shared Leader approval hash: signed-in staff can retrieve the salted hash to verify
-    // the password; only the allowlisted Owner can create/update/delete it.
-    match /settings/{settingId} {
-      allow read: if signedIn() && settingId == 'leaderApproval';
-      allow create, update, delete: if isOwner() && settingId == 'leaderApproval';
-    }
-
-    // Deny every unlisted collection by default.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
 }
