@@ -18,9 +18,9 @@ body.auth-pending { background: #f2f5fb; }
   isolation: isolate;
   overflow: hidden;
   background:
-    linear-gradient(140deg, rgba(8,25,51,.82), rgba(8,25,51,.38)),
-    url("./dinosaur-kingdom-hero.svg") center / cover no-repeat,
-    #10213d;
+    radial-gradient(ellipse at 18% 18%, rgba(22,119,238,.34), transparent 36%),
+    radial-gradient(ellipse at 88% 82%, rgba(7,155,104,.18), transparent 34%),
+    linear-gradient(135deg, #0b1b34 0%, #17385b 48%, #10213d 100%);
   padding: clamp(18px, 5vw, 44px);
 }
 .auth-gate::before {
