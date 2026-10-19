@@ -1,4 +1,4 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-safe-sync-v57";
+const CACHE_NAME = "pattaya-dinosaur-kingdom-safe-sync-v58";
 const APP_SHELL = [
   "./",
   "./index.html",
