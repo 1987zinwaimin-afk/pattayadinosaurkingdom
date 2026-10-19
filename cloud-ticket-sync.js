@@ -235,14 +235,12 @@ async function applyCatalog(snapshot) {
       catalogChanged = true;
     }
   }
-  // Remove only ticket entries that were explicitly linked to the Owner's shared catalog.
-  for (const local of localTickets) {
-    if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
-      if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
-      await store.del("tickets", local.id);
-      catalogChanged = true;
-    }
-  }
+  // Never delete local ticket records merely because a cloud snapshot does not
+  // contain their IDs. Owner and Staff can have older/different catalog states,
+  // and a snapshot/reconciliation race must not make tickets disappear.
+  // Explicit Owner deletions need a dedicated tombstone flow before they can
+  // safely remove records from every device.
+  lastCatalogIds = nextIds;
   lastCatalogIds = nextIds;
   if (catalogChanged) {
     window.ticketdeskLocalStore.refresh?.();
