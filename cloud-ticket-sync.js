@@ -241,8 +241,26 @@ async function applyCatalog(snapshot) {
   const remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
   let catalogChanged = false;
   const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
+  const tombstones = remoteRecords.filter(x => x.deleted === true && DEPTS.includes(x.departmentId));
   for (const remote of remoteRecords) {
     if (!DEPTS.includes(remote.departmentId)) continue;
+    if (remote.deleted !== true) {
+      // A live duplicate document can otherwise recreate a ticket that was
+      // deleted under a different catalog document ID. Compare stable slot and
+      // original ticket identity, but allow an explicitly newer re-add/edit.
+      const blockingTombstone = tombstones.find(dead =>
+        dead.departmentId === remote.departmentId &&
+        (dead.sourceTicketId && String(dead.sourceTicketId) === String(remote.sourceTicketId) ||
+          Number.isInteger(dead.slotNumber) && Number.isInteger(remote.slotNumber) && dead.slotNumber === remote.slotNumber) &&
+        Date.parse(remote.updatedAt || "") <= Date.parse(dead.deletedAt || dead.updatedAt || "")
+      );
+      if (blockingTombstone) {
+        console.warn("[Ticket Desk Cloud Sync] Ignoring stale duplicate catalog record blocked by Owner deletion:", {
+          departmentId: remote.departmentId, catalogId: remote.cloudDocId, tombstoneId: blockingTombstone.cloudDocId
+        });
+        continue;
+      }
+    }
     if (remote.deleted === true) {
       // Only an explicit Owner tombstone authorizes deleting the matching local
       // catalog ticket. Historical daily records and saved report snapshots stay.
