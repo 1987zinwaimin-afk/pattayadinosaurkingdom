@@ -25,21 +25,22 @@ form.addEventListener("submit",async e=>{
   if(auth.currentUser&&!auth.currentUser.isAnonymous)await signOut(auth);
   const cred=auth.currentUser?.isAnonymous?{user:auth.currentUser}:await signInAnonymously(auth);
   const uid=cred.user.uid;
-  // A revoked UID cannot re-register. Publish firestore.rules for account revocation to be enforced.
-  const revokedRef=doc(db,"revokedStaff",uid);
-  const revokedSnap=await getDoc(revokedRef);
-  if(revokedSnap.exists()){
-   localStorage.removeItem("ticketdesk-staff-session-v1");
-   status.textContent="This staff access has been removed by the Owner. Please contact the Owner.";
-   status.hidden=false;status.className="notice error";return;
-  }
-  const directoryRef=doc(db,"staffDirectory",uid);
-  const previous=await getDoc(directoryRef);
-  const previousData=previous.exists()?previous.data():{};
   const session={name:name.slice(0,80),department,loggedInAt:new Date().toISOString(),uid};
-  await setDoc(directoryRef,{uid,name:session.name,department,createdAt:previousData.createdAt||serverTimestamp(),lastSeenAt:serverTimestamp(),lastSeenClientTime:session.loggedInAt,loginCount:(Number(previousData.loginCount)||0)+1,source:"staff-share-link"},{merge:true});
+  // Account tracking/revocation becomes enforceable after the updated firestore.rules are published.
+  try{
+   const revokedSnap=await getDoc(doc(db,"revokedStaff",uid));
+   if(revokedSnap.exists()){
+    localStorage.removeItem("ticketdesk-staff-session-v1");
+    status.textContent="This staff access has been removed by the Owner. Please contact the Owner.";
+    status.hidden=false;status.className="notice error";return;
+   }
+   const directoryRef=doc(db,"staffDirectory",uid);
+   const previous=await getDoc(directoryRef);
+   const previousData=previous.exists()?previous.data():{};
+   await setDoc(directoryRef,{uid,name:session.name,department,createdAt:previousData.createdAt||serverTimestamp(),lastSeenAt:serverTimestamp(),lastSeenClientTime:session.loggedInAt,loginCount:(Number(previousData.loginCount)||0)+1,source:"staff-share-link"},{merge:true});
+  }catch(directoryError){console.warn("Staff account activity could not be synced. Publish the updated firestore.rules to enable account tracking and removal.",directoryError);}
   localStorage.setItem("ticketdesk-staff-session-v1",JSON.stringify(session));
-  await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid,createdAt:serverTimestamp(),clientTime:session.loggedInAt,source:"staff-share-link"});
+  try{await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid,createdAt:serverTimestamp(),clientTime:session.loggedInAt,source:"staff-share-link"});}catch(historyError){console.warn("Staff login history could not be recorded",historyError);}
   status.textContent="Login successful. Opening your department…";status.hidden=false;status.className="notice";window.location.href="./index.html";
  }catch(err){
   console.error("Staff login failed",err);
