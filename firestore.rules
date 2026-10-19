@@ -175,6 +175,25 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
+    // Staff check-out events are append-only. Users may create only their own event;
+    // only the Owner can read attendance history. Publish these rules before using check-out.
+    match /staffAttendanceEvents/{eventId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['eventType', 'name', 'department', 'uid', 'clientTime', 'createdAt', 'source'])
+        && request.resource.data.keys().hasAll(['eventType', 'name', 'department', 'uid', 'clientTime', 'createdAt', 'source'])
+        && request.resource.data.eventType == 'check-out'
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.department in ['sales', 'entry', 'playing', 'event', 'leader']
+        && request.resource.data.clientTime is string
+        && request.resource.data.source == 'staff-dashboard'
+        && !exists(/databases/$(database)/documents/revokedStaff/$(request.auth.uid));
+      allow read: if isOwner();
+      allow update, delete: if false;
+    }
+
     // Shared Leader approval hash: signed-in staff can retrieve the salted hash to verify
     // the password; only the allowlisted Owner can create/update/delete it.
     match /settings/{settingId} {
