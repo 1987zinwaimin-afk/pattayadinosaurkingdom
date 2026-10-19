@@ -354,3 +354,33 @@ button:disabled, .btn:disabled, input:disabled, select:disabled {
   .top-actions select { max-width: 96px; }
   .logout-button { padding: 7px 8px; }
 }
+
+
+/* UI/UX Phase H — reference-inspired authenticated Staff Dashboard. */
+.staff-home{max-width:920px;margin:0 auto;padding:clamp(14px,3vw,30px);border-radius:30px;background:linear-gradient(150deg,#f3f6fb 0%,#eef2f8 100%);color:#14233d}
+.staff-home-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.staff-home-header>img{width:88px;height:88px;object-fit:cover;border-radius:24px;flex:0 0 auto}
+.staff-home-heading{min-width:0;flex:1}
+.staff-home-heading h2{margin:0;color:#14233d;font-size:clamp(23px,4vw,36px);line-height:1.15;font-weight:850;letter-spacing:-.035em}
+.staff-home-heading p{margin:9px 0 0;color:#68758a;font-size:clamp(15px,2.3vw,21px);font-weight:700;overflow-wrap:anywhere}
+.staff-home-language{font-size:29px;font-weight:800;color:#14233d;padding:8px}
+.staff-home-department{padding:clamp(20px,3.5vw,30px);border:2px solid #dce3ec;border-radius:28px;background:#fff;margin-bottom:24px}
+.staff-home-department>span{display:block;color:#68758a;font-size:clamp(16px,2.6vw,22px);font-weight:750}
+.staff-home-department h3{margin:12px 0;color:#14233d;font-size:clamp(25px,4.8vw,42px);font-weight:850;line-height:1.18;overflow-wrap:anywhere}
+.staff-home-department p{margin:0;color:#68758a;font-size:clamp(14px,2.5vw,20px);font-weight:650}
+.staff-home-date{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 20px;padding:12px 16px;border-radius:18px;background:#fff;border:1px solid #dce3ec}
+.staff-home-date label{color:#68758a;font-weight:750}
+.staff-home-date input{width:auto;max-width:60%;min-height:42px}
+.staff-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.staff-home-card{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:13px;min-width:0;min-height:200px;padding:clamp(18px,3vw,28px);border:2px solid #dce3ec;border-radius:27px;background:#fff;color:#14233d;text-align:left;cursor:pointer;box-shadow:0 3px 8px rgba(20,35,61,.025);font:inherit}
+.staff-home-card:focus-visible,.staff-home-primary:focus-visible{outline:3px solid #1677ee;outline-offset:3px}
+.staff-home-card:active{transform:translateY(1px)}
+.staff-home-icon{font-size:clamp(30px,5vw,42px);line-height:1.1;font-weight:850}
+.staff-home-card strong{font-size:clamp(18px,2.8vw,27px);font-weight:850;line-height:1.2;overflow-wrap:anywhere}
+.staff-home-sub{color:#68758a;font-size:clamp(13px,2.2vw,19px);font-weight:650;line-height:1.4;overflow-wrap:anywhere}
+.staff-home-open{margin-top:auto;padding-top:4px;color:#68758a;font-size:13px;font-weight:750}
+.staff-blue .staff-home-icon{color:#2867d9}.staff-green .staff-home-icon{color:#079b68}.staff-orange .staff-home-icon{color:#d27a08}.staff-purple .staff-home-icon{color:#7c3aed}
+.staff-daily-card{cursor:default}.staff-home-count{font-size:clamp(28px,5vw,40px);font-weight:850;color:#14233d}
+.staff-home-primary{display:block;width:100%;min-height:84px;margin:24px 0 0;padding:16px 20px;border:0;border-radius:28px;background:#10213d;color:#fff;font-size:clamp(19px,3vw,28px);font-weight:850;cursor:pointer}
+.staff-home-foot{margin:24px 6px 0;color:#68758a;font-size:clamp(12px,2vw,16px);font-weight:650;line-height:1.7;text-align:center;overflow-wrap:anywhere}
+@media(max-width:520px){.staff-home{padding:16px 12px;border-radius:24px}.staff-home-header{gap:12px;margin-bottom:18px}.staff-home-header>img{width:66px;height:66px;border-radius:20px}.staff-home-language{font-size:23px;padding:4px}.staff-home-department{padding:20px 18px;border-radius:23px;margin-bottom:16px}.staff-home-date{align-items:flex-start;flex-direction:column}.staff-home-date input{width:100%;max-width:none}.staff-home-grid{gap:10px}.staff-home-card{min-height:174px;padding:16px 14px;gap:11px;border-radius:22px}.staff-home-card strong{font-size:17px}.staff-home-sub{font-size:12px}.staff-home-primary{min-height:70px;border-radius:22px;margin-top:18px}.staff-home-foot{margin-top:18px}}
