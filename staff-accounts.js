@@ -24,7 +24,7 @@ async function loadStaffAccounts(){
   events.docs.forEach(docSnap=>{
    const e=docSnap.data(),uid=String(e.uid||"");if(!uid)return;
    const current=accounts.get(uid)||{uid,name:e.name||"Unnamed staff",department:e.department||"",loginCount:0,lastSeenAt:null,lastSeenClientTime:null,legacy:true};
-   current.loginCount=Math.max(current.loginCount,0)+1;
+   current.eventCount=(Number(current.eventCount)||0)+1;
    const candidate=e.createdAt||e.clientTime;
    const candDate=dateValue(candidate),existingDate=dateValue(current.lastSeenAt||current.lastSeenClientTime);
    if(candDate&&(!existingDate||candDate>existingDate)){current.lastSeenAt=e.createdAt||null;current.lastSeenClientTime=e.clientTime||null;current.name=e.name||current.name;current.department=e.department||current.department;}
@@ -37,7 +37,7 @@ async function loadStaffAccounts(){
  const rows=[...accounts.values()].sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
  root.innerHTML=rows.map(a=>{
   const last=a.lastSeenAt||a.lastSeenClientTime,used=recent(last);
-  return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last used: '+esc(when(last))+' · Recorded logins: '+esc(a.loginCount||0)+'</small><br><span class="tag '+(used?'':'unsaved')+'">'+(used?'Recently used (last 15 min)':'Not recently used')+'</span></div><div>'+(used?'<span class="muted">In use recently</span>':'<button type="button" class="btn btn-secondary" data-remove-staff="'+esc(a.uid)+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Remove account</button>')+'</div></article>';
+  return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last used: '+esc(when(last))+' · Recorded logins: '+esc(Math.max(Number(a.loginCount)||0,Number(a.eventCount)||0))+'</small><br><span class="tag '+(used?'':'unsaved')+'">'+(used?'Recently used (last 15 min)':'Not recently used')+'</span></div><div>'+(used?'<span class="muted">In use recently</span>':'<button type="button" class="btn btn-secondary" data-remove-staff="'+esc(a.uid)+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Remove account</button>')+'</div></article>';
  }).join("")+'<p class="help-text">“Recently used” means a check-in in the last 15 minutes; it does not guarantee the person is online now. Removing an account keeps old login history and revokes this Firebase device UID. Names are self-reported and not identity-verified.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Publish the updated firestore.rules in Firebase Console and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
