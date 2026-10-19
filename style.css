@@ -236,3 +236,12 @@ body[data-layout="phone"] .sidebar nav{display:flex;overflow-x:auto;gap:5px;alig
 body[data-layout="phone"] .sidebar .nav-item{flex:0 0 auto;min-width:70px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;padding:8px 10px;font-size:11px;white-space:nowrap}
 body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="phone"] .main{margin-left:0!important;width:100%;padding-bottom:100px}body[data-layout="phone"] .topbar{position:sticky;top:0;z-index:20}body[data-layout="phone"] .sidebar-backdrop{display:none}
 @media(max-width:760px){body[data-layout="laptop"] .sidebar{width:min(86vw,300px)}body[data-layout="phone"] .sidebar{width:100%}}
+
+/* Touch-friendly ticket drag-and-drop */
+.ticket-drag-handle{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:58px;min-height:42px;padding:7px 9px;border:1px dashed #aeb9ca;border-radius:9px;background:#f5f7fb;color:#233754;font-size:14px;font-weight:800;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.ticket-drag-handle span{font-size:11px;font-weight:700}
+.ticket-drag-handle:active{cursor:grabbing;background:#e8eef8}
+.ticket-drag-handle:disabled{opacity:.45;cursor:not-allowed}
+.ticket-card.ticket-dragging{opacity:.62;outline:2px dashed var(--gold);outline-offset:2px;transform:scale(.985);z-index:3}
+.ticket-grid{align-items:stretch}
+@media(max-width:760px){.ticket-drag-handle{min-height:42px;min-width:54px;padding:7px 6px}.ticket-drag-handle span{font-size:10px}.ticket-actions{align-items:stretch}}
