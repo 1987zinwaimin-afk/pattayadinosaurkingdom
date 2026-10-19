@@ -1,4 +1,4 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-remove-login-install-v51";
+const CACHE_NAME = "pattaya-dinosaur-kingdom-remove-login-install-v52";
 const APP_SHELL = ["./", "./index.html", "./style.css?v=backup-atomic-20261019a", "./app.js?v=backup-atomic-20261019a", "./firebase-auth.js?v=separate-staff-owner-auth-20261019a", "./cloud-ticket-sync.js?v=shared-leader-password-20261019b", "./staff-accounts.js?v=staff-account-usage-20261019a", "./pwa.js?v=staff-install-menu-only-20261019c", "./manifest.webmanifest", "./staff-portal.html?v=staff-install-menu-only-20261019c", "./staff-portal.js?v=staff-account-tracking-20261019a", "./staff-manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
