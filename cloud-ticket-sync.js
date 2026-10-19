@@ -117,8 +117,10 @@ async function imageFor(ticket) {
   return image?.data || null;
 }
 async function publishOwnerCatalog() {
-  if (!["owner", "staff"].includes(role) || !auth.currentUser) return;
-  if (role === "owner" && auth.currentUser.email?.toLowerCase() !== OWNER) return;
+  // The shared catalog is an Owner-owned source of truth. Staff may update
+  // daily quantities, but must never publish or overwrite ticket definitions.
+  if (role !== "owner" || !auth.currentUser) return;
+  if (auth.currentUser.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
@@ -164,11 +166,13 @@ async function publishOwnerCatalog() {
   syncStatus(`Cloud sync complete: ${desired.size} named ticket types published.`);
 }
 function queueCatalogPublish(event) {
-  if (!["owner", "staff"].includes(role)) {
+  if (!role) {
     // Ticket edits can happen while Firebase is still restoring the Owner session.
     pendingCatalogPublish = true;
     return;
   }
+  // Staff sessions are not allowed to publish or delete the Owner catalog.
+  if (role !== "owner" || auth.currentUser?.email?.toLowerCase() !== OWNER) return;
   const detail = event?.detail || {};
   if (detail.action === "delete") {
     const ticket = detail.ticket;
