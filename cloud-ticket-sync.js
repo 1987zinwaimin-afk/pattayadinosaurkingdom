@@ -425,6 +425,17 @@ async function applyDaily(snapshot) {
       sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
     };
     const current = await store.get("daily", id);
+    // The Owner also listens to the shared quantity collection. If a local
+    // quantity edit has already been saved but its publish is still in flight,
+    // an older cloud snapshot must not roll that newer local value backwards.
+    // Compare parsed timestamps (not strings); if the local timestamp is valid
+    // and newer than the remote timestamp, leave the local record untouched.
+    const currentTime = Date.parse(current?.updatedAt || "");
+    const remoteTime = Date.parse(nextRecord.updatedAt || "");
+    if (current && Number.isFinite(currentTime) &&
+        (!Number.isFinite(remoteTime) || currentTime > remoteTime)) {
+      continue;
+    }
     if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
         String(current.notes || "") !== nextRecord.notes ||
         String(current.updatedAt || "") !== nextRecord.updatedAt) {
