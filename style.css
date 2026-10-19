@@ -243,3 +243,61 @@ body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="ph
 .quantity-digit{display:flex;align-items:center;justify-content:center;width:clamp(44px,13vw,64px);height:clamp(54px,11vw,76px);border:1px solid var(--line);border-radius:13px;background:#f4f6fa;color:var(--navy);font-size:clamp(24px,6vw,34px);font-weight:800;box-shadow:inset 0 1px 2px rgba(17,32,57,.05);font-variant-numeric:tabular-nums;}
 body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-color:#3b475a;}
 @media(max-width:420px){.quantity-digit-row{gap:6px}.quantity-digit{width:42px;height:54px;border-radius:10px}}
+
+/* UI/UX Phase A — shared polish, keyboard accessibility and touch-friendly controls.
+   Deliberately presentation-only: no data, permissions, navigation, or business logic changes. */
+:root {
+  --focus-ring: 0 0 0 3px rgba(201, 169, 110, .28);
+  --surface-hover: #fbfcff;
+}
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #d7b56f;
+  outline-offset: 3px;
+}
+:where(.panel, .stat-card, .department-card, .ticket-card, .report-card) {
+  transition: box-shadow .18s ease, border-color .18s ease;
+}
+:where(.panel, .stat-card, .department-card, .report-card):hover {
+  border-color: #d8deea;
+  box-shadow: 0 10px 30px rgba(17, 32, 57, .085);
+}
+.btn, .icon-button, .nav-item, .top-actions select, .date-input,
+.field input, .field select, .field textarea, .search-input, .qty-input {
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.btn:active, .icon-button:active {
+  transform: translateY(1px);
+}
+:where(.field input, .field select, .field textarea, .search-input, .qty-input, .date-input, .top-actions select):focus {
+  border-color: var(--gold);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+:where(.field input, .field select, .field textarea, .search-input, .qty-input, .date-input, .top-actions select):disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+.btn:disabled, button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+}
+@media (hover: none) {
+  .btn, .icon-button, .nav-item { -webkit-tap-highlight-color: transparent; }
+}
+@media (max-width: 760px) {
+  .page-head { gap: 12px; }
+  .page-head .actions, .page-head .toolbar { width: 100%; }
+  .page-head .actions > .btn { min-height: 42px; }
+  .panel { padding: 16px; }
+  .modal-footer .btn { min-height: 42px; }
+  .ticket-actions .btn, .report-actions .btn { min-height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
