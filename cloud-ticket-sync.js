@@ -139,17 +139,25 @@ async function publishOwnerCatalog() {
     let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
     const previousRecord = existingById.get(id);
-    // A stale Owner-local ticket must not overwrite its own cloud tombstone.
-    // This prevents the deleted ticket from reappearing when an older local
-    // snapshot is published during a focus refresh or a racing listener.
-    // A genuinely re-added/edited ticket can be published once its local
-    // updatedAt is newer than the explicit deletion timestamp.
-    if (previousRecord?.deleted === true) {
+    // Resolve tombstones by stable slot/source identity too. Older Owner-local
+    // records may have a different/missing sharedCatalogId, so checking only
+    // the computed document ID could allow a deleted ticket to be recreated.
+    const matchingTombstone = existingSnapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .find(remote => remote.deleted === true &&
+        remote.departmentId === ticket.departmentId &&
+        (remote.id === id ||
+          remote.sourceTicketId === String(ticket.id) ||
+          (Number.isInteger(remote.slotNumber) && Number.isInteger(ticket.slotNumber) && remote.slotNumber === ticket.slotNumber)));
+    const tombstone = matchingTombstone || (previousRecord?.deleted === true ? { id, ...previousRecord } : null);
+    // A stale Owner-local ticket must not overwrite a cloud tombstone. A
+    // genuine re-add/edit can publish only if its timestamp is newer.
+    if (tombstone) {
       const localUpdatedAt = Date.parse(ticket.updatedAt || ticket.createdAt || "");
-      const deletedAt = Date.parse(previousRecord.deletedAt || previousRecord.updatedAt || "");
+      const deletedAt = Date.parse(tombstone.deletedAt || tombstone.updatedAt || "");
       if (!Number.isFinite(localUpdatedAt) || !Number.isFinite(deletedAt) || localUpdatedAt <= deletedAt) {
         console.warn("[Ticket Desk Cloud Sync] Skipping stale local ticket because cloud tombstone is newer:", {
-          departmentId: ticket.departmentId, ticketId: ticket.id, catalogId: id
+          departmentId: ticket.departmentId, ticketId: ticket.id, catalogId: id, tombstoneId: tombstone.id
         });
         continue;
       }
