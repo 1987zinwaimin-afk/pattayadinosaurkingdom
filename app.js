@@ -222,8 +222,9 @@ async function importBackup(file){
   for(const r of data.reports){if(!r||typeof r.id!=='string'||!r.id||!DEPTS.some(d=>d.id===r.departmentId)||!Array.isArray(r.ticketSnapshots)||ids.reports.has(r.id))throw Error('invalid or duplicate report');ids.reports.add(r.id);}
   for(const image of data.images){if(!image||typeof image.id!=='string'||!image.id||ids.images.has(image.id))throw Error('invalid or duplicate image record');ids.images.add(image.id);}
   if(!confirmBox(tr('confirmImport')))return;
-  // Replace all stores in one IndexedDB transaction. If any write fails, the
-  // browser aborts the whole transaction and keeps the pre-import data intact.
+  // Safe additive restore: never clear existing stores and never overwrite
+  // an existing record. This lets users recover missing records without
+  // destroying newer tickets, quantities, reports, or images already here.
   if(db&&!fallbackStorage){
    await new Promise((resolve,reject)=>{
     let tx;
@@ -231,8 +232,10 @@ async function importBackup(file){
      tx=db.transaction(stores,'readwrite');
      for(const storeName of stores){
       const store=tx.objectStore(storeName);
-      store.clear();
-      for(const item of data[storeName])store.put(item);
+      for(const item of data[storeName]){
+       const lookup=store.get(item.id);
+       lookup.onsuccess=()=>{if(lookup.result===undefined)store.put(item);};
+      }
      }
     }catch(err){try{tx?.abort();}catch{}reject(err);return;}
     tx.oncomplete=()=>resolve();
@@ -240,13 +243,19 @@ async function importBackup(file){
     tx.onabort=()=>reject(tx.error||new Error('Backup transaction aborted'));
    });
   }else{
-   // Fallback storage cannot transact across keys; retain a rollback snapshot.
+   // Fallback storage cannot transact across keys; retain rollback data and
+   // merge only IDs that do not already exist.
    const previous={};
    for(const name of stores)previous[name]=fallbackRead(name);
    const previousRaw={};
    for(const name of stores)previousRaw[name]=localStorage.getItem(fallbackKey(name));
    try{
-    for(const name of stores)fallbackWrite(name,data[name]);
+    for(const name of stores){
+     const existing=Array.isArray(previous[name])?previous[name]:[];
+     const existingIds=new Set(existing.map(item=>item?.id).filter(Boolean));
+     const additions=data[name].filter(item=>!existingIds.has(item.id));
+     fallbackWrite(name,[...existing,...additions]);
+    }
    }catch(err){
     for(const name of stores){
      memoryStore[name]=previous[name];
