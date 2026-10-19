@@ -1,0 +1,26 @@
+{
+  "id": "./staff-portal.html",
+  "name": "Pattaya Dinosaur Kingdom Staff Check-in",
+  "short_name": "PDK Staff",
+  "description": "Staff check-in portal for Pattaya Dinosaur Kingdom.",
+  "start_url": "./staff-portal.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#101d35",
+  "theme_color": "#101d35",
+  "icons": [
+    {
+      "src": "./file_000000006da082119bbf212e4f6fad52.png?v=staff-login-logo-center-20261019b",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./file_000000006da082119bbf212e4f6fad52.png?v=staff-login-logo-center-20261019b",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
