@@ -251,6 +251,15 @@ function dailyDocId(departmentId, ticketId, date) {
 }
 async function publishDaily(record) {
   if (!auth.currentUser || !record || !DEPTS.includes(record.departmentId) || !record.date || !record.ticketId) return;
+  // Client-side guard: ordinary Staff may publish only their assigned department.
+  // Firestore Rules must enforce the same boundary server-side before this is secure.
+  if (role === "staff") {
+    const session = staffSession();
+    if (!session || (session.department !== "leader" && session.department !== record.departmentId)) {
+      syncStatus("Daily sync blocked: this Staff account cannot update that department.", true);
+      return;
+    }
+  }
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
@@ -280,6 +289,12 @@ async function applyDaily(snapshot) {
   for (const d of snapshot.docs) {
     const remote = d.data();
     if (!DEPTS.includes(remote.departmentId) || !remote.date || !remote.ticketId) continue;
+    // Keep regular Staff local records scoped to their own department; Leaders
+    // and Owner can reconcile all departments.
+    if (role === "staff") {
+      const session = staffSession();
+      if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
+    }
     const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
     if (!ticket) continue;
     const id = `${ticket.id}__${remote.date}`;
