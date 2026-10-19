@@ -310,3 +310,47 @@ tbody tr:hover td { background: #fafcff; }
   .backup-panel { padding: 15px; }
   .danger-zone { padding: 13px; }
 }
+
+
+/* UI/UX Phase H — final interaction details and accessibility consistency. */
+:where(button, input, select, textarea, a, [tabindex]):focus-visible {
+  outline: 3px solid rgba(22,119,238,.52);
+  outline-offset: 2px;
+}
+button:disabled, .btn:disabled, input:disabled, select:disabled {
+  opacity: .58;
+  cursor: not-allowed;
+}
+.modal {
+  width: min(680px, calc(100vw - 28px));
+  max-height: min(86svh, 820px);
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 22px;
+  box-shadow: 0 24px 80px rgba(12,24,45,.25);
+}
+.modal::backdrop { background: rgba(9,20,39,.56); backdrop-filter: blur(3px); }
+.modal form { padding: clamp(18px, 3vw, 26px); }
+.modal-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; margin-top: 20px; }
+.form-grid { gap: 14px; }
+.field label { line-height: 1.45; }
+.field input:focus, .field select:focus, .field textarea:focus, .search-input:focus, .date-input:focus {
+  outline: none;
+  border-color: var(--ui-blue);
+  box-shadow: 0 0 0 3px rgba(22,119,238,.11);
+}
+.toast-region { z-index: 10000; }
+@media (max-width: 760px) {
+  .modal { width: calc(100vw - 20px); max-height: 88svh; border-radius: 18px; }
+  .modal form { padding: 16px; }
+  .modal-footer { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .modal-footer .btn { width: 100%; min-width: 0; }
+  .top-actions { gap: 7px; }
+  .top-actions select { max-width: 118px; }
+  .logout-button { padding: 8px 10px; font-size: 12px; }
+}
+@media (max-width: 360px) {
+  .top-title h1 { font-size: 17px; }
+  .top-actions select { max-width: 96px; }
+  .logout-button { padding: 7px 8px; }
+}
