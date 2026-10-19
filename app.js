@@ -163,7 +163,7 @@ async function importBackup(file){
   const text=await file.text(),data=JSON.parse(text);
   if(data.app!=='TicketDesk'||data.schemaVersion!==1||!stores.every(k=>Array.isArray(data[k])))throw Error('invalid backup format');
   for(const t of data.tickets){if(!t||!t.id||!DEPTS.some(d=>d.id===t.departmentId))throw Error('invalid ticket');}
-  for(const r of data.daily){if(!r||!r.id||!r.ticketId||!DEPTS.some(d=>d.id===r.departmentId)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(r.date)||!Number.isInteger(r.quantity)||r.quantity<0)throw Error('invalid daily record');}
+  for(const r of data.daily){if(!r||!r.id||!r.ticketId||!DEPTS.some(d=>d.id===r.departmentId)||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!Number.isInteger(r.quantity)||r.quantity<0)throw Error('invalid daily record');}
   for(const r of data.reports){if(!r||!r.id||!DEPTS.some(d=>d.id===r.departmentId)||!Array.isArray(r.ticketSnapshots))throw Error('invalid report');}
   for(const image of data.images){if(!image||!image.id)throw Error('invalid image record');}
   if(!confirmBox(tr('confirmImport')))return;
