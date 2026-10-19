@@ -384,3 +384,24 @@ button:disabled, .btn:disabled, input:disabled, select:disabled {
 .staff-home-primary{display:block;width:100%;min-height:84px;margin:24px 0 0;padding:16px 20px;border:0;border-radius:28px;background:#10213d;color:#fff;font-size:clamp(19px,3vw,28px);font-weight:850;cursor:pointer}
 .staff-home-foot{margin:24px 6px 0;color:#68758a;font-size:clamp(12px,2vw,16px);font-weight:650;line-height:1.7;text-align:center;overflow-wrap:anywhere}
 @media(max-width:520px){.staff-home{padding:16px 12px;border-radius:24px}.staff-home-header{gap:12px;margin-bottom:18px}.staff-home-header>img{width:66px;height:66px;border-radius:20px}.staff-home-language{font-size:23px;padding:4px}.staff-home-department{padding:20px 18px;border-radius:23px;margin-bottom:16px}.staff-home-date{align-items:flex-start;flex-direction:column}.staff-home-date input{width:100%;max-width:none}.staff-home-grid{gap:10px}.staff-home-card{min-height:174px;padding:16px 14px;gap:11px;border-radius:22px}.staff-home-card strong{font-size:17px}.staff-home-sub{font-size:12px}.staff-home-primary{min-height:70px;border-radius:22px;margin-top:18px}.staff-home-foot{margin-top:18px}}
+
+
+/* UI/UX Phase I — place Staff language and secure logout in the fixed phone bottom bar. */
+.staff-bottom-bar{display:none}
+@media(max-width:760px){
+  .staff-bottom-bar{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:grid;grid-template-columns:minmax(72px,.8fr) minmax(120px,1fr) minmax(105px,.9fr);align-items:stretch;gap:8px;padding:12px 12px calc(12px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:linear-gradient(145deg,#10213d,#0b1830);box-shadow:0 -8px 28px rgba(16,33,61,.18)}
+  .staff-bottom-home{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:62px;border:0;border-radius:16px;background:#293f60;color:#fff;font:inherit}
+  .staff-bottom-home span{font-size:25px;line-height:1}
+  .staff-bottom-home strong{font-size:12px}
+  .staff-bottom-language,.staff-bottom-logout{display:flex;align-items:stretch;min-width:0}
+  .staff-bottom-language .language-label{display:none}
+  .staff-bottom-language select{width:100%;min-width:0;max-width:none!important;min-height:62px;padding:8px 10px;border:1px solid rgba(255,255,255,.2);border-radius:16px;background:#fff;color:#14233d;font-size:14px;font-weight:750}
+  .staff-bottom-logout .logout-button{width:100%;min-width:0;min-height:62px;padding:8px 10px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:linear-gradient(140deg,#e3c984,#c7a35e);color:#14233d;font-size:13px;font-weight:850;white-space:normal}
+  .staff-home{padding-bottom:96px}
+  .main{padding-bottom:calc(116px + env(safe-area-inset-bottom))!important}
+}
+@media(max-width:360px){
+  .staff-bottom-bar{grid-template-columns:minmax(60px,.7fr) minmax(105px,1fr) minmax(94px,.9fr);gap:6px;padding-left:8px;padding-right:8px}
+  .staff-bottom-language select{font-size:12px;padding:7px}
+  .staff-bottom-logout .logout-button{font-size:12px;padding:6px}
+}
