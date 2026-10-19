@@ -237,3 +237,9 @@ body[data-layout="phone"] .sidebar .nav-item{flex:0 0 auto;min-width:70px;displa
 body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="phone"] .main{margin-left:0!important;width:100%;padding-bottom:100px}body[data-layout="phone"] .topbar{position:sticky;top:0;z-index:20}body[data-layout="phone"] .sidebar-backdrop{display:none}
 @media(max-width:760px){body[data-layout="laptop"] .sidebar{width:min(86vw,300px)}body[data-layout="phone"] .sidebar{width:100%}}
 
+
+/* Dashboard ticket total displayed one digit per tile */
+.quantity-digit-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:76px;margin:14px 0 16px;}
+.quantity-digit{display:flex;align-items:center;justify-content:center;width:clamp(44px,13vw,64px);height:clamp(54px,11vw,76px);border:1px solid var(--line);border-radius:13px;background:#f4f6fa;color:var(--navy);font-size:clamp(24px,6vw,34px);font-weight:800;box-shadow:inset 0 1px 2px rgba(17,32,57,.05);font-variant-numeric:tabular-nums;}
+body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-color:#3b475a;}
+@media(max-width:420px){.quantity-digit-row{gap:6px}.quantity-digit{width:42px;height:54px;border-radius:10px}}
