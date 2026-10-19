@@ -1,0 +1,142 @@
+/* UI/UX Phase C — visual redesign inspired by the approved reference board.
+   Styling only: no changes to ticket/report data, authentication, permissions or Firebase logic. */
+:root {
+  --ui-ink: #14233d;
+  --ui-muted: #68758a;
+  --ui-border: #e5eaf2;
+  --ui-canvas: #f2f5fb;
+  --ui-navy: #10213d;
+  --ui-blue: #1677ee;
+  --ui-green: #079b68;
+  --ui-orange: #f28b13;
+  --ui-purple: #7c3aed;
+}
+body { background: var(--ui-canvas); color: var(--ui-ink); }
+body.auth-pending { background: #f2f5fb; }
+.auth-gate {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(140deg, rgba(8,25,51,.82), rgba(8,25,51,.38)),
+    url("./dinosaur-kingdom-hero.svg") center / cover no-repeat,
+    #10213d;
+  padding: clamp(18px, 5vw, 44px);
+}
+.auth-gate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 0, rgba(29,117,211,.22), transparent 58%);
+}
+.auth-card {
+  width: min(100%, 460px);
+  padding: clamp(24px, 5vw, 38px);
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 28px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 28px 90px rgba(0,12,35,.32);
+  text-align: left;
+}
+.auth-brand { width: 112px; height: 112px; margin: 0 auto 15px; }
+.auth-kicker { text-align: center; color: #b58b3f; letter-spacing: 2.2px; }
+.auth-card h1 { text-align: center; font-size: clamp(25px, 5vw, 31px); letter-spacing: -.035em; }
+.auth-description { text-align: center; font-size: 14px; }
+.auth-card form { margin-top: 24px; }
+.auth-card .field label { font-size: 12px; color: #36455c; }
+.auth-card .field input {
+  min-height: 49px;
+  border: 1px solid #dbe3ef;
+  border-radius: 13px;
+  padding: 13px 14px;
+  background: #f9fbff;
+}
+.auth-card .field input:focus { border-color: #1677ee; box-shadow: 0 0 0 4px rgba(22,119,238,.12); }
+.auth-card #ownerLoginButton {
+  min-height: 50px !important;
+  border-radius: 13px;
+  background: linear-gradient(110deg, #1479f5, #1553bd);
+  box-shadow: 0 8px 18px rgba(22,94,190,.2);
+}
+.auth-card > a.btn { border-radius: 13px; }
+.auth-status { text-align: center; }
+.topbar { background: rgba(255,255,255,.96); backdrop-filter: blur(14px); }
+.top-title h1, h1, .page-head h2 { color: var(--ui-ink); letter-spacing: -.035em; }
+.page-head h2 { font-size: clamp(22px, 2.4vw, 29px); }
+.page-head p { color: var(--ui-muted); max-width: 68ch; }
+.content { padding-top: clamp(20px, 3vw, 36px); }
+.stat-card, .department-card, .panel, .ticket-card, .report-card {
+  border: 1px solid var(--ui-border);
+  border-radius: 21px;
+  box-shadow: 0 8px 26px rgba(23,43,77,.055);
+}
+.stat-card { position: relative; overflow: hidden; padding: 20px; }
+.stat-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: #dbe4f2; }
+.stat-card:nth-child(4n+1)::before { background: var(--ui-green); }
+.stat-card:nth-child(4n+2)::before { background: var(--ui-blue); }
+.stat-card:nth-child(4n+3)::before { background: var(--ui-orange); }
+.stat-card:nth-child(4n+4)::before { background: var(--ui-purple); }
+.stat-card:nth-child(4n+1) .stat-icon { background: #d9f7e9; color: #087f56; }
+.stat-card:nth-child(4n+2) .stat-icon { background: #dceaff; color: #145cc3; }
+.stat-card:nth-child(4n+3) .stat-icon { background: #fff0d9; color: #b85b06; }
+.stat-card:nth-child(4n+4) .stat-icon { background: #eee4ff; color: #6d28d9; }
+.stat-top { color: #68758a; font-weight: 650; }
+.stat-number { color: var(--ui-ink); font-size: clamp(27px, 3vw, 36px); }
+.stat-sub { font-size: 12px; }
+.department-card { position: relative; overflow: hidden; padding: 21px; }
+.department-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: #dbe4f2; }
+.dashboard-grid .department-card:nth-child(4n+1)::before { background: var(--ui-green); }
+.dashboard-grid .department-card:nth-child(4n+2)::before { background: var(--ui-blue); }
+.dashboard-grid .department-card:nth-child(4n+3)::before { background: var(--ui-orange); }
+.dashboard-grid .department-card:nth-child(4n+4)::before { background: var(--ui-purple); }
+.dept-title { color: #34435b; font-size: 15px; }
+.dept-count { color: var(--ui-ink); font-size: 29px; }
+.btn { border-radius: 12px; min-height: 43px; }
+.btn-primary { background: var(--ui-navy); box-shadow: 0 5px 12px rgba(16,33,61,.14); }
+.btn-primary:hover { background: #203b63; }
+.btn-gold { background: linear-gradient(130deg, #e3c984, #c7a35e); color: #17253d; }
+.btn-secondary { border-color: #dce4ef; }
+.panel { padding: clamp(16px, 2.5vw, 25px); }
+.field input, .field select, .field textarea, .search-input, .date-input, .top-actions select {
+  min-height: 45px;
+  border-radius: 12px;
+  border-color: #dce4ef;
+}
+.notice { border-radius: 15px; padding: 15px 17px; line-height: 1.65; }
+.ticket-card { overflow: hidden; }
+.ticket-image-wrap { background: linear-gradient(145deg, #f6f9fd, #eaf0f8); }
+.tag { border-radius: 20px; padding: 5px 9px; }
+.table-wrap { border-radius: 14px; }
+th { background: #f3f6fb; }
+.modal { border-radius: 22px; }
+.sidebar { background: linear-gradient(180deg, #10213d, #0d1a31); }
+.nav-item { border-radius: 13px; min-height: 45px; }
+.nav-item.active { background: #263d60; box-shadow: inset 3px 0 #e1bd71; }
+.footer { color: #8994a7; }
+@media (max-width: 760px) {
+  .auth-gate { min-height: 100svh; padding: 20px 14px; }
+  .auth-card { border-radius: 24px; padding: 25px 20px; }
+  .auth-brand { width: 100px; height: 100px; }
+  .topbar { min-height: 72px; padding: 12px 14px; }
+  .content { padding: 18px 13px 28px; }
+  .page-head h2 { font-size: 23px; line-height: 1.25; }
+  .page-head p { font-size: 14px; line-height: 1.55; }
+  .stat-card { padding: 14px; border-radius: 18px; }
+  .stat-top { font-size: 11px; line-height: 1.35; }
+  .stat-number { font-size: 27px; margin-top: 12px; }
+  .stat-sub { font-size: 11px; line-height: 1.4; }
+  .department-card { padding: 17px; }
+  .sidebar { border-radius: 18px 18px 0 0; }
+  .sidebar .nav-item { flex: 0 0 86px; min-width: 86px; font-size: 10px; }
+  .main { padding-bottom: calc(104px + env(safe-area-inset-bottom)) !important; }
+  .footer { padding-bottom: 8px; }
+}
+@media (max-width: 380px) {
+  .sidebar .nav-item { flex-basis: 78px; min-width: 78px; }
+  .stat-card { padding: 11px; }
+  .stat-number { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
