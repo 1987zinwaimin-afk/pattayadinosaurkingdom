@@ -31,6 +31,14 @@ let role = "";
 let started = false;
 let signingInAnonymously = false;
 let publishTimer = null;
+// Serialize Owner catalog writes so an in-flight publish cannot overwrite a
+// deletion tombstone after the user deletes a ticket.
+let catalogOperationQueue = Promise.resolve();
+function queueCatalogOperation(operation) {
+  const next = catalogOperationQueue.catch(() => {}).then(operation);
+  catalogOperationQueue = next;
+  return next;
+}
 let stopCatalog = null;
 let stopDaily = null;
 let lastCatalogIds = new Set();
@@ -207,7 +215,7 @@ function queueCatalogPublish(event) {
     if (cloudId) {
       // Keep a tombstone instead of deleting the document outright. Staff can
       // then distinguish an intentional Owner deletion from a partial snapshot.
-      setDoc(doc(db, "sharedTicketCatalog", cloudId), {
+      queueCatalogOperation(() => setDoc(doc(db, "sharedTicketCatalog", cloudId), {
         catalogId: cloudId,
         departmentId: ticket.departmentId,
         sourceTicketId: String(ticket.id),
@@ -215,23 +223,23 @@ function queueCatalogPublish(event) {
         deleted: true,
         deletedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      }, { merge: true })
+      }, { merge: true }))
         .catch(err => syncStatus(`Ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
     }
     return;
   }
   // A saved ticket must reach Firestore immediately; do not rely on the next page load.
   clearTimeout(publishTimer);
-  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 100);
+  publishTimer = setTimeout(() => queueCatalogOperation(() => publishOwnerCatalog()).catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 100);
 }
 // Register before auth finishes so an early Owner edit is not lost.
 document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
 window.addEventListener("focus", () => {
-  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus(`Catalog focus sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  if (role === "owner") queueCatalogOperation(() => publishOwnerCatalog()).catch(err => syncStatus(`Catalog focus sync failed: ${err?.code || err?.message || "unknown error"}`, true));
 });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && role === "owner") {
-    publishOwnerCatalog().catch(err => syncStatus(`Catalog visibility sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+    queueCatalogOperation(() => publishOwnerCatalog()).catch(err => syncStatus(`Catalog visibility sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   }
 });
 async function applyCatalog(snapshot) {
@@ -414,7 +422,7 @@ function startOwner() {
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
-  waitForLocalStore().then(() => publishOwnerCatalog()).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return publishOwnerCatalog(); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  waitForLocalStore().then(() => queueCatalogOperation(() => publishOwnerCatalog())).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return queueCatalogOperation(() => publishOwnerCatalog()); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
