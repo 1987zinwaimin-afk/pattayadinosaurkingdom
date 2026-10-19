@@ -222,3 +222,59 @@ th { position: sticky; top: 0; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   .ticket-card, .ticket-image-wrap img { transition: none !important; }
 }
+
+
+/* UI/UX Phase F — reports, saved albums, staff list and settings surfaces. */
+.report-list { align-items: stretch; }
+.report-card {
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  border-radius: 20px;
+  border-color: var(--ui-border);
+  box-shadow: 0 7px 24px rgba(23,43,77,.055);
+}
+.report-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ui-blue), var(--ui-purple));
+}
+.report-card h3 { color: var(--ui-ink); font-size: 16px; line-height: 1.4; }
+.report-meta { gap: 7px; line-height: 1.5; }
+.report-meta > span, .report-meta > time {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f1f5fb;
+}
+.report-total { color: var(--ui-ink); letter-spacing: -.035em; font-size: 27px; }
+.report-line { min-width: 0; }
+.report-thumb { border: 1px solid var(--ui-border); background: #f7f9fc; }
+.report-actions { gap: 8px; }
+.report-actions .btn { min-height: 40px; border-radius: 10px; }
+.report-actions .btn-primary { background: var(--ui-navy); }
+.report-actions .btn-secondary { background: #fff; border-color: #dbe3ef; }
+.summary-line { padding: 12px 0; gap: 16px; }
+.summary-line strong { color: var(--ui-ink); }
+.notice { border-radius: 14px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
+.settings-grid { align-items: stretch; }
+.settings-grid > .panel { border-radius: 20px; }
+.panel-head { align-items: center; }
+.panel-head h3 { color: var(--ui-ink); }
+.table-wrap { border: 1px solid var(--ui-border); border-radius: 14px; }
+table { border-collapse: separate; border-spacing: 0; }
+th { background: #f2f6fc; color: #4d5c73; }
+td, th { padding: 13px 12px; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: #fafcff; }
+@media (max-width: 760px) {
+  .report-list { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .report-card { padding: 17px; }
+  .report-total { font-size: 25px; }
+  .report-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .report-actions .btn { min-width: 0; white-space: normal; }
+  .summary-line { align-items: flex-start; }
+  .settings-grid { grid-template-columns: minmax(0,1fr); }
+  .panel-head { flex-wrap: wrap; }
+}
