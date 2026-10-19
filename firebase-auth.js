@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -12,6 +13,7 @@ const firebaseConfig = {
 const OWNER_EMAIL = "1987zinwaimin@gmail.com".toLowerCase();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 const gate = document.getElementById("ownerAuthGate");
 const statusEl = document.getElementById("authStatus");
 const loginBtn = document.getElementById("ownerLoginButton");
@@ -116,7 +118,18 @@ const logoutButton = document.getElementById('logoutButton');
 if (logoutButton) logoutButton.addEventListener('click', async () => {
   logoutButton.disabled = true;
   try {
-    if (staffSession()) { localStorage.removeItem('ticketdesk-staff-session-v1'); await signOut(auth); window.location.href = './staff-portal.html'; return; }
+    if (staffSession()) {
+      const session = staffSession();
+      if (auth.currentUser?.isAnonymous && session?.uid === auth.currentUser.uid) {
+        await addDoc(collection(db, 'staffLoginEvents'), {
+          name: String(session.name || '').slice(0, 80), department: session.department,
+          uid: auth.currentUser.uid, createdAt: serverTimestamp(),
+          clientTime: new Date().toISOString(), source: 'staff-share-link', eventType: 'check-out'
+        });
+      } else { throw new Error('Staff attendance session is not available. Please sign in again.'); }
+      localStorage.removeItem('ticketdesk-staff-session-v1');
+      await signOut(auth); window.location.href = './staff-portal.html'; return;
+    }
     await signOut(auth); window.location.reload();
   } catch (error) { console.error('Logout failed', error); status('Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပါ။', true); }
   finally { logoutButton.disabled = false; }
