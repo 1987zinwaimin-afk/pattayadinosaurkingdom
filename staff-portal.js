@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const config={apiKey:"AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",authDomain:"pattaya-dinosaur-ticket-desk.firebaseapp.com",projectId:"pattaya-dinosaur-ticket-desk",storageBucket:"pattaya-dinosaur-ticket-desk.firebasestorage.app",messagingSenderId:"386652978138",appId:"1:386652978138:web:32c00c1b19caacda7cdee3"};
 // Use the same default Firebase Auth instance as the workspace so Staff login
 // cannot leave an Owner Google/email session active behind the Staff screen.
@@ -22,13 +22,24 @@ form.addEventListener("submit",async e=>{
    // Fixed site-wide Leader approval password; no Owner Settings setup required.
    if(supplied!=="0735"){status.textContent=w.approvalWrong;status.hidden=false;status.className="notice error";$("leaderApprovalPassword").value="";$("leaderApprovalPassword").focus();return;}
   }
-  const session={name:name.slice(0,80),department,loggedInAt:new Date().toISOString()};
+  if(auth.currentUser&&!auth.currentUser.isAnonymous)await signOut(auth);
+  const cred=auth.currentUser?.isAnonymous?{user:auth.currentUser}:await signInAnonymously(auth);
+  const uid=cred.user.uid;
+  // A revoked UID cannot re-register. Publish firestore.rules for account revocation to be enforced.
+  const revokedRef=doc(db,"revokedStaff",uid);
+  const revokedSnap=await getDoc(revokedRef);
+  if(revokedSnap.exists()){
+   localStorage.removeItem("ticketdesk-staff-session-v1");
+   status.textContent="This staff access has been removed by the Owner. Please contact the Owner.";
+   status.hidden=false;status.className="notice error";return;
+  }
+  const directoryRef=doc(db,"staffDirectory",uid);
+  const previous=await getDoc(directoryRef);
+  const previousData=previous.exists()?previous.data():{};
+  const session={name:name.slice(0,80),department,loggedInAt:new Date().toISOString(),uid};
+  await setDoc(directoryRef,{uid,name:session.name,department,createdAt:previousData.createdAt||serverTimestamp(),lastSeenAt:serverTimestamp(),lastSeenClientTime:session.loggedInAt,loginCount:(Number(previousData.loginCount)||0)+1,source:"staff-share-link"},{merge:true});
   localStorage.setItem("ticketdesk-staff-session-v1",JSON.stringify(session));
-  try{
-   if(auth.currentUser&&!auth.currentUser.isAnonymous)await signOut(auth);
-   const cred=auth.currentUser?.isAnonymous?{user:auth.currentUser}:await signInAnonymously(auth);
-   await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid:cred.user.uid,createdAt:serverTimestamp(),clientTime:new Date().toISOString(),source:"staff-share-link"});
-  }catch(err){console.warn("Staff entered workspace, but check-in history could not be recorded",err);}
+  await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid,createdAt:serverTimestamp(),clientTime:session.loggedInAt,source:"staff-share-link"});
   status.textContent="Login successful. Opening your department…";status.hidden=false;status.className="notice";window.location.href="./index.html";
  }catch(err){
   console.error("Staff login failed",err);
