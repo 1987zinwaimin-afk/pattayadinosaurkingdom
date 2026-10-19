@@ -450,17 +450,11 @@ async function applyDaily(snapshot) {
       sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
     };
     const current = await store.get("daily", id);
-    // The Owner also listens to the shared quantity collection. If a local
-    // quantity edit has already been saved but its publish is still in flight,
-    // an older cloud snapshot must not roll that newer local value backwards.
-    // Compare parsed timestamps (not strings); if the local timestamp is valid
-    // and newer than the remote timestamp, leave the local record untouched.
-    const currentTime = Date.parse(current?.updatedAt || "");
-    const remoteTime = Date.parse(nextRecord.updatedAt || "");
-    if (current && Number.isFinite(currentTime) &&
-        (!Number.isFinite(remoteTime) || currentTime > remoteTime)) {
-      continue;
-    }
+    // Firestore's sharedDaily snapshot is the cross-device source of truth.
+    // Device clocks are not comparable: a Staff phone can have a timestamp in
+    // the future and cause the Owner to ignore a valid newer cloud total.
+    // Apply the latest snapshot; additive writes are protected by a Firestore
+    // transaction in publishDaily, so this must not be gated by local clocks.
     if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
         String(current.notes || "") !== nextRecord.notes ||
         String(current.updatedAt || "") !== nextRecord.updatedAt) {
