@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -31,6 +31,14 @@ let role = "";
 let started = false;
 let signingInAnonymously = false;
 let publishTimer = null;
+// Serialize Owner catalog writes so an in-flight publish cannot overwrite a
+// deletion tombstone after the user deletes a ticket.
+let catalogOperationQueue = Promise.resolve();
+function queueCatalogOperation(operation) {
+  const next = catalogOperationQueue.catch(() => {}).then(operation);
+  catalogOperationQueue = next;
+  return next;
+}
 let stopCatalog = null;
 let stopDaily = null;
 let lastCatalogIds = new Set();
@@ -42,6 +50,7 @@ let pendingCatalogPublish = false;
 const SNAPSHOT_COALESCE_MS = 350;
 let catalogApplyTimer = null, dailyApplyTimer = null;
 let queuedCatalogSnapshot = null, queuedDailySnapshot = null;
+let latestDailySnapshot = null;
 let catalogApplyRunning = false, dailyApplyRunning = false;
 
 function queueLatestSnapshot(kind, snapshot) {
@@ -60,10 +69,16 @@ function queueLatestSnapshot(kind, snapshot) {
         .finally(() => {
           catalogApplyRunning = false;
           if (queuedCatalogSnapshot) queueLatestSnapshot("catalog", queuedCatalogSnapshot);
+          else if (latestDailySnapshot) queueLatestSnapshot("daily", latestDailySnapshot);
         });
     }, SNAPSHOT_COALESCE_MS);
     return;
   }
+  // Keep the latest complete quantity snapshot so it can be reconciled again
+  // after catalog loading. On first login, the daily listener can arrive before
+  // Staff ticket records exist locally; a one-time skipped record would never
+  // be retried if no further quantity writes happen.
+  latestDailySnapshot = snapshot;
   queuedDailySnapshot = snapshot;
   clearTimeout(dailyApplyTimer);
   dailyApplyTimer = setTimeout(() => {
@@ -139,6 +154,29 @@ async function publishOwnerCatalog() {
     let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
     const previousRecord = existingById.get(id);
+    // Resolve tombstones by stable slot/source identity too. Older Owner-local
+    // records may have a different/missing sharedCatalogId, so checking only
+    // the computed document ID could allow a deleted ticket to be recreated.
+    const matchingTombstone = existingSnapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .find(remote => remote.deleted === true &&
+        remote.departmentId === ticket.departmentId &&
+        (remote.id === id ||
+          remote.sourceTicketId === String(ticket.id) ||
+          (Number.isInteger(remote.slotNumber) && Number.isInteger(ticket.slotNumber) && remote.slotNumber === ticket.slotNumber)));
+    const tombstone = matchingTombstone || (previousRecord?.deleted === true ? { id, ...previousRecord } : null);
+    // A stale Owner-local ticket must not overwrite a cloud tombstone. A
+    // genuine re-add/edit can publish only if its timestamp is newer.
+    if (tombstone) {
+      const localUpdatedAt = Date.parse(ticket.updatedAt || ticket.createdAt || "");
+      const deletedAt = Date.parse(tombstone.deletedAt || tombstone.updatedAt || "");
+      if (!Number.isFinite(localUpdatedAt) || !Number.isFinite(deletedAt) || localUpdatedAt <= deletedAt) {
+        console.warn("[Ticket Desk Cloud Sync] Skipping stale local ticket because cloud tombstone is newer:", {
+          departmentId: ticket.departmentId, ticketId: ticket.id, catalogId: id, tombstoneId: tombstone.id
+        });
+        continue;
+      }
+    }
     // Keep syncing text/inventory edits even if a newly selected image is too
     // large for a safe Firestore document. Retain the last valid cloud image.
     if (imageData && imageData.length > 760000) {
@@ -148,6 +186,7 @@ async function publishOwnerCatalog() {
     }
     const nextRecord = {
       catalogId: id,
+      deleted: false,
       sourceTicketId: String(ticket.id),
       departmentId: ticket.departmentId,
       name: String(ticket.name || "").slice(0, 160),
@@ -156,7 +195,7 @@ async function publishOwnerCatalog() {
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData
     };
-    const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
+    const fields = ["catalogId", "deleted", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
     const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
     if (!unchanged) {
       await setDoc(catalogRef, { ...nextRecord, updatedAt: new Date().toISOString() });
@@ -181,23 +220,33 @@ function queueCatalogPublish(event) {
     const ticket = detail.ticket;
     const cloudId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : null);
     if (cloudId) {
-      deleteDoc(doc(db, "sharedTicketCatalog", cloudId))
+      // Keep a tombstone instead of deleting the document outright. Staff can
+      // then distinguish an intentional Owner deletion from a partial snapshot.
+      queueCatalogOperation(() => setDoc(doc(db, "sharedTicketCatalog", cloudId), {
+        catalogId: cloudId,
+        departmentId: ticket.departmentId,
+        sourceTicketId: String(ticket.id),
+        slotNumber: Number.isInteger(ticket.slotNumber) ? ticket.slotNumber : null,
+        deleted: true,
+        deletedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true }))
         .catch(err => syncStatus(`Ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
     }
     return;
   }
   // A saved ticket must reach Firestore immediately; do not rely on the next page load.
   clearTimeout(publishTimer);
-  publishTimer = setTimeout(() => publishOwnerCatalog().catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 100);
+  publishTimer = setTimeout(() => queueCatalogOperation(() => publishOwnerCatalog()).catch(err => syncStatus(`Catalog publish failed: ${err?.code || err?.message || "unknown error"}`, true)), 100);
 }
 // Register before auth finishes so an early Owner edit is not lost.
 document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
 window.addEventListener("focus", () => {
-  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus(`Catalog focus sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  if (role === "owner") queueCatalogOperation(() => publishOwnerCatalog()).catch(err => syncStatus(`Catalog focus sync failed: ${err?.code || err?.message || "unknown error"}`, true));
 });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && role === "owner") {
-    publishOwnerCatalog().catch(err => syncStatus(`Catalog visibility sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+    queueCatalogOperation(() => publishOwnerCatalog()).catch(err => syncStatus(`Catalog visibility sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   }
 });
 async function applyCatalog(snapshot) {
@@ -207,8 +256,47 @@ async function applyCatalog(snapshot) {
   const remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
   let catalogChanged = false;
   const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
+  const tombstones = remoteRecords.filter(x => x.deleted === true && DEPTS.includes(x.departmentId));
   for (const remote of remoteRecords) {
-    if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
+    if (!DEPTS.includes(remote.departmentId)) continue;
+    if (remote.deleted !== true) {
+      // A live duplicate document can otherwise recreate a ticket that was
+      // deleted under a different catalog document ID. Compare stable slot and
+      // original ticket identity, but allow an explicitly newer re-add/edit.
+      const blockingTombstone = tombstones.find(dead =>
+        dead.departmentId === remote.departmentId &&
+        (dead.sourceTicketId && String(dead.sourceTicketId) === String(remote.sourceTicketId) ||
+          Number.isInteger(dead.slotNumber) && Number.isInteger(remote.slotNumber) && dead.slotNumber === remote.slotNumber) &&
+        (!Number.isFinite(Date.parse(remote.updatedAt || "")) ||
+          !Number.isFinite(Date.parse(dead.deletedAt || dead.updatedAt || "")) ||
+          Date.parse(remote.updatedAt || "") <= Date.parse(dead.deletedAt || dead.updatedAt || ""))
+      );
+      if (blockingTombstone) {
+        console.warn("[Ticket Desk Cloud Sync] Ignoring stale duplicate catalog record blocked by Owner deletion:", {
+          departmentId: remote.departmentId, catalogId: remote.cloudDocId, tombstoneId: blockingTombstone.cloudDocId
+        });
+        continue;
+      }
+    }
+    if (remote.deleted === true) {
+      // Only an explicit Owner tombstone authorizes deleting the matching local
+      // catalog ticket. Historical daily records and saved report snapshots stay.
+      const deletedLocal = localTickets.filter(t =>
+        t.departmentId === remote.departmentId &&
+        (t.sharedCatalogId === remote.cloudDocId ||
+          (Number.isInteger(remote.slotNumber) && Number(t.slotNumber) === remote.slotNumber))
+      );
+      for (const ticket of deletedLocal) {
+        await store.del("tickets", ticket.id);
+        const sharedImageId = `shared-img-${remote.cloudDocId}`;
+        if (ticket.imageId === sharedImageId) await store.del("images", sharedImageId);
+        const index = localTickets.findIndex(t => t.id === ticket.id);
+        if (index >= 0) localTickets.splice(index, 1);
+        catalogChanged = true;
+      }
+      continue;
+    }
+    if (!remote.name) continue;
     let local = localTickets.find(t => t.sharedCatalogId === remote.cloudDocId);
     if (!local && Number.isInteger(remote.slotNumber)) {
       local = localTickets.find(t => t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber);
@@ -218,8 +306,11 @@ async function applyCatalog(snapshot) {
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
       const updated = { ...local, sharedCatalogId: remote.cloudDocId, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      // A missing image payload is not an explicit image removal. It can mean
+      // the cloud record was published without an image (or an older snapshot
+      // arrived); preserve the currently visible image unless an explicit
+      // Owner image-removal signal is implemented.
       if (remote.imageData) updated.imageId = sharedImageId;
-      else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       if (JSON.stringify(local) !== JSON.stringify(updated)) { await store.put("tickets", updated); catalogChanged = true; }
     } else {
       const created = {
@@ -235,14 +326,9 @@ async function applyCatalog(snapshot) {
       catalogChanged = true;
     }
   }
-  // Remove only ticket entries that were explicitly linked to the Owner's shared catalog.
-  for (const local of localTickets) {
-    if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
-      if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
-      await store.del("tickets", local.id);
-      catalogChanged = true;
-    }
-  }
+  // Missing IDs are not deletion signals: only the explicit Owner tombstone
+  // handled above may remove a matching local ticket. This avoids transient
+  // snapshot gaps deleting records while still allowing intentional deletes.
   lastCatalogIds = nextIds;
   if (catalogChanged) {
     window.ticketdeskLocalStore.refresh?.();
@@ -266,9 +352,48 @@ async function publishDaily(record) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
-  const catalogTicketId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId)));
-  await setDoc(doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date)), {
-    id: dailyDocId(record.departmentId, catalogTicketId, record.date),
+  // Resolve Owner-local IDs to the exact shared catalog document Staff receives.
+  // Local ticket IDs can differ between Owner and Staff, so never assume the
+  // Owner's stored sharedCatalogId is current without checking the live catalog.
+  const localCatalogId = ticket ? slotCatalogId(ticket) : String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId);
+  let catalogTicketId = ticket?.sharedCatalogId || localCatalogId;
+  if (role === "owner" && ticket) {
+    const catalogSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+    const catalogRecords = catalogSnapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+    const exact = catalogRecords.find(remote => remote.cloudDocId === localCatalogId && remote.departmentId === record.departmentId && remote.deleted !== true);
+    const bySource = catalogRecords.find(remote => remote.departmentId === record.departmentId && remote.deleted !== true && String(remote.sourceTicketId || "") === String(ticket.id));
+    const bySlot = Number.isInteger(ticket.slotNumber) ? catalogRecords.find(remote => remote.departmentId === record.departmentId && remote.deleted !== true && Number(remote.slotNumber) === ticket.slotNumber) : null;
+    const canonical = exact || bySource || bySlot;
+    if (canonical) catalogTicketId = canonical.cloudDocId;
+  }
+  const cloudRecordId = dailyDocId(record.departmentId, catalogTicketId, record.date);
+  const cloudRef = doc(db, "sharedDaily", cloudRecordId);
+  const sourceName = staffSession()?.name || auth.currentUser.email || "Owner";
+  // Quantity entry is an increment, not a replacement of this device's local
+  // total. A Firestore transaction combines additions from Owner and Staff
+  // without allowing one device's stale total to overwrite the other's work.
+  if (Number.isFinite(Number(record.delta)) && Number(record.delta) > 0) {
+    const delta = Math.max(0, Math.trunc(Number(record.delta)));
+    await runTransaction(db, async transaction => {
+      const currentSnap = await transaction.get(cloudRef);
+      const current = currentSnap.exists() ? currentSnap.data() : {};
+      transaction.set(cloudRef, {
+        id: cloudRecordId,
+        ticketId: catalogTicketId,
+        departmentId: record.departmentId,
+        date: record.date,
+        quantity: Math.max(0, Math.trunc(Number(current.quantity) || 0)) + delta,
+        notes: String(record.notes || current.notes || "").slice(0, 1000),
+        updatedAt: new Date().toISOString(),
+        sourceUid: auth.currentUser.uid,
+        sourceName
+      });
+    });
+    return;
+  }
+  // Resets/clears intentionally replace the shared value with zero.
+  await setDoc(cloudRef, {
+    id: cloudRecordId,
     ticketId: catalogTicketId,
     departmentId: record.departmentId,
     date: record.date,
@@ -276,7 +401,7 @@ async function publishDaily(record) {
     notes: String(record.notes || "").slice(0, 1000),
     updatedAt: record.updatedAt || new Date().toISOString(),
     sourceUid: auth.currentUser.uid,
-    sourceName: staffSession()?.name || auth.currentUser.email || "Owner"
+    sourceName
   });
 }
 async function publishReset(detail) {
@@ -298,8 +423,25 @@ async function applyDaily(snapshot) {
       const session = staffSession();
       if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
     }
-    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
-    if (!ticket) continue;
+    // Resolve within the same department first. A ticket ID or slot number
+    // from another department must never receive this quantity record.
+    let ticket = tickets.find(t =>
+      t.departmentId === remote.departmentId &&
+      (t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId)
+    );
+    // Older local records may not have sharedCatalogId populated yet.
+    if (!ticket) {
+      const slotMatch = String(remote.ticketId).match(/^(sales|entry|playing|event)__slot__(\d+)$/);
+      if (slotMatch && slotMatch[1] === remote.departmentId) {
+        ticket = tickets.find(t => t.departmentId === remote.departmentId && Number(t.slotNumber) === Number(slotMatch[2]));
+      }
+    }
+    if (!ticket) {
+      console.warn("[Ticket Desk Cloud Sync] Shared daily record has no matching local ticket:", {
+        departmentId: remote.departmentId, ticketId: remote.ticketId, date: remote.date
+      });
+      continue;
+    }
     const id = `${ticket.id}__${remote.date}`;
     const nextRecord = {
       id, ticketId: ticket.id, departmentId: remote.departmentId, date: remote.date,
@@ -308,6 +450,11 @@ async function applyDaily(snapshot) {
       sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
     };
     const current = await store.get("daily", id);
+    // Firestore's sharedDaily snapshot is the cross-device source of truth.
+    // Device clocks are not comparable: a Staff phone can have a timestamp in
+    // the future and cause the Owner to ignore a valid newer cloud total.
+    // Apply the latest snapshot; additive writes are protected by a Firestore
+    // transaction in publishDaily, so this must not be gated by local clocks.
     if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
         String(current.notes || "") !== nextRecord.notes ||
         String(current.updatedAt || "") !== nextRecord.updatedAt) {
@@ -323,12 +470,12 @@ async function applyDaily(snapshot) {
 function startOwner() {
   if (role === "owner") return;
   role = "owner"; started = true;
-  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Owner quantity publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
-  waitForLocalStore().then(() => publishOwnerCatalog()).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return publishOwnerCatalog(); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  waitForLocalStore().then(() => queueCatalogOperation(() => publishOwnerCatalog())).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return queueCatalogOperation(() => publishOwnerCatalog()); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
-  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
 function startStaff() {
   if (started || !auth.currentUser) return;

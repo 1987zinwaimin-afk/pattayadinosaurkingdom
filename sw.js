@@ -1,9 +1,31 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-thai-staff-language-v56";
-const APP_SHELL = ["./", "./index.html", "./style.css?v=backup-atomic-20261019a", "./app.js?v=thai-live-switch-20261019d", "./firebase-auth.js?v=separate-staff-owner-auth-20261019a", "./cloud-ticket-sync.js?v=shared-leader-password-20261019b", "./staff-accounts.js?v=staff-account-usage-20261019a", "./pwa.js?v=staff-install-menu-only-20261019c", "./manifest.webmanifest", "./staff-portal.html?v=staff-install-menu-only-20261019c", "./staff-portal.js?v=staff-account-tracking-20261019a", "./staff-manifest.webmanifest", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
+const CACHE_NAME = "pattaya-dinosaur-kingdom-safe-sync-v60";
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./style.css?v=ticket-order-original-20261019f",
+  "./language-default.js?v=english-default-migration-v2-20261019b",
+  "./app.js?v=owner-delete-order-fix-20261019a",
+  "./firebase-auth.js?v=separate-staff-owner-auth-20261019a",
+  "./cloud-ticket-sync.js?v=atomic-quantity-increment-20261019a",
+  "./staff-history.js?v=staff-login-history-20261018a",
+  "./staff-accounts.js?v=staff-account-usage-20261019a",
+  "./pwa.js?v=settings-install-20261018d",
+  "./manifest.webmanifest",
+  "./staff-portal.html",
+  "./staff-portal.js?v=staff-login-hide-language-fix-20261019b",
+  "./staff-manifest.webmanifest",
+  "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3",
+  "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-loginlogo1",
+  "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-sidebarlogo1",
+  "./style.css?v=normal-password-field-20261019c",
+  "./file_000000006da082119bbf212e4f6fad52.png?v=staff-login-logo-center-20261019b"
+];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", event => {
+  // Clear only old Cache Storage entries. Ticket data, daily quantities and
+  // reports live in IndexedDB and are deliberately never touched here.
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
 self.addEventListener("fetch", event => {
