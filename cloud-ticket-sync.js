@@ -345,9 +345,23 @@ async function publishDaily(record) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
-  const catalogTicketId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId)));
-  await setDoc(doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date)), {
-    id: dailyDocId(record.departmentId, catalogTicketId, record.date),
+  // Resolve Owner-local IDs to the exact shared catalog document Staff receives.
+  // Local ticket IDs can differ between Owner and Staff, so never assume the
+  // Owner's stored sharedCatalogId is current without checking the live catalog.
+  const localCatalogId = ticket ? slotCatalogId(ticket) : String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId);
+  let catalogTicketId = ticket?.sharedCatalogId || localCatalogId;
+  if (role === "owner" && ticket) {
+    const catalogSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+    const catalogRecords = catalogSnapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+    const exact = catalogRecords.find(remote => remote.cloudDocId === localCatalogId && remote.departmentId === record.departmentId && remote.deleted !== true);
+    const bySource = catalogRecords.find(remote => remote.departmentId === record.departmentId && remote.deleted !== true && String(remote.sourceTicketId || "") === String(ticket.id));
+    const bySlot = Number.isInteger(ticket.slotNumber) ? catalogRecords.find(remote => remote.departmentId === record.departmentId && remote.deleted !== true && Number(remote.slotNumber) === ticket.slotNumber) : null;
+    const canonical = exact || bySource || bySlot;
+    if (canonical) catalogTicketId = canonical.cloudDocId;
+  }
+  const cloudRecordId = dailyDocId(record.departmentId, catalogTicketId, record.date);
+  await setDoc(doc(db, "sharedDaily", cloudRecordId), {
+    id: cloudRecordId,
     ticketId: catalogTicketId,
     departmentId: record.departmentId,
     date: record.date,
@@ -419,7 +433,7 @@ async function applyDaily(snapshot) {
 function startOwner() {
   if (role === "owner") return;
   role = "owner"; started = true;
-  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Owner quantity publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
   waitForLocalStore().then(() => queueCatalogOperation(() => publishOwnerCatalog())).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return queueCatalogOperation(() => publishOwnerCatalog()); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
