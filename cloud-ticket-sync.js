@@ -218,8 +218,11 @@ async function applyCatalog(snapshot) {
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
       const updated = { ...local, sharedCatalogId: remote.cloudDocId, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      // A missing image payload is not an explicit image removal. It can mean
+      // the cloud record was published without an image (or an older snapshot
+      // arrived); preserve the currently visible image unless an explicit
+      // Owner image-removal signal is implemented.
       if (remote.imageData) updated.imageId = sharedImageId;
-      else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       if (JSON.stringify(local) !== JSON.stringify(updated)) { await store.put("tickets", updated); catalogChanged = true; }
     } else {
       const created = {
@@ -240,7 +243,6 @@ async function applyCatalog(snapshot) {
   // and a snapshot/reconciliation race must not make tickets disappear.
   // Explicit Owner deletions need a dedicated tombstone flow before they can
   // safely remove records from every device.
-  lastCatalogIds = nextIds;
   lastCatalogIds = nextIds;
   if (catalogChanged) {
     window.ticketdeskLocalStore.refresh?.();
