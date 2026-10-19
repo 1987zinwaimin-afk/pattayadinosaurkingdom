@@ -1,0 +1,132 @@
+/* UI/UX Phase B — visible responsive layout refresh.
+   Presentation only. Keeps existing markup, navigation handlers, data and permissions intact. */
+:root {
+  --brand-navy: #101d35;
+  --brand-gold: #c9a96e;
+  --surface: #ffffff;
+  --surface-soft: #f7f9fc;
+  --radius-card: 20px;
+}
+body { background: var(--bg); }
+.topbar {
+  min-height: 82px;
+  height: auto;
+  padding: 16px clamp(16px, 2.4vw, 34px);
+  box-shadow: 0 3px 18px rgba(17,32,57,.035);
+}
+.top-title h1 { letter-spacing: -.035em; font-weight: 750; }
+.content { padding-top: clamp(20px, 3vw, 34px); }
+.page-head { margin-bottom: 24px; }
+.page-head h2 { font-size: clamp(21px, 2vw, 27px); letter-spacing: -.025em; font-weight: 750; }
+.page-head p { max-width: 68ch; }
+.stat-card, .department-card, .panel, .ticket-card, .report-card {
+  border-radius: var(--radius-card);
+  border-color: #e7ebf2;
+  box-shadow: 0 5px 20px rgba(24,39,66,.045);
+}
+.stat-card { padding: 21px; }
+.stat-top { font-size: 13px; font-weight: 600; }
+.stat-icon { width: 42px; height: 42px; border-radius: 14px; }
+.stat-number { font-size: clamp(27px, 3vw, 34px); letter-spacing: -.04em; }
+.department-card { padding: 21px; }
+.dept-title { font-size: 16px; line-height: 1.4; }
+.dept-count { font-size: 29px; letter-spacing: -.04em; }
+.btn { min-height: 42px; border-radius: 11px; padding: 10px 15px; }
+.btn-primary { box-shadow: 0 3px 8px rgba(16,29,53,.12); }
+.btn-gold { background: linear-gradient(135deg, #d7bb80, #c9a96e); }
+.field input, .field select, .field textarea, .search-input, .date-input {
+  min-height: 44px;
+  border-radius: 11px;
+}
+.panel { padding: clamp(16px, 2.2vw, 24px); }
+.table-wrap { border-radius: 12px; }
+th { letter-spacing: .025em; }
+.sidebar { box-shadow: 8px 0 26px rgba(8,19,39,.08); }
+.nav-item { min-height: 46px; border-radius: 13px; }
+.nav-item.active { background: #293c5a; }
+.ticket-card { overflow: hidden; }
+.ticket-image-wrap { background: linear-gradient(145deg, #f6f8fb, #edf1f7); }
+.empty-state { border-radius: 16px; padding: 42px 20px; }
+
+/* Small-screen app shell: replace the slide-out drawer with a persistent bottom bar.
+   Existing nav links and click handlers are reused, not recreated. */
+@media (max-width: 760px) {
+  .mobile-menu { display: none !important; }
+  .sidebar {
+    transform: none !important;
+    left: 0; right: 0; top: auto; bottom: 0;
+    width: 100% !important; height: auto;
+    max-height: calc(92px + env(safe-area-inset-bottom));
+    padding: 7px 7px calc(7px + env(safe-area-inset-bottom));
+    background: rgba(16,29,53,.98);
+    border: 0;
+    border-top: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -8px 28px rgba(12,24,45,.2);
+    overflow: hidden;
+  }
+  .sidebar .brand, .sidebar .sidebar-foot, .sidebar .nav-group { display: none !important; }
+  .sidebar nav {
+    display: flex !important;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 3px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sidebar nav::-webkit-scrollbar { display: none; }
+  .sidebar .nav-item {
+    flex: 0 0 76px;
+    min-width: 76px;
+    min-height: 60px;
+    margin: 0;
+    padding: 7px 4px;
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    border-radius: 12px;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: normal;
+    color: #dce5f3;
+  }
+  .sidebar .nav-item .nav-icon { width: auto; font-size: 19px; line-height: 1; }
+  .sidebar .nav-item.active { box-shadow: inset 0 2px #d7bb80; background: #293c5a; color: #fff; }
+  .sidebar-backdrop { display: none !important; }
+  .main { margin-left: 0 !important; width: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; }
+  .topbar { min-height: 72px; padding: 12px 14px; }
+  .top-title h1 { font-size: 19px; }
+  .content { padding: 17px 13px 24px; }
+  .page-head { display: block; }
+  .page-head .actions { margin-top: 14px; }
+  .stats-grid { gap: 10px; }
+  .stat-card { padding: 14px; border-radius: 17px; }
+  .stat-top { gap: 8px; align-items: flex-start; font-size: 11px; }
+  .stat-icon { width: 34px; height: 34px; border-radius: 11px; font-size: 16px; }
+  .stat-number { margin-top: 10px; font-size: 25px; }
+  .stat-sub { font-size: 10px; }
+  .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
+  .department-card { padding: 16px; }
+  .panel { margin-bottom: 13px; }
+  .footer { padding-bottom: 8px; }
+  .ticket-grid { gap: 10px; }
+}
+@media (max-width: 380px) {
+  .sidebar .nav-item { flex-basis: 70px; min-width: 70px; }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .stat-card { padding: 11px; }
+  .stat-top { font-size: 10px; }
+}
+@media (min-width: 761px) {
+  .sidebar { width: 258px; padding: 27px 17px; }
+  .main { margin-left: 258px; }
+  .content { padding-left: clamp(24px, 3vw, 42px); padding-right: clamp(24px, 3vw, 42px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
