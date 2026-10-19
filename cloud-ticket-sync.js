@@ -136,12 +136,16 @@ async function publishOwnerCatalog() {
     const id = slotCatalogId(ticket);
     if (!String(ticket.name || "").trim()) continue;
     desired.add(id);
-    const imageData = await imageFor(ticket);
-    if (imageData && imageData.length > 760000) {
-      console.warn("Ticket image is too large to sync safely; preserving any existing cloud record:", ticket.name);
-      continue;
-    }
+    let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
+    const previousRecord = existingById.get(id);
+    // Keep syncing text/inventory edits even if a newly selected image is too
+    // large for a safe Firestore document. Retain the last valid cloud image.
+    if (imageData && imageData.length > 760000) {
+      console.warn("Ticket image exceeds the safe Firestore document budget; syncing other fields and retaining the previous cloud image:", ticket.name);
+      imageData = previousRecord?.imageData || null;
+      syncStatus(`Ticket updated, but its new image is too large to sync: ${String(ticket.name || "ticket").slice(0, 100)}`, true);
+    }
     const nextRecord = {
       catalogId: id,
       sourceTicketId: String(ticket.id),
@@ -152,7 +156,6 @@ async function publishOwnerCatalog() {
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData
     };
-    const previousRecord = existingById.get(id);
     const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
     const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
     if (!unchanged) {
