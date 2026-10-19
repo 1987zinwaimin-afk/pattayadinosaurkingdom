@@ -268,11 +268,9 @@ async function applyCatalog(snapshot) {
       catalogChanged = true;
     }
   }
-  // Never delete local ticket records merely because a cloud snapshot does not
-  // contain their IDs. Owner and Staff can have older/different catalog states,
-  // and a snapshot/reconciliation race must not make tickets disappear.
-  // Explicit Owner deletions need a dedicated tombstone flow before they can
-  // safely remove records from every device.
+  // Missing IDs are not deletion signals: only the explicit Owner tombstone
+  // handled above may remove a matching local ticket. This avoids transient
+  // snapshot gaps deleting records while still allowing intentional deletes.
   lastCatalogIds = nextIds;
   if (catalogChanged) {
     window.ticketdeskLocalStore.refresh?.();
