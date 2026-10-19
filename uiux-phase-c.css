@@ -140,3 +140,25 @@ th { background: #f3f6fb; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* UI/UX Phase D — finish login/check-in consistency and phone navigation fit. */
+body:has(#checkinForm) {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 12% 10%, rgba(22,119,238,.22), transparent 38%), radial-gradient(ellipse at 90% 90%, rgba(7,155,104,.12), transparent 34%), linear-gradient(145deg, #0b1b34, #17385b 52%, #10213d);
+  color: var(--ui-ink);
+}
+body:has(#checkinForm) main { width: min(100% - 28px, 500px) !important; max-width: 500px !important; margin: clamp(18px, 6vh, 56px) auto !important; padding: 0 !important; }
+body:has(#checkinForm) .panel { padding: clamp(22px, 5vw, 36px) !important; border: 1px solid rgba(255,255,255,.82); border-radius: 27px; background: rgba(255,255,255,.98); box-shadow: 0 28px 80px rgba(0,10,30,.3); }
+body:has(#checkinForm) #title { margin-bottom: 8px; color: var(--ui-ink); font-size: clamp(25px, 5vw, 31px); font-weight: 800; letter-spacing: -.035em; }
+body:has(#checkinForm) #desc { margin: 0 0 22px; color: var(--ui-muted); line-height: 1.6; text-align: center; }
+body:has(#checkinForm) #checkinForm { gap: 15px; }
+body:has(#checkinForm) #checkinForm label { display: block; margin-bottom: 7px; color: #34435b; font-size: 12px; font-weight: 750; }
+body:has(#checkinForm) #checkinForm input, body:has(#checkinForm) #checkinForm select { min-height: 49px; width: 100%; border: 1px solid #dbe3ef; border-radius: 13px; padding: 12px 14px; background: #f9fbff; color: var(--ui-ink); }
+body:has(#checkinForm) #submitBtn { min-height: 50px; width: 100%; border-radius: 13px; background: linear-gradient(110deg, #1479f5, #1553bd); box-shadow: 0 8px 18px rgba(22,94,190,.2); }
+body:has(#checkinForm) .help-text { color: #758197; font-size: 12px; line-height: 1.5; text-align: center; }
+@media (max-width: 760px) {
+  .sidebar .nav-item { flex-basis: 72px; min-width: 72px; padding-left: 2px; padding-right: 2px; font-size: 9px; line-height: 1.15; scroll-snap-align: start; }
+  .sidebar .nav-item .nav-icon { font-size: 18px; }
+  .sidebar nav { scroll-snap-type: x proximity; }
+  body:has(#checkinForm) main { width: min(100% - 24px, 500px) !important; margin: 20px auto !important; }
+}
