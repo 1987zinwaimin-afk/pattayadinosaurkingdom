@@ -117,8 +117,10 @@ async function imageFor(ticket) {
   return image?.data || null;
 }
 async function publishOwnerCatalog() {
-  if (!["owner", "staff"].includes(role) || !auth.currentUser) return;
-  if (role === "owner" && auth.currentUser.email?.toLowerCase() !== OWNER) return;
+  // The shared catalog is an Owner-owned source of truth. Staff may update
+  // daily quantities, but must never publish or overwrite ticket definitions.
+  if (role !== "owner" || !auth.currentUser) return;
+  if (auth.currentUser.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
@@ -134,12 +136,16 @@ async function publishOwnerCatalog() {
     const id = slotCatalogId(ticket);
     if (!String(ticket.name || "").trim()) continue;
     desired.add(id);
-    const imageData = await imageFor(ticket);
-    if (imageData && imageData.length > 760000) {
-      console.warn("Ticket image is too large to sync safely; preserving any existing cloud record:", ticket.name);
-      continue;
-    }
+    let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
+    const previousRecord = existingById.get(id);
+    // Keep syncing text/inventory edits even if a newly selected image is too
+    // large for a safe Firestore document. Retain the last valid cloud image.
+    if (imageData && imageData.length > 760000) {
+      console.warn("Ticket image exceeds the safe Firestore document budget; syncing other fields and retaining the previous cloud image:", ticket.name);
+      imageData = previousRecord?.imageData || null;
+      syncStatus(`Ticket updated, but its new image is too large to sync: ${String(ticket.name || "ticket").slice(0, 100)}`, true);
+    }
     const nextRecord = {
       catalogId: id,
       sourceTicketId: String(ticket.id),
@@ -150,7 +156,6 @@ async function publishOwnerCatalog() {
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData
     };
-    const previousRecord = existingById.get(id);
     const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
     const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
     if (!unchanged) {
@@ -164,11 +169,13 @@ async function publishOwnerCatalog() {
   syncStatus(`Cloud sync complete: ${desired.size} named ticket types published.`);
 }
 function queueCatalogPublish(event) {
-  if (!["owner", "staff"].includes(role)) {
+  if (!role) {
     // Ticket edits can happen while Firebase is still restoring the Owner session.
     pendingCatalogPublish = true;
     return;
   }
+  // Staff sessions are not allowed to publish or delete the Owner catalog.
+  if (role !== "owner" || auth.currentUser?.email?.toLowerCase() !== OWNER) return;
   const detail = event?.detail || {};
   if (detail.action === "delete") {
     const ticket = detail.ticket;
@@ -247,6 +254,15 @@ function dailyDocId(departmentId, ticketId, date) {
 }
 async function publishDaily(record) {
   if (!auth.currentUser || !record || !DEPTS.includes(record.departmentId) || !record.date || !record.ticketId) return;
+  // Client-side guard: ordinary Staff may publish only their assigned department.
+  // Firestore Rules must enforce the same boundary server-side before this is secure.
+  if (role === "staff") {
+    const session = staffSession();
+    if (!session || (session.department !== "leader" && session.department !== record.departmentId)) {
+      syncStatus("Daily sync blocked: this Staff account cannot update that department.", true);
+      return;
+    }
+  }
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
@@ -276,6 +292,12 @@ async function applyDaily(snapshot) {
   for (const d of snapshot.docs) {
     const remote = d.data();
     if (!DEPTS.includes(remote.departmentId) || !remote.date || !remote.ticketId) continue;
+    // Keep regular Staff local records scoped to their own department; Leaders
+    // and Owner can reconcile all departments.
+    if (role === "staff") {
+      const session = staffSession();
+      if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
+    }
     const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
     if (!ticket) continue;
     const id = `${ticket.id}__${remote.date}`;
