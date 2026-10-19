@@ -298,8 +298,25 @@ async function applyDaily(snapshot) {
       const session = staffSession();
       if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
     }
-    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
-    if (!ticket) continue;
+    // Resolve within the same department first. A ticket ID or slot number
+    // from another department must never receive this quantity record.
+    let ticket = tickets.find(t =>
+      t.departmentId === remote.departmentId &&
+      (t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId)
+    );
+    // Older local records may not have sharedCatalogId populated yet.
+    if (!ticket) {
+      const slotMatch = String(remote.ticketId).match(/^(sales|entry|playing|event)__slot__(\\d+)$/);
+      if (slotMatch && slotMatch[1] === remote.departmentId) {
+        ticket = tickets.find(t => t.departmentId === remote.departmentId && Number(t.slotNumber) === Number(slotMatch[2]));
+      }
+    }
+    if (!ticket) {
+      console.warn("[Ticket Desk Cloud Sync] Shared daily record has no matching local ticket:", {
+        departmentId: remote.departmentId, ticketId: remote.ticketId, date: remote.date
+      });
+      continue;
+    }
     const id = `${ticket.id}__${remote.date}`;
     const nextRecord = {
       id, ticketId: ticket.id, departmentId: remote.departmentId, date: remote.date,
@@ -328,7 +345,7 @@ function startOwner() {
   syncStatus("Owner connected; preparing ticket catalog sync…");
   waitForLocalStore().then(() => publishOwnerCatalog()).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return publishOwnerCatalog(); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
-  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
 function startStaff() {
   if (started || !auth.currentUser) return;
