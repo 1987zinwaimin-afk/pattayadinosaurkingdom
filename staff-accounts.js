@@ -6,30 +6,45 @@ const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(config),auth=ge
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const departments={sales:"Sales Department",entry:"Entry Department",playing:"Playing Department",event:"Event Department",leader:"Leader — All Departments"};
-function when(value){let d=value?.toDate?.()||(value?new Date(value):null);if(!d||Number.isNaN(d.getTime()))return "No login recorded";return new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"}).format(d)+" ICT";}
-function recent(value){const d=value?.toDate?.()||(value?new Date(value):null);return !!d&&!Number.isNaN(d.getTime())&&(Date.now()-d.getTime()<=15*60*1000);}
+function dateValue(value){const d=value?.toDate?.()||(value?new Date(value):null);return d&&!Number.isNaN(d.getTime())?d:null;}
+function when(value){const d=dateValue(value);return d?new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"}).format(d)+" ICT":"No login recorded";}
+function recent(value){const d=dateValue(value);return !!d&&Date.now()-d.getTime()<=15*60*1000;}
 async function loadStaffAccounts(){
  const root=$("staffAccountList");if(!root)return;
  const user=auth.currentUser;
  if(!user||user.email?.toLowerCase()!=="1987zinwaimin@gmail.com"){root.innerHTML='<p class="notice">Please log in as the Owner to manage staff accounts.</p>';return;}
- root.innerHTML='<p class="muted">Loading staff accounts…</p>';
+ root.innerHTML='<p class="muted">Loading staff accounts and login activity…</p>';
+ let accounts=new Map(),directoryAvailable=true,historyAvailable=true;
  try{
   const snap=await getDocs(query(collection(db,"staffDirectory"),orderBy("lastSeenAt","desc")));
-  if(snap.empty){root.innerHTML='<p class="muted">No registered staff accounts yet. Staff who check in after this feature is enabled will appear here. Existing login history is kept separately.</p>';return;}
-  root.innerHTML=snap.docs.map(d=>{
-   const a=d.data(),used=recent(a.lastSeenAt||a.lastSeenClientTime),last=when(a.lastSeenAt||a.lastSeenClientTime);
-   return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last used: '+esc(last)+' · Logins: '+esc(a.loginCount||1)+'</small><br><span class="tag '+(used?'':'unsaved')+'">'+(used?'Recently used (15 min)':'Not recently used')+'</span></div><div>'+(!used?'<button type="button" class="btn btn-secondary" data-remove-staff="'+esc(d.id)+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Remove account</button>':'<span class="muted">In use recently</span>')+'</div></article>';
-  }).join("");
- }catch(e){
-  console.error("Could not load staff directory",e);
-  root.innerHTML='<p class="notice">Could not load staff accounts. Publish the updated firestore.rules in Firebase Console, then refresh this list. ('+esc(e.code||e.message||"error")+')</p>';
+  snap.docs.forEach(d=>accounts.set(d.id,{uid:d.id,...d.data(),loginCount:Number(d.data().loginCount)||0}));
+ }catch(e){directoryAvailable=false;console.warn("Staff directory not available; trying login history",e);}
+ try{
+  const events=await getDocs(collection(db,"staffLoginEvents"));
+  events.docs.forEach(docSnap=>{
+   const e=docSnap.data(),uid=String(e.uid||"");if(!uid)return;
+   const current=accounts.get(uid)||{uid,name:e.name||"Unnamed staff",department:e.department||"",loginCount:0,lastSeenAt:null,lastSeenClientTime:null,legacy:true};
+   current.loginCount=Math.max(current.loginCount,0)+1;
+   const candidate=e.createdAt||e.clientTime;
+   const candDate=dateValue(candidate),existingDate=dateValue(current.lastSeenAt||current.lastSeenClientTime);
+   if(candDate&&(!existingDate||candDate>existingDate)){current.lastSeenAt=e.createdAt||null;current.lastSeenClientTime=e.clientTime||null;current.name=e.name||current.name;current.department=e.department||current.department;}
+   accounts.set(uid,current);
+  });
+ }catch(e){historyAvailable=false;console.warn("Could not read staff login history",e);}
+ if(!accounts.size){
+  root.innerHTML='<p class="muted">No staff accounts or check-ins found yet.</p>'+(directoryAvailable&&historyAvailable?'':'<p class="notice">Publish the updated firestore.rules in Firebase Console to enable account management.</p>');return;
  }
+ const rows=[...accounts.values()].sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
+ root.innerHTML=rows.map(a=>{
+  const last=a.lastSeenAt||a.lastSeenClientTime,used=recent(last);
+  return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last used: '+esc(when(last))+' · Recorded logins: '+esc(a.loginCount||0)+'</small><br><span class="tag '+(used?'':'unsaved')+'">'+(used?'Recently used (last 15 min)':'Not recently used')+'</span></div><div>'+(used?'<span class="muted">In use recently</span>':'<button type="button" class="btn btn-secondary" data-remove-staff="'+esc(a.uid)+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Remove account</button>')+'</div></article>';
+ }).join("")+'<p class="help-text">“Recently used” means a check-in in the last 15 minutes; it does not guarantee the person is online now. Removing an account keeps old login history and revokes this Firebase device UID. Names are self-reported and not identity-verified.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Publish the updated firestore.rules in Firebase Console and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
 document.addEventListener("click",async e=>{
  const btn=e.target.closest("[data-remove-staff]");if(!btn)return;
  const uid=btn.dataset.removeStaff,name=btn.dataset.staffName||"this staff account",dept=departments[btn.dataset.staffDept]||btn.dataset.staffDept||"Unknown department";
- if(!confirm("Remove access for "+name+" — "+dept+"? The old login history will be kept. This device account will be blocked from checking in again."))return;
+ if(!confirm("Remove access for "+name+" — "+dept+"? Old login history will be kept. This Firebase device UID will be blocked from checking in again."))return;
  btn.disabled=true;btn.textContent="Removing…";
  try{
   const batch=writeBatch(db);
