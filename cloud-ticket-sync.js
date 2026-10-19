@@ -139,6 +139,21 @@ async function publishOwnerCatalog() {
     let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
     const previousRecord = existingById.get(id);
+    // A stale Owner-local ticket must not overwrite its own cloud tombstone.
+    // This prevents the deleted ticket from reappearing when an older local
+    // snapshot is published during a focus refresh or a racing listener.
+    // A genuinely re-added/edited ticket can be published once its local
+    // updatedAt is newer than the explicit deletion timestamp.
+    if (previousRecord?.deleted === true) {
+      const localUpdatedAt = Date.parse(ticket.updatedAt || ticket.createdAt || "");
+      const deletedAt = Date.parse(previousRecord.deletedAt || previousRecord.updatedAt || "");
+      if (!Number.isFinite(localUpdatedAt) || !Number.isFinite(deletedAt) || localUpdatedAt <= deletedAt) {
+        console.warn("[Ticket Desk Cloud Sync] Skipping stale local ticket because cloud tombstone is newer:", {
+          departmentId: ticket.departmentId, ticketId: ticket.id, catalogId: id
+        });
+        continue;
+      }
+    }
     // Keep syncing text/inventory edits even if a newly selected image is too
     // large for a safe Firestore document. Retain the last valid cloud image.
     if (imageData && imageData.length > 760000) {
