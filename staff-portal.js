@@ -40,7 +40,7 @@ form.addEventListener("submit",async e=>{
    await setDoc(directoryRef,{uid,name:session.name,department,createdAt:previousData.createdAt||serverTimestamp(),lastSeenAt:serverTimestamp(),lastSeenClientTime:session.loggedInAt,loginCount:(Number(previousData.loginCount)||0)+1,source:"staff-share-link"},{merge:true});
   }catch(directoryError){console.warn("Staff account activity could not be synced. Publish the updated firestore.rules to enable account tracking and removal.",directoryError);}
   localStorage.setItem("ticketdesk-staff-session-v1",JSON.stringify(session));
-  try{await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid,createdAt:serverTimestamp(),clientTime:session.loggedInAt,source:"staff-share-link"});}catch(historyError){console.warn("Staff login history could not be recorded",historyError);}
+  try{await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid,createdAt:serverTimestamp(),clientTime:session.loggedInAt,source:"staff-share-link",eventType:"check-in"});}catch(historyError){console.warn("Staff login history could not be recorded",historyError);}
   status.textContent="Login successful. Opening your department…";status.hidden=false;status.className="notice";window.location.href="./index.html";
  }catch(err){
   console.error("Staff login failed",err);
