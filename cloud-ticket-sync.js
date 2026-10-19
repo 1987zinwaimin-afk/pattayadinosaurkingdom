@@ -298,8 +298,25 @@ async function applyDaily(snapshot) {
       const session = staffSession();
       if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
     }
-    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
-    if (!ticket) continue;
+    // Resolve the shared catalog ID first. Older local records may not yet
+    // have sharedCatalogId attached, so also match the stable department/slot
+    // identity before falling back to the original ticket ID.
+    let ticket = tickets.find(t =>
+      t.departmentId === remote.departmentId &&
+      (t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId)
+    );
+    if (!ticket) {
+      const slotMatch = String(remote.ticketId).match(/^(sales|entry|playing|event)__slot__(\\d+)$/);
+      if (slotMatch && slotMatch[1] === remote.departmentId) {
+        ticket = tickets.find(t => t.departmentId === remote.departmentId && Number(t.slotNumber) === Number(slotMatch[2]));
+      }
+    }
+    if (!ticket) {
+      console.warn("[Ticket Desk Cloud Sync] Shared daily record has no matching local ticket:", {
+        departmentId: remote.departmentId, ticketId: remote.ticketId, date: remote.date
+      });
+      continue;
+    }
     const id = `${ticket.id}__${remote.date}`;
     const nextRecord = {
       id, ticketId: ticket.id, departmentId: remote.departmentId, date: remote.date,
