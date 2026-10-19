@@ -243,3 +243,44 @@ body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="ph
 .quantity-digit{display:flex;align-items:center;justify-content:center;width:clamp(44px,13vw,64px);height:clamp(54px,11vw,76px);border:1px solid var(--line);border-radius:13px;background:#f4f6fa;color:var(--navy);font-size:clamp(24px,6vw,34px);font-weight:800;box-shadow:inset 0 1px 2px rgba(17,32,57,.05);font-variant-numeric:tabular-nums;}
 body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-color:#3b475a;}
 @media(max-width:420px){.quantity-digit-row{gap:6px}.quantity-digit{width:42px;height:54px;border-radius:10px}}
+
+
+/* Full-screen Pattaya Dinosaur Kingdom login scene; login controls remain functional. */
+body.auth-pending .auth-gate{
+ min-height:100vh;min-height:100dvh;padding:22px 16px;
+ background-color:#087ac5;
+ background-image:linear-gradient(180deg,rgba(0,65,120,.03),rgba(0,31,66,.12)),url("./dinosaur-kingdom-hero.svg");
+ background-position:center;background-size:cover;background-repeat:no-repeat;
+}
+body.auth-pending .auth-card{
+ width:min(100%,490px);padding:clamp(20px,4.5vw,34px);
+ border:1px solid rgba(255,255,255,.8);border-radius:27px;
+ background:rgba(255,255,255,.9);color:#10294f;
+ box-shadow:0 22px 64px rgba(5,32,65,.28);
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+body.auth-pending .auth-brand{width:clamp(108px,27vw,150px);height:clamp(108px,27vw,150px);object-fit:cover;border-radius:26px;margin:0 auto 12px;box-shadow:0 10px 26px rgba(12,43,78,.2)}
+body.auth-pending .auth-kicker{color:#27558a;text-align:center}
+body.auth-pending #ownerAuthTitle{color:#10294f;text-align:center;font-size:clamp(28px,6vw,38px);margin-bottom:8px}
+body.auth-pending .auth-description{color:#52657a;text-align:center;line-height:1.55}
+body.auth-pending .auth-card label{color:#162d4d;font-weight:700}
+body.auth-pending .auth-card input{min-height:54px;border:1px solid #d3dce8;border-radius:14px;background:rgba(255,255,255,.97);font-size:16px}
+body.auth-pending .auth-card input:focus{outline:none;border-color:#2b69ad;box-shadow:0 0 0 4px rgba(43,105,173,.14)}
+body.auth-pending .auth-card .btn{min-height:54px;border-radius:14px;font-size:16px}
+body.auth-pending .auth-card .btn-primary{background:linear-gradient(135deg,#0e376e,#1455a0);box-shadow:0 8px 18px rgba(12,57,112,.22)}
+body.auth-pending .auth-status{text-align:center;line-height:1.5;color:#52657a}
+body.staff-login-wallpaper{min-height:100vh;min-height:100dvh;background:#087ac5 url("./dinosaur-kingdom-hero.svg") center/cover no-repeat!important;background-attachment:scroll!important}
+body.staff-login-wallpaper>main{max-width:560px!important;margin:0 auto!important;padding:18px 14px 28px!important;min-height:100vh;min-height:100dvh;display:flex;align-items:center}
+body.staff-login-wallpaper>main>.panel{width:100%;padding:clamp(20px,5vw,34px)!important;border:1px solid rgba(255,255,255,.8)!important;border-radius:27px!important;background:rgba(255,255,255,.91)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 22px 64px rgba(5,32,65,.28)!important}
+body.staff-login-wallpaper #title{font-size:clamp(26px,6vw,36px);color:#10294f}
+body.staff-login-wallpaper #desc{text-align:center;line-height:1.55;margin-bottom:22px}
+body.staff-login-wallpaper .field label{font-size:14px;color:#162d4d}
+body.staff-login-wallpaper .field input,body.staff-login-wallpaper .field select{min-height:52px;border-radius:13px;font-size:16px}
+body.staff-login-wallpaper #submitBtn{min-height:54px;border-radius:14px;background:linear-gradient(135deg,#0e376e,#1455a0);font-size:16px;box-shadow:0 8px 18px rgba(12,57,112,.22)}
+body.staff-login-wallpaper .help-text{background:rgba(255,255,255,.72);padding:10px;border-radius:10px}
+@media(max-width:560px){
+ body.auth-pending .auth-gate{padding:14px 10px;background-position:center}
+ body.auth-pending .auth-card{border-radius:22px;padding:20px 16px}
+ body.staff-login-wallpaper>main{padding:12px 10px}
+ body.staff-login-wallpaper>main>.panel{border-radius:22px!important;padding:20px 16px!important}
+}
