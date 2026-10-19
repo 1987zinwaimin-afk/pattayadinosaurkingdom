@@ -40,4 +40,6 @@ document.addEventListener("click",async e=>{
  }catch(err){console.error("Could not remove staff account",err);btn.disabled=false;btn.textContent="Remove account";alert("Could not remove account. Publish the updated firestore.rules in Firebase Console and try again. ("+(err.code||err.message||"error")+")");}
 });
 document.addEventListener("DOMContentLoaded",()=>{if($("staffAccountList"))loadStaffAccounts();});
+if(document.readyState!=="loading"&&$("staffAccountList"))loadStaffAccounts();
+document.addEventListener("click",e=>{if(e.target.closest("#refreshStaffAccounts"))loadStaffAccounts();});
 document.addEventListener("ticketdesk-staff-accounts-refresh",loadStaffAccounts);
