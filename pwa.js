@@ -21,6 +21,10 @@
     const button = event.target.closest("#installAppButton");
     if (!button) return;
     updateInstallButton(button);
+    // Staff installs must begin at a staff-specific manifest/start URL, not the Owner app root.
+    let staffMode = false;
+    try { const s = JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1") || "null"); staffMode = !!(s && typeof s.name === "string" && ["sales","entry","playing","event","leader"].includes(s.department)); } catch {}
+    if (staffMode && !isInstalled()) { window.location.href = "./staff-install.html"; return; }
     if (isInstalled()) {
       alert("Ticket Desk is already installed on your home screen.");
       return;
