@@ -141,8 +141,15 @@ async function publishOwnerCatalog() {
   const existingSnapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
   const existingById = new Map(existingSnapshot.docs.map(d => [d.id, d.data()]));
   for (const ticket of tickets) {
-    const id = ticket.sharedCatalogId || slotCatalogId(ticket);
     if (!String(ticket.name || "").trim()) continue;
+    // Keep an existing cloud identity when available, including legacy slot IDs.
+    // Otherwise use a stable ticket-ID identity, never the mutable display slot.
+    const legacyMatch = existingSnapshot.docs.find(d => {
+      const data = d.data();
+      return data.departmentId === ticket.departmentId &&
+        String(data.sourceTicketId || "") === String(ticket.id);
+    });
+    const id = ticket.sharedCatalogId || legacyMatch?.id || `${ticket.departmentId}__ticket__${ticket.id}`;
     desired.add(id);
     let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
