@@ -449,10 +449,17 @@ async function recoverCloudSync() {
   if (recoverySyncRunning || !auth.currentUser || !started || (role !== "owner" && role !== "staff")) return;
   recoverySyncRunning = true;
   try {
-    const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
-    await applyCatalog(catalog);
-    const daily = await getDocsFromServer(collection(db, "sharedDaily"));
-    await applyDaily(daily);
+    // Owner is the source of truth for ticket definitions. Never apply a remote
+    // catalog snapshot back onto Owner's local ticket list during recovery.
+    if (role === "owner") {
+      await publishOwnerCatalog();
+      await publishExistingOwnerDaily();
+    } else {
+      const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
+      await applyCatalog(catalog);
+      const daily = await getDocsFromServer(collection(db, "sharedDaily"));
+      await applyDaily(daily);
+    }
     syncStatus("Cloud sync connected; latest tickets and quantities checked.");
   } catch (err) {
     syncStatus("Cloud reconnect sync failed: " + (err?.code || err?.message || "network error"), true);
@@ -473,7 +480,7 @@ document.addEventListener("visibilitychange", () => {
 });
 // Backgrounded iPhone browsers may suspend listeners. Reconcile once per minute
 // while the page is visible; realtime snapshots remain the primary update path.
-setInterval(() => { if (document.visibilityState === "visible") recoverCloudSync(); }, 60000);
+setInterval(() => { if (document.visibilityState === "visible") recoverCloudSync(); }, 30000);
 
 function startOwner() {
   if (role === "owner") return;
