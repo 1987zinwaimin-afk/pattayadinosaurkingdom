@@ -46,3 +46,25 @@ body.staff-login-wallpaper #submitBtn{min-height:44px}
  .auth-card{width:min(100%,400px);padding:24px 24px 22px}
  .auth-brand{width:76px;height:76px}
 }
+
+
+/* Final phone viewport fit: reduce the Owner login card's total height */
+@media(max-width:600px){
+  body.auth-pending .auth-gate{align-items:center!important;justify-content:center!important;padding:8px!important;overflow:auto!important}
+  body.auth-pending .auth-card{width:min(100%,350px)!important;max-width:350px!important;padding:13px 13px 12px!important;border-radius:18px!important}
+  body.auth-pending .auth-brand{width:52px!important;height:52px!important;margin:0 auto 5px!important}
+  body.auth-pending .auth-kicker{font-size:8px!important;letter-spacing:1px!important;margin:0 0 3px!important}
+  body.auth-pending .auth-card h1{font-size:20px!important;line-height:1.15!important;margin:0 0 5px!important}
+  body.auth-pending .auth-description{font-size:11px!important;line-height:1.3!important;margin:0 0 8px!important}
+  body.auth-pending .auth-card #ownerLoginForm .field{margin-bottom:7px!important;gap:3px!important}
+  body.auth-pending .auth-card #ownerLoginForm label{font-size:11px!important}
+  body.auth-pending .auth-card #ownerLoginForm input{min-height:38px!important;padding:7px 9px!important;font-size:14px!important}
+  body.auth-pending .auth-card #ownerLoginButton{min-height:40px!important;padding:8px 10px!important;font-size:14px!important}
+  body.auth-pending .auth-card>a.btn{min-height:38px!important;margin-top:7px!important;padding:7px 9px!important;font-size:12px!important;line-height:1.25!important}
+  body.auth-pending .auth-status{font-size:10px!important;line-height:1.25!important;margin:7px 0 0!important}
+}
+@media(max-width:390px){
+  body.auth-pending .auth-card{width:min(100%,330px)!important;padding:11px 11px 10px!important}
+  body.auth-pending .auth-brand{width:46px!important;height:46px!important}
+  body.auth-pending .auth-description{font-size:10px!important}
+}
