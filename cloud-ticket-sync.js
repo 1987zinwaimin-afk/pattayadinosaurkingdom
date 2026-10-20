@@ -515,12 +515,21 @@ async function recoverCloudSync() {
     syncStatus("Cloud reconnect sync failed: " + (err?.code || err?.message || "network error"), true);
   } finally { recoverySyncRunning = false; }
 }
-// Firestore realtime listeners reconnect automatically. Recover only when a device returns active/online;
-// do not poll full collections on a timer across every open device.
-window.addEventListener("online", () => recoverCloudSync());
-window.addEventListener("focus", () => recoverCloudSync());
+// Firestore realtime listeners reconnect automatically. Mobile browsers can emit online,
+// focus and visibilitychange together; debounce these signals so one resume causes at most
+// one recovery read, avoiding repeated full-collection reads and resource-exhausted errors.
+let recoveryDebounceTimer = null;
+function scheduleCloudRecovery() {
+  clearTimeout(recoveryDebounceTimer);
+  recoveryDebounceTimer = setTimeout(() => {
+    recoveryDebounceTimer = null;
+    recoverCloudSync();
+  }, 1200);
+}
+window.addEventListener("online", scheduleCloudRecovery);
+window.addEventListener("focus", scheduleCloudRecovery);
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") recoverCloudSync();
+  if (document.visibilityState === "visible") scheduleCloudRecovery();
 });
 
 function startOwner() {
