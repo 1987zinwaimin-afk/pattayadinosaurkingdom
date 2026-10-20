@@ -15,7 +15,7 @@ async function sendStaffHeartbeat(){
  let session;try{session=JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1")||"null")}catch{return;}
  if(!session||!session.uid||!session.name||!session.department)return;
  staffHeartbeatBusy=true;
- try{await updateDoc(doc(db,"staffDirectory",session.uid),{lastSeenAt:serverTimestamp(),lastSeenClientTime:new Date().toISOString()});}
+ try{await updateDoc(doc(db,"staffDirectory",session.uid),{lastSeenAt:serverTimestamp(),lastSeenClientTime:new Date().toISOString(),isOnline:true,presenceUpdatedAt:serverTimestamp()});}
  catch(e){if(e.code!=="permission-denied"&&e.code!=="not-found")console.warn("Staff heartbeat failed",e);}
  finally{staffHeartbeatBusy=false;}
 }
@@ -57,26 +57,28 @@ async function loadStaffAccounts(){
   const key=staffGroupKey(a.name);
   const g=grouped.get(key)||{...a,uids:[],loginTotal:0,eventTotal:0,lastSeenAt:null,lastSeenClientTime:null};
   g.uids.push(a.uid);g.loginTotal+=Number(a.loginCount)||0;g.eventTotal+=Number(a.eventCount)||0;
-  const at=dateValue(a.lastSeenAt||a.lastSeenClientTime),prev=dateValue(g.lastSeenAt||g.lastSeenClientTime);
-  if(at&&(!prev||at>prev)){g.lastSeenAt=a.lastSeenAt||null;g.lastSeenClientTime=a.lastSeenClientTime||null;g.uid=a.uid;g.department=a.department;g.name=a.name;}
+  const at=dateValue(a.presenceUpdatedAt||a.lastSeenAt||a.lastSeenClientTime),prev=dateValue(g.presenceUpdatedAt||g.lastSeenAt||g.lastSeenClientTime);
+  if(at&&(!prev||at>prev)){g.lastSeenAt=a.lastSeenAt||null;g.lastSeenClientTime=a.lastSeenClientTime||null;g.presenceUpdatedAt=a.presenceUpdatedAt||null;g.isOnline=typeof a.isOnline==="boolean"?a.isOnline:undefined;g.uid=a.uid;g.department=a.department;g.name=a.name;}
   grouped.set(key,g);
  }
  const dismissed=readDismissed();
  const rows=[...grouped.values()].filter(a=>{const key=staffGroupKey(a.name),saved=dismissed[key];return !saved||latestStamp(a)>saved;}).sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
  root.innerHTML=rows.map(a=>{
-  const last=a.lastSeenAt||a.lastSeenClientTime,used=recent(last);
+  const last=a.lastSeenAt||a.lastSeenClientTime,used=typeof a.isOnline==="boolean"?(a.isOnline&&recent(a.presenceUpdatedAt||last)):recent(last);
   return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last login: '+esc(when(last))+' · Login count: '+esc(Math.max(a.loginTotal,a.eventTotal))+'</small><br><span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(used?'#16a34a':'#dc2626')+'"></span><span>'+(used?'Active recently':'Logged out / inactive')+'</span></span></div><div><button type="button" class="btn btn-secondary" data-dismiss-staff-notice="1" data-notice-key="'+esc(staffGroupKey(a.name,a.department))+'" data-notice-stamp="'+esc(latestStamp(a))+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Delete name</button></div></article>';
  }).join('')+'<p class="help-text">Names are grouped by name and department. Green means a heartbeat was received in the last 45 seconds; red means logged out or no recent activity. Active Staff pages send a heartbeat every 30 seconds. Delete name only dismisses this Owner-side notice on this browser; it does not delete or disable the Staff account.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
 // Explicit Staff logout: mark the directory entry inactive immediately, then clear this browser session.
+let staffLogoutInProgress=false;
 window.ticketdeskStaffLogout=async function(){
+ if(staffLogoutInProgress)return;staffLogoutInProgress=true;
  let session;try{session=JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1")||"null")}catch{}
+ try{localStorage.removeItem("ticketdesk-staff-session-v1")}catch{}
  if(session?.uid){
-  try{await updateDoc(doc(db,"staffDirectory",session.uid),{lastSeenAt:Timestamp.fromDate(new Date(0)),lastSeenClientTime:new Date(0).toISOString()});}
+  try{await updateDoc(doc(db,"staffDirectory",session.uid),{isOnline:false,presenceUpdatedAt:serverTimestamp()});}
   catch(e){console.warn("Could not mark Staff logout in directory",e);}
  }
- try{localStorage.removeItem("ticketdesk-staff-session-v1")}catch{}
  window.location.href="./staff-portal.html";
 };
 
