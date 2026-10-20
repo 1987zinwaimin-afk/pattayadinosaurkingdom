@@ -284,3 +284,10 @@ body.staff-login-wallpaper .help-text{background:rgba(255,255,255,.72);padding:1
  body.staff-login-wallpaper>main{padding:12px 10px}
  body.staff-login-wallpaper>main>.panel{border-radius:22px!important;padding:20px 16px!important}
 }
+
+
+/* Staff login wallpaper fix: scope styles to the existing check-in page without changing its form or scripts. */
+body:has(#checkinForm){min-height:100vh;min-height:100dvh;background:#123b35 url("./dinosaur-kingdom-hero.svg?v=login-wallpaper-fix-20261020") center center/cover fixed no-repeat!important}
+body:has(#checkinForm)>main{max-width:560px!important;width:100%;margin:0 auto!important;padding:clamp(12px,3vh,28px) 14px!important;min-height:100vh;min-height:100dvh;display:flex;align-items:center}
+body:has(#checkinForm)>main>.panel{width:100%;padding:clamp(20px,5vw,34px)!important;border:1px solid rgba(255,255,255,.82)!important;border-radius:27px!important;background:rgba(255,255,255,.91)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 22px 64px rgba(5,32,65,.32)!important}
+@media(max-width:560px){body:has(#checkinForm)>main{padding:12px 10px!important}body:has(#checkinForm)>main>.panel{border-radius:22px!important;padding:20px 16px!important}}
