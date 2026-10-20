@@ -80,3 +80,6 @@ document.addEventListener("DOMContentLoaded",()=>{if($("staffAccountList"))loadS
 if(document.readyState!=="loading"&&$("staffAccountList"))loadStaffAccounts();
 document.addEventListener("click",e=>{if(e.target.closest("#refreshStaffAccounts"))loadStaffAccounts();});
 document.addEventListener("ticketdesk-staff-accounts-refresh",loadStaffAccounts);
+// Keep the Owner Staff Database fresh while it is open, so a new check-in appears without manual refresh.
+let staffAccountsRefreshBusy=false;
+setInterval(async()=>{if(document.visibilityState!=="visible"||!$("staffAccountList")||staffAccountsRefreshBusy)return;staffAccountsRefreshBusy=true;try{await loadStaffAccounts()}finally{staffAccountsRefreshBusy=false}},5000);
