@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, getDocsFromServer, onSnapshot, setDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, getDocsFromServer, onSnapshot, setDoc, deleteDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -525,10 +525,20 @@ function startOwner() {
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => { lastCatalogIds = new Set(snapshot.docs.map(d => d.id)); syncStatus("Owner catalog snapshot observed; local Owner tickets remain authoritative."); }, err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
+let staffHeartbeatTimer = null;
+async function updateStaffHeartbeat(){
+ const session=staffSession(),user=auth.currentUser;
+ if(role!=="staff"||!session||!user?.isAnonymous||document.visibilityState!=="visible")return;
+ try{await setDoc(doc(db,"staffDirectory",session.uid),{uid:session.uid,name:session.name,department:session.department,lastSeenAt:serverTimestamp(),lastSeenClientTime:new Date().toISOString(),loginCount:1,source:"staff-share-link"},{merge:true});}
+ catch(err){console.warn("Staff live status heartbeat failed:",err?.code||err?.message||err);}
+}
 function startStaff() {
   if (started || !auth.currentUser) return;
   role = "staff"; started = true;
   syncStatus("Staff connected; loading shared ticket catalog…");
+  updateStaffHeartbeat();
+  staffHeartbeatTimer = setInterval(updateStaffHeartbeat, 45000);
+  document.addEventListener("visibilitychange", updateStaffHeartbeat);
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
