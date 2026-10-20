@@ -352,3 +352,59 @@ img,video,canvas,svg{max-width:100%}
   .nav-item:hover,.btn:hover{filter:none}
   .btn:active,.nav-item:active{transform:scale(.99)}
 }
+
+
+/* Login wallpaper: shared Owner and Staff background, using the supplied scenic image */
+.auth-gate,
+body.staff-login-wallpaper{
+  background-image:linear-gradient(rgba(5,18,38,.30),rgba(5,18,38,.42)),url("./file_00000000980482119751e46afe4d8511.png?v=login-wallpaper-20261020c");
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-attachment:scroll;
+}
+body.staff-login-wallpaper{
+  min-height:100vh;
+  min-height:100svh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+}
+body.staff-login-wallpaper main{width:100%;max-width:420px!important;margin:0 auto!important;padding:12px!important}
+body.staff-login-wallpaper main>.panel{
+  width:100%;
+  padding:18px 16px;
+  border-radius:20px;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:0 16px 48px rgba(3,16,36,.25);
+  backdrop-filter:blur(8px);
+}
+body.auth-pending .auth-gate{
+  min-height:100vh;
+  min-height:100svh;
+  padding:12px;
+  background-color:#071a35;
+  background-image:linear-gradient(rgba(5,18,38,.22),rgba(5,18,38,.38)),url("./file_00000000980482119751e46afe4d8511.png?v=login-wallpaper-20261020c");
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-attachment:scroll;
+}
+@media(max-width:600px){
+  .auth-gate{padding:10px!important}
+  .auth-card{width:min(100%,370px);padding:17px 15px;border-radius:20px}
+  .auth-brand{width:62px;height:62px;margin-bottom:8px}
+  .auth-kicker{font-size:9px;letter-spacing:1.3px;margin-bottom:5px}
+  .auth-card h1{font-size:22px;margin-bottom:7px}
+  .auth-description{font-size:12px;line-height:1.45;margin-bottom:12px}
+  .auth-card #ownerLoginForm .field{margin-bottom:9px!important}
+  .auth-card #ownerLoginForm input{min-height:42px;padding:9px 10px}
+  .auth-card #ownerLoginButton{min-height:44px!important}
+  body.staff-login-wallpaper main>.panel{max-width:370px;padding:16px 14px}
+  body.staff-login-wallpaper main>.panel img{width:64px!important;height:64px!important}
+  body.staff-login-wallpaper main>.panel h2{font-size:clamp(15px,4.2vw,19px)!important}
+  body.staff-login-wallpaper .form-grid{gap:9px}
+  body.staff-login-wallpaper .field input,body.staff-login-wallpaper .field select{min-height:42px}
+}
