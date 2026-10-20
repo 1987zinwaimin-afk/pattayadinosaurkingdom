@@ -59,7 +59,7 @@ function queueLatestSnapshot(kind, snapshot) {
           // New Staff devices may receive daily snapshots before the catalog is
           // applied. Re-read shared quantities after ticket IDs/images exist.
           if (role === "staff" && auth.currentUser) {
-            const dailySnapshot = await getDocs(collection(db, "sharedDaily"));
+            const dailySnapshot = await getDocsFromServer(collection(db, "sharedDaily"));
             await applyDaily(dailySnapshot);
           }
           syncStatus("Shared catalog loaded: " + latest.size + " ticket types.");
@@ -138,7 +138,7 @@ async function publishOwnerCatalog() {
     return;
   }
   const desired = new Set();
-  const existingSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+  const existingSnapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
   const existingById = new Map(existingSnapshot.docs.map(d => [d.id, d.data()]));
   for (const ticket of tickets) {
     const id = ticket.sharedCatalogId || slotCatalogId(ticket);
@@ -192,7 +192,7 @@ function queueCatalogPublish(event) {
     // later catalog snapshot cannot resurrect the deleted Owner ticket.
     (async () => {
       if (!ticket) return;
-      const snapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+      const snapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
       const exactName = String(ticket.name || "").trim().toLocaleLowerCase();
       const idsToDelete = new Set([ticket.sharedCatalogId, slotCatalogId(ticket)].filter(Boolean));
       for (const item of snapshot.docs) {
@@ -336,7 +336,7 @@ async function publishExistingOwnerDaily() {
   if (role !== "owner" || !auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
-  const results = await Promise.all([store.all("daily"), getDocs(collection(db, "sharedDaily")), store.all("tickets")]);
+  const results = await Promise.all([store.all("daily"), getDocsFromServer(collection(db, "sharedDaily")), store.all("tickets")]);
   const records = results[0], cloudSnapshot = results[1], tickets = results[2];
   const cloudById = new Map(cloudSnapshot.docs.map(d => [d.id, d.data()]));
   const ticketById = new Map(tickets.map(t => [t.id, t]));
@@ -400,7 +400,7 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
   // so those quantities are not silently skipped until a later Firestore event.
   if (missingTicketMatch && retryAfterCatalog && role === "staff" && auth.currentUser) {
     try {
-      const catalog = await getDocs(collection(db, "sharedTicketCatalog"));
+      const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
       await applyCatalog(catalog);
       await applyDaily(snapshot, false);
     } catch (err) {
@@ -415,9 +415,9 @@ async function recoverCloudSync() {
   if (recoverySyncRunning || !auth.currentUser || !started || (role !== "owner" && role !== "staff")) return;
   recoverySyncRunning = true;
   try {
-    const catalog = await getDocs(collection(db, "sharedTicketCatalog"));
+    const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
     await applyCatalog(catalog);
-    const daily = await getDocs(collection(db, "sharedDaily"));
+    const daily = await getDocsFromServer(collection(db, "sharedDaily"));
     await applyDaily(daily);
     syncStatus("Cloud sync connected; latest tickets and quantities checked.");
   } catch (err) {
@@ -455,8 +455,8 @@ function startStaff() {
   if (started || !auth.currentUser) return;
   role = "staff"; started = true;
   syncStatus("Staff connected; loading shared ticket catalog…");
-  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
-  stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopDaily = onSnapshot(collection(db, "sharedDaily"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
