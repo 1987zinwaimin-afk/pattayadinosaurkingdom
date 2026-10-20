@@ -1,0 +1,48 @@
+/* Compact phone-first login presentation. Auth behavior and fields remain unchanged. */
+.auth-gate{
+  min-height:100vh;min-height:100svh;
+  padding:clamp(10px,3vh,24px) 14px;
+  background-position:center center;
+  background-attachment:scroll;
+}
+.auth-card{
+  width:min(100%,380px);
+  padding:20px 18px 18px;
+  border-radius:22px;
+  box-shadow:0 16px 48px rgba(0,0,0,.22);
+}
+.auth-brand{width:68px;height:68px;border-radius:16px;margin:0 auto 10px}
+.auth-kicker{font-size:9px;letter-spacing:1.5px;margin:0 0 5px}
+.auth-card h1{font-size:clamp(21px,6vw,25px);margin:0 0 8px}
+.auth-description{font-size:12px;line-height:1.45;margin:0 0 14px}
+.auth-card .field{gap:5px}
+.auth-card .field label{font-size:12px}
+.auth-card .field input{min-height:44px;padding:10px 11px;border-radius:10px}
+.auth-card #ownerLoginForm .field{margin-bottom:10px!important}
+.auth-card #ownerLoginButton{min-height:44px!important;border-radius:10px;margin-top:1px}
+.auth-card>a.btn{min-height:42px!important;margin-top:10px;padding:10px 12px;font-size:13px;border-radius:10px}
+.auth-status{font-size:11px;line-height:1.4;margin:10px 0 0}
+body.staff-login-wallpaper main{padding:12px;align-items:center}
+body.staff-login-wallpaper main>.panel{width:min(100%,380px);padding:18px 16px;border-radius:20px}
+body.staff-login-wallpaper main>.panel>div:first-child{gap:6px!important;margin:0 0 14px!important}
+body.staff-login-wallpaper main>.panel img{width:66px!important;height:66px!important;border-radius:15px!important}
+body.staff-login-wallpaper main>.panel h2{font-size:clamp(15px,4.4vw,20px)!important;letter-spacing:.1px!important}
+body.staff-login-wallpaper main>.panel h1{font-size:22px;margin:0 0 8px}
+body.staff-login-wallpaper main>.panel p{font-size:12px;line-height:1.45;margin:0 0 12px}
+body.staff-login-wallpaper .form-grid{gap:10px}
+body.staff-login-wallpaper .field{gap:5px}
+body.staff-login-wallpaper .field input,body.staff-login-wallpaper .field select{min-height:43px;padding:9px 10px}
+body.staff-login-wallpaper #submitBtn{min-height:44px}
+@media(max-height:740px) and (max-width:600px){
+ .auth-gate{align-items:flex-start;overflow:auto}
+ .auth-card{margin:auto;padding:15px 16px}
+ .auth-brand{width:56px;height:56px;margin-bottom:7px}
+ .auth-description{margin-bottom:10px}
+ .auth-card #ownerLoginForm .field{margin-bottom:8px!important}
+ body.staff-login-wallpaper main{align-items:flex-start}
+ body.staff-login-wallpaper main>.panel{margin:auto}
+}
+@media(min-width:700px){
+ .auth-card{width:min(100%,400px);padding:24px 24px 22px}
+ .auth-brand{width:76px;height:76px}
+}
