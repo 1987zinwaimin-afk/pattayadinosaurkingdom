@@ -527,9 +527,10 @@ document.addEventListener("visibilitychange", () => {
   if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner visibility publish failed: " + (err?.code || err?.message || "unknown error"), true));
   recoverCloudSync();
 });
-// Backgrounded iPhone browsers may suspend listeners. Reconcile once per minute
-// while the page is visible; realtime snapshots remain the primary update path.
-setInterval(() => { if (document.visibilityState === "visible") recoverCloudSync(); }, 30000);
+// Realtime Firestore listeners are the primary sync path. Avoid frequent full-collection reads
+// across every open device, which can exhaust the Firestore read quota. Focus/online events recover immediately.
+// Low-frequency fallback handles browsers that suspend listeners.
+setInterval(() => { if (document.visibilityState === "visible") recoverCloudSync(); }, 300000);
 
 function startOwner() {
   if (role === "owner") return;
