@@ -80,6 +80,31 @@ document.addEventListener("DOMContentLoaded",()=>{if($("staffAccountList"))loadS
 if(document.readyState!=="loading"&&$("staffAccountList"))loadStaffAccounts();
 document.addEventListener("click",e=>{if(e.target.closest("#refreshStaffAccounts"))loadStaffAccounts();});
 document.addEventListener("ticketdesk-staff-accounts-refresh",loadStaffAccounts);
+// Owner-wide live login notifications: works even when Owner is on Dashboard or another page.
+let knownLoginEventIds=null,loginNoticeBusy=false;
+async function pollOwnerStaffLogins(){
+ if(loginNoticeBusy||document.visibilityState!=="visible")return;
+ const user=auth.currentUser;if(!user||user.email?.toLowerCase()!=="1987zinwaimin@gmail.com")return;
+ loginNoticeBusy=true;
+ try{
+  const snap=await getDocs(collection(db,"staffLoginEvents"));
+  const events=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(dateValue(b.createdAt||b.clientTime)?.getTime()||0)-(dateValue(a.createdAt||a.clientTime)?.getTime()||0));
+  if(knownLoginEventIds===null){knownLoginEventIds=new Set(events.map(e=>e.id));return;}
+  const fresh=events.filter(e=>!knownLoginEventIds.has(e.id));
+  for(const e of events)knownLoginEventIds.add(e.id);
+  for(const e of fresh.reverse()){
+   const region=$("toastRegion")||$(".toast-region");if(!region)continue;
+   const toast=document.createElement("div");toast.className="toast success";
+   toast.textContent="Staff Login: "+String(e.name||"Staff")+" — "+(departments[e.department]||e.department||"Unknown department");
+   region.appendChild(toast);setTimeout(()=>toast.remove(),7000);
+  }
+  if(fresh.length&&$("staffAccountList"))await loadStaffAccounts();
+ }catch(err){console.warn("Owner staff login notification could not refresh",err)}
+ finally{loginNoticeBusy=false;}
+}
+setInterval(pollOwnerStaffLogins,5000);
+window.addEventListener("focus",pollOwnerStaffLogins);
+
 // Keep the Owner Staff Database fresh while it is open, so a new check-in appears without manual refresh.
 let staffAccountsRefreshBusy=false;
 setInterval(async()=>{if(document.visibilityState!=="visible"||!$("staffAccountList")||staffAccountsRefreshBusy)return;staffAccountsRefreshBusy=true;try{await loadStaffAccounts()}finally{staffAccountsRefreshBusy=false}},5000);
