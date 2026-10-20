@@ -187,11 +187,25 @@ function queueCatalogPublish(event) {
   const detail = event?.detail || {};
   if (detail.action === "delete") {
     const ticket = detail.ticket;
-    const cloudId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : null);
-    if (cloudId) {
-      deleteDoc(doc(db, "sharedTicketCatalog", cloudId))
-        .catch(err => syncStatus(`Ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
-    }
+    // Legacy catalog records may use an older document ID than sharedCatalogId
+    // or the current slot-based ID. Remove every exact identity/name match so a
+    // later catalog snapshot cannot resurrect the deleted Owner ticket.
+    (async () => {
+      if (!ticket) return;
+      const snapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+      const exactName = String(ticket.name || "").trim().toLocaleLowerCase();
+      const idsToDelete = new Set([ticket.sharedCatalogId, slotCatalogId(ticket)].filter(Boolean));
+      for (const item of snapshot.docs) {
+        const data = item.data();
+        const sameSource = data.departmentId === ticket.departmentId &&
+          String(data.sourceTicketId || "") === String(ticket.id);
+        const sameName = exactName && data.departmentId === ticket.departmentId &&
+          String(data.name || "").trim().toLocaleLowerCase() === exactName;
+        if (idsToDelete.has(item.id) || sameSource || sameName) idsToDelete.add(item.id);
+      }
+      await Promise.all([...idsToDelete].map(id => deleteDoc(doc(db, "sharedTicketCatalog", id))));
+      syncStatus("Deleted ticket and matching legacy cloud catalog records.");
+    })().catch(err => syncStatus(`Ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
     return;
   }
   // A saved ticket must reach Firestore immediately; do not rely on the next page load.
