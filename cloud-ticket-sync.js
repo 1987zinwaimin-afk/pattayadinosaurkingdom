@@ -176,6 +176,19 @@ async function publishOwnerCatalog() {
     if (!unchanged) {
       await setDoc(catalogRef, { ...nextRecord, updatedAt: new Date().toISOString() });
     }
+    // Remove only duplicate legacy documents that identify this exact Owner
+    // ticket by department + sourceTicketId. Same-name tickets with different
+    // source IDs are separate valid ticket types and are never merged.
+    const duplicateIds = existingSnapshot.docs
+      .filter(d => d.id !== id &&
+        d.data().departmentId === ticket.departmentId &&
+        String(d.data().sourceTicketId || "") === String(ticket.id))
+      .map(d => d.id);
+    if (duplicateIds.length) {
+      await Promise.all(duplicateIds.map(duplicateId =>
+        deleteDoc(doc(db, "sharedTicketCatalog", duplicateId))
+      ));
+    }
   }
   // Never infer deletions from a device's local list: Owner and Staff may have
   // different local snapshots. Explicit deletes are sent by the delete handler.
