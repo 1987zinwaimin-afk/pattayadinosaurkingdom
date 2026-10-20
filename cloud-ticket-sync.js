@@ -219,12 +219,18 @@ function queueCatalogPublish(event) {
       // Only delete a known catalog identity or records whose sourceTicketId
       // matches this exact ticket. Never delete a slot-derived ID blindly: the
       // same slot may now belong to a different ticket after reordering.
-      const idsToDelete = new Set([ticket.sharedCatalogId].filter(Boolean));
+      const idsToDelete = new Set();
       for (const item of snapshot.docs) {
         const data = item.data();
         const sameSource = data.departmentId === ticket.departmentId &&
           String(data.sourceTicketId || "") === String(ticket.id);
-        if (idsToDelete.has(item.id) || sameSource) idsToDelete.add(item.id);
+        // A legacy sharedCatalogId may be a reused slot ID. Trust it only when
+        // the stored source identity agrees; never delete a newer ticket that
+        // happens to occupy the same old catalog document ID.
+        const exactKnownIdentity = item.id === ticket.sharedCatalogId &&
+          data.departmentId === ticket.departmentId &&
+          (!data.sourceTicketId || String(data.sourceTicketId) === String(ticket.id));
+        if (sameSource || exactKnownIdentity) idsToDelete.add(item.id);
       }
       await Promise.all([...idsToDelete].map(id => deleteDoc(doc(db, "sharedTicketCatalog", id))));
       syncStatus("Deleted ticket and matching legacy cloud catalog records.");
