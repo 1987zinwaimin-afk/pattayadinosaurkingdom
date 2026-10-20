@@ -267,26 +267,56 @@ async function publishDaily(record) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
-  const catalogTicketId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId)));
-  const ref = doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date));
-  const proposedTime = Date.parse(record.updatedAt || "") || Date.now();
-  const payload = {
-    id: dailyDocId(record.departmentId, catalogTicketId, record.date),
+  // Resolve Owner-local IDs to the exact shared catalog document Staff receives.
+  // Local ticket IDs can differ between Owner and Staff, so never assume the
+  // Owner's stored sharedCatalogId is current without checking the live catalog.
+  const localCatalogId = ticket ? slotCatalogId(ticket) : String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId);
+  let catalogTicketId = ticket?.sharedCatalogId || localCatalogId;
+  if (role === "owner" && ticket) {
+    const catalogSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
+    const catalogRecords = catalogSnapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+    const exact = catalogRecords.find(remote => remote.cloudDocId === localCatalogId && remote.departmentId === record.departmentId && remote.deleted !== true);
+    const bySource = catalogRecords.find(remote => remote.departmentId === record.departmentId && remote.deleted !== true && String(remote.sourceTicketId || "") === String(ticket.id));
+    const bySlot = Number.isInteger(ticket.slotNumber) ? catalogRecords.find(remote => remote.departmentId === record.departmentId && remote.deleted !== true && Number(remote.slotNumber) === ticket.slotNumber) : null;
+    const canonical = exact || bySource || bySlot;
+    if (canonical) catalogTicketId = canonical.cloudDocId;
+  }
+  const cloudRecordId = dailyDocId(record.departmentId, catalogTicketId, record.date);
+  const cloudRef = doc(db, "sharedDaily", cloudRecordId);
+  const sourceName = staffSession()?.name || auth.currentUser.email || "Owner";
+  // Quantity entry is an increment, not a replacement of this device's local
+  // total. A Firestore transaction combines additions from Owner and Staff
+  // without allowing one device's stale total to overwrite the other's work.
+  if (Number.isFinite(Number(record.delta)) && Number(record.delta) > 0) {
+    const delta = Math.max(0, Math.trunc(Number(record.delta)));
+    await runTransaction(db, async transaction => {
+      const currentSnap = await transaction.get(cloudRef);
+      const current = currentSnap.exists() ? currentSnap.data() : {};
+      transaction.set(cloudRef, {
+        id: cloudRecordId,
+        ticketId: catalogTicketId,
+        departmentId: record.departmentId,
+        date: record.date,
+        quantity: Math.max(0, Math.trunc(Number(current.quantity) || 0)) + delta,
+        notes: String(record.notes || current.notes || "").slice(0, 1000),
+        updatedAt: new Date().toISOString(),
+        sourceUid: auth.currentUser.uid,
+        sourceName
+      });
+    });
+    return;
+  }
+  // Resets/clears intentionally replace the shared value with zero.
+  await setDoc(cloudRef, {
+    id: cloudRecordId,
     ticketId: catalogTicketId,
     departmentId: record.departmentId,
     date: record.date,
     quantity: Math.max(0, Math.trunc(Number(record.quantity) || 0)),
     notes: String(record.notes || "").slice(0, 1000),
-    updatedAt: new Date(proposedTime).toISOString(),
+    updatedAt: record.updatedAt || new Date().toISOString(),
     sourceUid: auth.currentUser.uid,
-    sourceName: staffSession()?.name || auth.currentUser.email || "Owner"
-  };
-  // Serialize concurrent writes so a delayed older device cannot replace a newer quantity.
-  await runTransaction(db, async transaction => {
-    const current = await transaction.get(ref);
-    const currentTime = Date.parse(current.data()?.updatedAt || "") || 0;
-    if (current.exists() && currentTime > proposedTime) return;
-    transaction.set(ref, payload);
+    sourceName
   });
 }
 async function publishReset(detail) {
@@ -333,7 +363,10 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
       const session = staffSession();
       if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
     }
-    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || t.id === `shared-${remote.ticketId}` || slotCatalogId(t) === remote.ticketId);
+    const ticket = tickets.find(t =>
+      t.departmentId === remote.departmentId &&
+      (t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || t.id === `shared-${remote.ticketId}` || slotCatalogId(t) === remote.ticketId)
+    );
     if (!ticket) { missingTicketMatch = true; continue; }
     const id = `${ticket.id}__${remote.date}`;
     const nextRecord = {
@@ -343,11 +376,9 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
       sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
     };
     const current = await store.get("daily", id);
-    const currentTime = Date.parse(current?.updatedAt || "") || 0;
-    const remoteTime = Date.parse(nextRecord.updatedAt || "") || 0;
-    // Firestore can deliver queued snapshots after a newer write. Never let
-    // an older snapshot roll back the visible quantity on this device.
-    if (current && currentTime > remoteTime) continue;
+    // The Firestore snapshot is the shared source of truth. Client clock
+    // timestamps are not comparable across phones, so do not reject a cloud
+    // quantity just because this device's local clock appears newer.
     if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
         String(current.notes || "") !== nextRecord.notes ||
         String(current.updatedAt || "") !== nextRecord.updatedAt) {
