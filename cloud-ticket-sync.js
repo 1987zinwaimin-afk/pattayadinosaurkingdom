@@ -222,21 +222,27 @@ async function applyCatalog(snapshot) {
   const remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
   let catalogChanged = false;
   const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
+  // One local ticket must map to at most one cloud record. Without this guard,
+  // two cloud tickets with the same name (or legacy source IDs) can both match
+  // the same local ticket, leaving Staff with one fewer ticket type than Owner.
+  const claimedLocalIds = new Set();
+  const isUnclaimed = ticket => ticket && !claimedLocalIds.has(String(ticket.id));
   for (const remote of remoteRecords) {
     if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
-    let local = localTickets.find(t => t.sharedCatalogId === remote.cloudDocId);
+    let local = localTickets.find(t => isUnclaimed(t) && t.sharedCatalogId === remote.cloudDocId);
     // Prefer stable identity and exact name matches. Slot numbers are only a
     // fallback for an empty local starter slot; matching a named ticket by
     // position can overwrite it when old data contains duplicate slot numbers.
     if (!local && remote.sourceTicketId) {
-      local = localTickets.find(t => t.departmentId === remote.departmentId && t.id === String(remote.sourceTicketId));
+      local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && String(t.id) === String(remote.sourceTicketId));
     }
     if (!local) {
-      local = localTickets.find(t => t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
+      local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
     }
     if (!local && Number.isInteger(remote.slotNumber)) {
-      local = localTickets.find(t => t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber && !String(t.name || "").trim());
+      local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber && !String(t.name || "").trim());
     }
+    if (local) claimedLocalIds.add(String(local.id));
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
