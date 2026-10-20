@@ -1,9 +1,9 @@
 {
-  "id": "./staff-portal.html",
+  "id": "./staff-app.html",
   "name": "Pattaya Dinosaur Kingdom Staff Check-in",
   "short_name": "PDK Staff",
   "description": "Staff check-in portal for Pattaya Dinosaur Kingdom.",
-  "start_url": "./staff-portal.html",
+  "start_url": "./staff-app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
