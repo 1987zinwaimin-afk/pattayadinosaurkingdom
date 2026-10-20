@@ -13,6 +13,7 @@ const OWNER_EMAIL = "1987zinwaimin@gmail.com".toLowerCase();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const gate = document.getElementById("ownerAuthGate");
+const isStaffEntry = new URLSearchParams(window.location.search).get("staff") === "1";
 const statusEl = document.getElementById("authStatus");
 const loginBtn = document.getElementById("ownerLoginButton");
 const emailInput = document.getElementById("ownerEmail");
@@ -35,8 +36,8 @@ function staffSession() {
     return value && typeof value.name === "string" && ["sales", "entry", "playing", "event", "leader"].includes(value.department) ? value : null;
   } catch { return null; }
 }
-// If a Staff session exists, hide the Owner gate synchronously instead of waiting for Firebase restore.
-if (staffSession()) { gate.hidden = true; document.body.classList.remove("auth-pending"); }
+// Never flash the Owner gate when this navigation originated from a Staff login.
+if (staffSession() || isStaffEntry) { gate.hidden = true; document.body.classList.remove("auth-pending"); }
 function showGate() {
   document.body.classList.add("auth-pending");
   gate.hidden = false;
@@ -62,6 +63,10 @@ function allowOwner(user) {
 // Keep Owner signed in on this device/browser after the first successful login.
 setPersistence(auth, browserLocalPersistence).then(() => {
   onAuthStateChanged(auth, user => {
+    if (isStaffEntry && !staffSession()) {
+      window.location.replace("./staff-portal.html");
+      return;
+    }
     if (staffSession()) {
       // A saved Staff session must never inherit an Owner Firebase session.
       if (user && !user.isAnonymous) { signOut(auth).then(() => allowStaff()).catch(error => { console.error("Could not separate Staff and Owner sessions:", error); allowStaff(); }); return; }
