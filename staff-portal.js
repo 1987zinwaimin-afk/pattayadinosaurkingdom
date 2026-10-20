@@ -69,7 +69,7 @@ form.addEventListener("submit",async e=>{
   }catch(directoryError){console.warn("Staff account activity could not be synced. Publish the updated firestore.rules to enable account tracking and removal.",directoryError);}
   localStorage.setItem("ticketdesk-staff-session-v1",JSON.stringify(session));
   try{await addDoc(collection(db,"staffLoginEvents"),{name:session.name,department,uid,createdAt:serverTimestamp(),clientTime:session.loggedInAt,source:"staff-share-link"});}catch(historyError){console.warn("Staff login history could not be recorded",historyError);}
-  status.textContent="Login successful. Opening your department…";status.hidden=false;status.className="notice";window.location.href="./index.html";
+  status.textContent="Login successful. Opening your department…";status.hidden=false;status.className="notice";window.location.href="./index.html?staff=1";
  }catch(err){
   console.error("Staff login failed",err);
   status.textContent=(department==="leader"&&err?.code==="permission-denied"?"Firebase permission denied: publish the current firestore.rules rules to the live Firestore database, then try again.":(department==="leader"&&err?.code==="unavailable"?"Cannot reach Firebase. Check internet and try again.":(department==="leader"?w.approvalWrong:w.err)))+" ("+(err?.code||"network")+")";status.hidden=false;status.className="notice error";
