@@ -1,11 +1,39 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getAuth, signInAnonymously, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const config={apiKey:"AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",authDomain:"pattaya-dinosaur-ticket-desk.firebaseapp.com",projectId:"pattaya-dinosaur-ticket-desk",storageBucket:"pattaya-dinosaur-ticket-desk.firebasestorage.app",messagingSenderId:"386652978138",appId:"1:386652978138:web:32c00c1b19caacda7cdee3"};
 // Use the same default Firebase Auth instance as the workspace so Staff login
 // cannot leave an Owner Google/email session active behind the Staff screen.
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(config),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id),form=$("checkinForm"),status=$("status"),button=$("submitBtn");
+function getSavedStaffSession(){
+ try{
+  const value=JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1")||"null");
+  return value&&typeof value.name==="string"&&value.name.trim()&&["sales","entry","playing","event","leader"].includes(value.department)&&typeof value.uid==="string"&&value.uid?value:null;
+ }catch{return null;}
+}
+async function restoreStaffSession(){
+ const saved=getSavedStaffSession();
+ if(!saved)return;
+ form.hidden=true;
+ status.hidden=false;status.className="notice";status.textContent="Checking saved Staff session…";
+ try{
+  await setPersistence(auth,browserLocalPersistence);
+  if(auth.currentUser&&!auth.currentUser.isAnonymous)await signOut(auth);
+  if(!auth.currentUser)await signInAnonymously(auth);
+  const revoked=await getDoc(doc(db,"revokedStaff",saved.uid));
+  if(revoked.exists()){
+   localStorage.removeItem("ticketdesk-staff-session-v1");
+   form.hidden=false;status.textContent="This Staff access was removed by the Owner. Please sign in again.";status.className="notice error";return;
+  }
+  window.location.replace("./index.html");
+ }catch(error){
+  console.warn("Could not verify saved Staff session; keeping sign-in available.",error);
+  form.hidden=false;status.hidden=true;
+ }
+}
+restoreStaffSession();
+
 const words={en:{title:"Staff Check-in",desc:"Select your name and department to record your check-in.",name:"Your name",dept:"Department",lang:"Language",approval:"Owner approval password",approvalEnter:"Please enter the Owner approval password.",approvalRequired:"",approvalWrong:"Owner approval password is incorrect.",submit:"Check in",busy:"Recording…",ok:"Check-in recorded. You can now return to the Owner.",err:"Could not record check-in. Please try again or contact the Owner."},th:{title:"ลงชื่อเข้าทำงาน",desc:"เลือกชื่อและแผนกเพื่อบันทึกการเข้าทำงาน",name:"ชื่อของคุณ",dept:"แผนก",lang:"ภาษา",approval:"รหัสอนุมัติจาก Owner",approvalEnter:"กรุณากรอกรหัสผ่านอนุมัติจาก Owner",approvalRequired:"กรุณาตั้งรหัสอนุมัติใน Owner Settings ก่อน",approvalWrong:"รหัสอนุมัติจาก Owner ไม่ถูกต้อง",submit:"ลงชื่อเข้า",busy:"กำลังบันทึก…",ok:"บันทึกการเข้าทำงานแล้ว",err:"บันทึกไม่สำเร็จ โปรดลองอีกครั้งหรือติดต่อเจ้าของ"}};
 function translate(){const w=words[$("language").value];$("title").textContent=w.title;$("desc").textContent=w.desc;$("nameLabel").textContent=w.name;$("deptLabel").textContent=w.dept;$("langLabel").textContent=w.lang;$("leaderApprovalLabel").textContent=w.approval;$("leaderApprovalField").hidden=$("department").value!=="leader";button.textContent=w.submit;document.documentElement.lang=$("language").value;try{localStorage.setItem("ticketdesk-language",$("language").value)}catch{}}
 $("department").addEventListener("change",()=>{ $("leaderApprovalField").hidden=$("department").value!=="leader"; if($("department").value!=="leader")$("leaderApprovalPassword").value=""; });
