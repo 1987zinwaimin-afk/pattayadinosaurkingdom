@@ -357,7 +357,7 @@ img,video,canvas,svg{max-width:100%}
 /* Login wallpaper: shared Owner and Staff background, using the supplied scenic image */
 .auth-gate,
 body.staff-login-wallpaper{
-  background-image:linear-gradient(rgba(5,18,38,.30),rgba(5,18,38,.42)),url("./1792253599844.jpg?v=login-wallpaper-20261020b");
+  background-image:linear-gradient(rgba(5,18,38,.30),rgba(5,18,38,.42)),url("./file_00000000980482119751e46afe4d8511.png?v=login-wallpaper-20261020c");
   background-size:cover;
   background-position:center center;
   background-repeat:no-repeat;
@@ -386,7 +386,7 @@ body.auth-pending .auth-gate{
   min-height:100svh;
   padding:12px;
   background-color:#071a35;
-  background-image:linear-gradient(rgba(5,18,38,.22),rgba(5,18,38,.38)),url("./1792253599844.jpg?v=login-wallpaper-20261020b");
+  background-image:linear-gradient(rgba(5,18,38,.22),rgba(5,18,38,.38)),url("./file_00000000980482119751e46afe4d8511.png?v=login-wallpaper-20261020c");
   background-size:cover;
   background-position:center center;
   background-repeat:no-repeat;
