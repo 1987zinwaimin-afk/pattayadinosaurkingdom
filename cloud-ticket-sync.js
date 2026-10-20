@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, getDocsFromServer, onSnapshot, setDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -266,9 +266,14 @@ async function applyCatalog(snapshot) {
   // Never remove shared tickets based on a cached/offline catalog snapshot.
   // Firestore may first emit a cache view that is incomplete or stale; treating
   // it as authoritative makes Owner tickets flicker or disappear on Staff.
-  if (!snapshot.metadata?.fromCache) {
+  if (!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
+    // Confirm removals against a fresh server read. Listener snapshots can be
+    // transient while Owner publishes/deletes multiple catalog records; never
+    // remove a Staff ticket based on one possibly stale/intermediate view.
+    const confirmedSnapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
+    const confirmedIds = new Set(confirmedSnapshot.docs.map(d => d.id));
     for (const local of localTickets) {
-      if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
+      if (local.sharedCatalogId && !confirmedIds.has(local.sharedCatalogId)) {
         if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
         await store.del("tickets", local.id);
         catalogChanged = true;
