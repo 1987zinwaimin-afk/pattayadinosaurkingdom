@@ -529,7 +529,7 @@ let staffHeartbeatTimer = null;
 async function updateStaffHeartbeat(){
  const session=staffSession(),user=auth.currentUser;
  if(role!=="staff"||!session||!user?.isAnonymous||document.visibilityState!=="visible")return;
- try{await setDoc(doc(db,"staffDirectory",session.uid),{uid:session.uid,name:session.name,department:session.department,lastSeenAt:serverTimestamp(),lastSeenClientTime:new Date().toISOString(),loginCount:1,source:"staff-share-link"},{merge:true});}
+ try{await setDoc(doc(db,"staffDirectory",session.uid),{uid:session.uid,name:session.name,department:session.department,lastSeenAt:serverTimestamp() ,lastSeenClientTime:new Date().toISOString()},{merge:true});}
  catch(err){console.warn("Staff live status heartbeat failed:",err?.code||err?.message||err);}
 }
 function startStaff() {
