@@ -62,6 +62,11 @@ function queueLatestSnapshot(kind, snapshot) {
             const dailySnapshot = await getDocsFromServer(collection(db, "sharedDaily"));
             await applyDaily(dailySnapshot);
           }
+          // Notify the UI after every completed cloud snapshot, even when the
+          // local record comparison says no fields changed. This repairs stale
+          // in-memory views without a full page refresh.
+          window.ticketdeskLocalStore?.refresh?.();
+          document.dispatchEvent(new Event("ticketdesk-cloud-catalog-updated"));
           syncStatus("Shared catalog loaded: " + latest.size + " ticket types.");
         })
         .catch(err => syncStatus("Staff catalog load failed: " + (err?.code || err?.message || "unknown error"), true))
@@ -81,7 +86,13 @@ function queueLatestSnapshot(kind, snapshot) {
     queuedDailySnapshot = null;
     dailyApplyRunning = true;
     applyDaily(latest)
-      .then(() => syncStatus(`Shared ticket quantities updated: ${latest.size} records.`))
+      .then(() => {
+        // Keep the currently open Owner/Staff screen in sync without reloading
+        // the whole website. app.js defers rendering while a quantity is edited.
+        window.ticketdeskLocalStore?.refresh?.();
+        document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
+        syncStatus(`Shared ticket quantities updated: ${latest.size} records.`);
+      })
       .catch(err => syncStatus(`Staff quantity sync failed: ${err?.code || err?.message || "unknown error"}`, true))
       .finally(() => {
         dailyApplyRunning = false;
