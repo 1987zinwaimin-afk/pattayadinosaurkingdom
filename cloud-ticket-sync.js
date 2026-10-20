@@ -494,8 +494,19 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
 // Firestore listeners provide live updates. These safe pull checks recover from
 // temporary mobile-network/background-tab gaps without requiring a page refresh.
 let recoverySyncRunning = false;
+// Realtime listeners are the primary sync path. Limit full-collection recovery
+// reads to one attempt per five minutes per page, even when mobile browsers emit
+// repeated online/focus/visibility events. This prevents reconnect read storms.
+const RECOVERY_MIN_INTERVAL_MS = 5 * 60 * 1000;
+let lastRecoveryStartedAt = 0;
 async function recoverCloudSync() {
   if (recoverySyncRunning || !auth.currentUser || !started || (role !== "owner" && role !== "staff")) return;
+  const now = Date.now();
+  if (now - lastRecoveryStartedAt < RECOVERY_MIN_INTERVAL_MS) {
+    console.info("[Ticket Desk Cloud Sync] Recovery skipped: realtime listeners remain active; next full recovery is rate-limited.");
+    return;
+  }
+  lastRecoveryStartedAt = now;
   recoverySyncRunning = true;
   try {
     // Owner is the source of truth for ticket definitions. Never apply a remote
