@@ -294,3 +294,61 @@ body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-col
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* Cross-platform responsive refinement: Android, iOS, tablet and desktop.
+   Presentation only; no ticket, account, or Firebase data is changed. */
+:root{color-scheme:light}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:90px}
+body{min-width:320px;min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent}
+button,a,select,input,textarea,summary{touch-action:manipulation}
+button,a,[role="button"],summary{ -webkit-user-select:none; user-select:none }
+input,select,textarea{font-size:16px}
+img,video,canvas,svg{max-width:100%}
+.app-shell,.main,.content,.panel,.ticket-card,.department-card,.report-card{min-width:0}
+.ticket-name,.ticket-id,.stat-top,.dept-title,.panel-head,.notice,.help-text{overflow-wrap:anywhere}
+.sidebar{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.topbar{padding-top:max(12px,env(safe-area-inset-top))}
+.footer{padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.modal{max-height:calc(100dvh - 24px);overscroll-behavior:contain}
+#modalContent{max-height:calc(100dvh - 24px);overscroll-behavior:contain}
+@supports(height:100dvh){.app-shell,.main{min-height:100dvh}.auth-gate{min-height:100dvh}}
+@media(max-width:760px){
+  .topbar{min-height:72px;height:auto;min-height:72px;flex-wrap:nowrap}
+  .top-title{min-width:0}
+  .top-title h1,h1{overflow-wrap:anywhere}
+  .top-actions{min-width:0;flex-shrink:0}
+  .top-actions .btn{min-height:42px}
+  .top-actions select{min-height:42px}
+  .mobile-menu{min-width:42px;min-height:42px}
+  .content{padding-left:clamp(10px,3.5vw,16px);padding-right:clamp(10px,3.5vw,16px)}
+  .stats-grid,.ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ticket-card{min-width:0}
+  .ticket-image-wrap{height:clamp(92px,28vw,150px)}
+  .ticket-body{min-width:0}
+  .quantity-row{flex-wrap:wrap}
+  .qty-input{max-width:100%;min-width:0}
+  .ticket-actions{display:grid;grid-template-columns:minmax(0,1fr) auto}
+  .ticket-actions .btn{min-width:0;white-space:normal}
+  .toolbar-left,.toolbar-right{min-width:0}
+  .table-wrap{max-width:100%;overflow:auto;overscroll-behavior-x:contain}
+  .sidebar{padding-top:max(18px,env(safe-area-inset-top))}
+  .sidebar-backdrop.open{touch-action:manipulation}
+}
+@media(max-width:390px){
+  .topbar{gap:6px;padding-left:8px;padding-right:8px}
+  .top-title h1{font-size:16px;line-height:1.15}
+  .top-actions{gap:5px}
+  .top-actions .btn{padding:8px 7px;font-size:11px}
+  .top-actions select{max-width:82px;padding:7px 3px;font-size:12px}
+  .stats-grid,.ticket-grid{gap:8px}
+  .stat-card{padding:10px}
+  .ticket-body{padding:8px}
+  .ticket-name{font-size:12px}
+  .ticket-actions{gap:5px}
+  .ticket-actions .btn{font-size:10px;padding:7px 4px}
+}
+@media(hover:none){
+  .nav-item:hover,.btn:hover{filter:none}
+  .btn:active,.nav-item:active{transform:scale(.99)}
+}
