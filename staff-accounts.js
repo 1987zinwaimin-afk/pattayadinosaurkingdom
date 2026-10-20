@@ -31,7 +31,7 @@ async function loadStaffAccounts(){
  const root=$("staffAccountList");if(!root)return;
  const user=auth.currentUser;
  if(!user||user.email?.toLowerCase()!=="1987zinwaimin@gmail.com"){root.innerHTML='<p class="notice">Please log in as the Owner to manage staff accounts.</p>';return;}
- root.innerHTML='<p class="muted">Loading staff accounts and login activity…</p>';
+ if(!root.children.length)root.innerHTML='<p class="muted">Loading staff accounts and login activity…</p>';
  let accounts=new Map(),directoryAvailable=true,historyAvailable=true;
  try{
   const snap=await getDocs(query(collection(db,"staffDirectory"),orderBy("lastSeenAt","desc")));
@@ -105,6 +105,4 @@ async function pollOwnerStaffLogins(){
 setInterval(pollOwnerStaffLogins,5000);
 window.addEventListener("focus",pollOwnerStaffLogins);
 
-// Keep the Owner Staff Database fresh while it is open, so a new check-in appears without manual refresh.
-let staffAccountsRefreshBusy=false;
-setInterval(async()=>{if(document.visibilityState!=="visible"||!$("staffAccountList")||staffAccountsRefreshBusy)return;staffAccountsRefreshBusy=true;try{await loadStaffAccounts()}finally{staffAccountsRefreshBusy=false}},5000);
+// Avoid periodic full-list redraws; refresh the list only when a new login event is detected or the Owner requests it.
