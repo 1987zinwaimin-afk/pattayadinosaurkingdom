@@ -203,7 +203,10 @@ function queueCatalogPublish(event) {
       // Delete only records linked by stable identity. Name-based deletion is
       // unsafe: two different ticket types can share a name, and deleting one
       // must never remove the other from every Staff account.
-      const idsToDelete = new Set([ticket.sharedCatalogId, slotCatalogId(ticket)].filter(Boolean));
+      // Only delete a known catalog identity or records whose sourceTicketId
+      // matches this exact ticket. Never delete a slot-derived ID blindly: the
+      // same slot may now belong to a different ticket after reordering.
+      const idsToDelete = new Set([ticket.sharedCatalogId].filter(Boolean));
       for (const item of snapshot.docs) {
         const data = item.data();
         const sameSource = data.departmentId === ticket.departmentId &&
