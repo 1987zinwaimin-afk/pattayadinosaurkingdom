@@ -1,14 +1,28 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, query, orderBy, doc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, orderBy, doc, writeBatch, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const config={apiKey:"AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",authDomain:"pattaya-dinosaur-ticket-desk.firebaseapp.com",projectId:"pattaya-dinosaur-ticket-desk",storageBucket:"pattaya-dinosaur-ticket-desk.firebasestorage.app",messagingSenderId:"386652978138",appId:"1:386652978138:web:32c00c1b19caacda7cdee3"};
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(config),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
+// Keep the selected Staff account green only while its app is actively sending heartbeats.
+let staffHeartbeatBusy=false;
+async function sendStaffHeartbeat(){
+ if(staffHeartbeatBusy||document.visibilityState!=="visible")return;
+ let session;try{session=JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1")||"null")}catch{return;}
+ if(!session||!session.uid||!session.name||!session.department)return;
+ staffHeartbeatBusy=true;
+ try{await updateDoc(doc(db,"staffDirectory",session.uid),{lastSeenAt:serverTimestamp(),lastSeenClientTime:new Date().toISOString()});}
+ catch(e){if(e.code!=="permission-denied"&&e.code!=="not-found")console.warn("Staff heartbeat failed",e);}
+ finally{staffHeartbeatBusy=false;}
+}
+setInterval(sendStaffHeartbeat,30000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")sendStaffHeartbeat();});
+window.addEventListener("focus",sendStaffHeartbeat);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const departments={sales:"Sales Department",entry:"Entry Department",playing:"Playing Department",event:"Event Department",leader:"Leader — All Departments"};
 function dateValue(value){const d=value?.toDate?.()||(value?new Date(value):null);return d&&!Number.isNaN(d.getTime())?d:null;}
 function when(value){const d=dateValue(value);return d?new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"}).format(d)+" ICT":"No login recorded";}
-function recent(value){const d=dateValue(value);return !!d&&Date.now()-d.getTime()<=15*60*1000;}
+function recent(value){const d=dateValue(value);return !!d&&Date.now()-d.getTime()<=2*60*1000;}
 async function loadStaffAccounts(){
  const root=$("staffAccountList");if(!root)return;
  const user=auth.currentUser;
@@ -47,7 +61,7 @@ async function loadStaffAccounts(){
  root.innerHTML=rows.map(a=>{
   const last=a.lastSeenAt||a.lastSeenClientTime,used=recent(last);
   return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last login: '+esc(when(last))+' · Login count: '+esc(Math.max(a.loginTotal,a.eventTotal))+'</small><br><span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(used?'#16a34a':'#dc2626')+'"></span><span>'+(used?'Active recently':'Logged out / inactive')+'</span></span></div><div><button type="button" class="btn btn-secondary" data-remove-staff-group="'+esc(a.uids.join(','))+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Delete name</button></div></article>';
- }).join('')+'<p class="help-text">Names are grouped by name and department. Green means activity within the last 2 minutes; red means no recent activity. Live status requires periodic heartbeat updates from the active Staff page.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
+ }).join('')+'<p class="help-text">Names are grouped by name and department. Green means a heartbeat was received in the last 2 minutes; red means logged out or no recent activity. Active Staff pages send a heartbeat every 30 seconds.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
 document.addEventListener("click",async e=>{
