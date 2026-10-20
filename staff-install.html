@@ -30,4 +30,10 @@
 <p class="small">Important: add this page to Home Screen. Do not add the Owner Dashboard page.</p>
 </main>
 <script>if("serviceWorker" in navigator && location.protocol==="https:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
+<script>
+(function(){
+ const standalone=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;
+ if(standalone) location.replace("./staff-app.html?staff-app=1");
+})();
+</script>
 </body></html>
