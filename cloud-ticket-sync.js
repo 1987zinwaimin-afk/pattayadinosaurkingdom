@@ -236,9 +236,8 @@ async function applyCatalog(snapshot) {
     if (!local && remote.sourceTicketId) {
       local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && String(t.id) === String(remote.sourceTicketId));
     }
-    if (!local) {
-      local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
-    }
+    // Never use ticket name as identity. Duplicate names are valid ticket types;
+    // matching by name merges them and makes Staff show fewer types than Owner.
     if (!local && Number.isInteger(remote.slotNumber)) {
       local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber && !String(t.name || "").trim());
     }
