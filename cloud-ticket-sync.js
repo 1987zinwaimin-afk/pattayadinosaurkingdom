@@ -162,6 +162,14 @@ async function publishOwnerCatalog() {
         String(data.sourceTicketId || "") === String(ticket.id);
     });
     const id = ticket.sharedCatalogId || legacyMatch?.id || `${ticket.departmentId}__ticket__${ticket.id}`;
+    // Persist the exact Firestore catalog ID on the Owner ticket. Daily quantity
+    // documents must use this same identity so Owner and Staff resolve the same
+    // sharedDaily record across devices (slot-based fallback IDs can differ).
+    if (ticket.sharedCatalogId !== id) {
+      const identifiedTicket = { ...ticket, sharedCatalogId: id };
+      await store.put("tickets", identifiedTicket);
+      Object.assign(ticket, identifiedTicket);
+    }
     desired.add(id);
     let imageData = await imageFor(ticket);
     const catalogRef = doc(db, "sharedTicketCatalog", id);
