@@ -55,10 +55,11 @@ function queueLatestSnapshot(kind, snapshot) {
       queuedCatalogSnapshot = null;
       catalogApplyRunning = true;
       applyCatalog(latest)
-        .then(async () => {
-          // New Staff devices may receive daily snapshots before the catalog is
-          // applied. Re-read shared quantities after ticket IDs/images exist.
-          if (role === "staff" && auth.currentUser) {
+        .then(async catalogChanged => {
+          // Re-read shared quantities only when the catalog actually changed.
+          // Previously every catalog snapshot caused an extra server read of the
+          // entire daily collection, slowing Owner/Staff sync unnecessarily.
+          if (role === "staff" && auth.currentUser && catalogChanged) {
             const dailySnapshot = await getDocsFromServer(collection(db, "sharedDaily"));
             await applyDaily(dailySnapshot);
           }
@@ -311,10 +312,13 @@ async function applyCatalog(snapshot) {
   // Never remove shared tickets based on a cached/offline catalog snapshot.
   // Firestore may first emit a cache view that is incomplete or stale; treating
   // it as authoritative makes Owner tickets flicker or disappear on Staff.
-  if (!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
-    // Confirm removals against a fresh server read. Listener snapshots can be
-    // transient while Owner publishes/deletes multiple catalog records; never
-    // remove a Staff ticket based on one possibly stale/intermediate view.
+  const possibleMissingSharedTicket = localTickets.some(local =>
+    local.sharedFromOwner === true && local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)
+  );
+  if (possibleMissingSharedTicket && !snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
+    // Only pay for a second server read when this snapshot appears to omit an
+    // existing shared ticket. Normal quantity/catalog updates avoid this extra
+    // network round-trip; suspected deletions still require server confirmation.
     const confirmedSnapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
     const confirmedIds = new Set(confirmedSnapshot.docs.map(d => d.id));
     for (const local of localTickets) {
@@ -330,6 +334,7 @@ async function applyCatalog(snapshot) {
     window.ticketdeskLocalStore.refresh?.();
     document.dispatchEvent(new Event("ticketdesk-cloud-catalog-updated"));
   }
+  return catalogChanged;
 }
 function dailyDocId(departmentId, ticketId, date) {
   return `${departmentId}__${ticketId}__${date}`.replaceAll("/", "_");
