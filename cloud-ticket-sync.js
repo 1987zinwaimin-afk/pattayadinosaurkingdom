@@ -245,7 +245,7 @@ async function applyCatalog(snapshot) {
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
-      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: true, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: true, slotNumber: Number.isInteger(remote.slotNumber) ? remote.slotNumber : local.slotNumber, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
       else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       if (JSON.stringify(local) !== JSON.stringify(updated)) {
