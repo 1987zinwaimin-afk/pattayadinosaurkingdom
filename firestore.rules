@@ -140,7 +140,7 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 1
         && request.resource.data.name.size() <= 80
-        && request.resource.data.department in ['sales', 'entry', 'playing', 'event']
+        && request.resource.data.department in ['sales', 'entry', 'playing', 'event', 'leader']
         && request.resource.data.source == 'staff-share-link';
       allow read: if isOwner();
       allow update, delete: if false;
