@@ -200,14 +200,7 @@ function queueCatalogPublish(event) {
 }
 // Register before auth finishes so an early Owner edit is not lost.
 document.addEventListener("ticketdesk-local-ticket-changed", queueCatalogPublish);
-window.addEventListener("focus", () => {
-  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus(`Catalog focus sync failed: ${err?.code || err?.message || "unknown error"}`, true));
-});
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && role === "owner") {
-    publishOwnerCatalog().catch(err => syncStatus(`Catalog visibility sync failed: ${err?.code || err?.message || "unknown error"}`, true));
-  }
-});
+
 async function applyCatalog(snapshot) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
@@ -352,6 +345,39 @@ async function applyDaily(snapshot) {
     document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
   }
 }
+// Firestore listeners provide live updates. These safe pull checks recover from
+// temporary mobile-network/background-tab gaps without requiring a page refresh.
+let recoverySyncRunning = false;
+async function recoverCloudSync() {
+  if (recoverySyncRunning || !auth.currentUser || !started || (role !== "owner" && role !== "staff")) return;
+  recoverySyncRunning = true;
+  try {
+    const catalog = await getDocs(collection(db, "sharedTicketCatalog"));
+    await applyCatalog(catalog);
+    const daily = await getDocs(collection(db, "sharedDaily"));
+    await applyDaily(daily);
+    syncStatus("Cloud sync connected; latest tickets and quantities checked.");
+  } catch (err) {
+    syncStatus("Cloud reconnect sync failed: " + (err?.code || err?.message || "network error"), true);
+  } finally { recoverySyncRunning = false; }
+}
+window.addEventListener("online", () => {
+  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner reconnect publish failed: " + (err?.code || err?.message || "unknown error"), true));
+  recoverCloudSync();
+});
+window.addEventListener("focus", () => {
+  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner focus publish failed: " + (err?.code || err?.message || "unknown error"), true));
+  recoverCloudSync();
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner visibility publish failed: " + (err?.code || err?.message || "unknown error"), true));
+  recoverCloudSync();
+});
+// Backgrounded iPhone browsers may suspend listeners. Reconcile once per minute
+// while the page is visible; realtime snapshots remain the primary update path.
+setInterval(() => { if (document.visibilityState === "visible") recoverCloudSync(); }, 60000);
+
 function startOwner() {
   if (role === "owner") return;
   role = "owner"; started = true;
