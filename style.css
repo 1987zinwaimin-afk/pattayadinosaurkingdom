@@ -243,3 +243,54 @@ body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="ph
 .quantity-digit{display:flex;align-items:center;justify-content:center;width:clamp(44px,13vw,64px);height:clamp(54px,11vw,76px);border:1px solid var(--line);border-radius:13px;background:#f4f6fa;color:var(--navy);font-size:clamp(24px,6vw,34px);font-weight:800;box-shadow:inset 0 1px 2px rgba(17,32,57,.05);font-variant-numeric:tabular-nums;}
 body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-color:#3b475a;}
 @media(max-width:420px){.quantity-digit-row{gap:6px}.quantity-digit{width:42px;height:54px;border-radius:10px}}
+
+
+/* UI/UX refinement — responsive spacing and accessible touch targets.
+   CSS-only: does not alter ticket records, Firebase, sync logic, or calculations. */
+:where(button,a,select,input,textarea,[role="button"]){scroll-margin-top:90px}
+:where(button,a,select,input,textarea):focus-visible{outline:3px solid #c9a96e;outline-offset:2px}
+.sidebar{overflow-y:auto;overscroll-behavior:contain}
+.sidebar-backdrop{touch-action:manipulation}
+.top-actions select,.logout-button,.mobile-menu{min-height:42px}
+.stat-card,.department-card,.panel,.report-card{min-width:0}
+.stat-top,.dept-top,.panel-head{min-width:0}
+.stat-top>*,.dept-top>*{overflow-wrap:anywhere}
+@media(max-width:760px){
+  .topbar{flex-wrap:nowrap}
+  .top-title{min-width:0}
+  .top-title h1{overflow-wrap:anywhere}
+  .top-actions{flex:0 0 auto}
+  .logout-button{min-height:42px;padding:9px 10px}
+  .top-actions select{min-height:42px;max-width:104px}
+  .content{padding-left:12px;padding-right:12px}
+  .page-head{gap:12px}
+  .page-head p{font-size:14px;line-height:1.55}
+  .page-head .actions .btn,.actions .btn{min-height:42px}
+  .stat-card{min-width:0;padding:12px}
+  .stat-top{align-items:flex-start;gap:8px}
+  .stat-number{overflow-wrap:anywhere}
+  .department-card{padding:14px}
+  .ticket-preview-row{max-width:100%;overflow-x:auto;padding-bottom:4px}
+  .panel-head{flex-wrap:wrap}
+  .table-wrap{-webkit-overflow-scrolling:touch}
+  .sidebar .nav-item{min-height:44px}
+  .sidebar-foot{line-height:1.45}
+  .auth-card{width:calc(100% - 24px);padding:26px 18px;border-radius:20px}
+  .auth-card h1{font-size:clamp(22px,6vw,26px)}
+  .auth-description{font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+  .auth-status{overflow-wrap:anywhere}
+}
+@media(max-width:380px){
+  .topbar{padding-left:9px;padding-right:9px;gap:6px}
+  .top-title h1{font-size:17px}
+  .top-actions{gap:5px}
+  .logout-button{font-size:11px;padding:8px}
+  .top-actions select{max-width:88px;font-size:12px}
+  .stats-grid{gap:8px}
+  .stat-card{padding:10px}
+  .stat-top{font-size:11px}
+  .stat-icon{width:30px;height:30px;font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
