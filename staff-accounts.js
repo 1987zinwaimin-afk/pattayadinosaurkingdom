@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, query, orderBy, doc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, orderBy, doc, serverTimestamp, Timestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const config={apiKey:"AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",authDomain:"pattaya-dinosaur-ticket-desk.firebaseapp.com",projectId:"pattaya-dinosaur-ticket-desk",storageBucket:"pattaya-dinosaur-ticket-desk.firebasestorage.app",messagingSenderId:"386652978138",appId:"1:386652978138:web:32c00c1b19caacda7cdee3"};
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(config),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
@@ -69,6 +69,17 @@ async function loadStaffAccounts(){
  }).join('')+'<p class="help-text">Names are grouped by name and department. Green means a heartbeat was received in the last 45 seconds; red means logged out or no recent activity. Active Staff pages send a heartbeat every 30 seconds. Delete name only dismisses this Owner-side notice on this browser; it does not delete or disable the Staff account.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
+// Explicit Staff logout: mark the directory entry inactive immediately, then clear this browser session.
+window.ticketdeskStaffLogout=async function(){
+ let session;try{session=JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1")||"null")}catch{}
+ if(session?.uid){
+  try{await updateDoc(doc(db,"staffDirectory",session.uid),{lastSeenAt:Timestamp.fromDate(new Date(0)),lastSeenClientTime:new Date(0).toISOString()});}
+  catch(e){console.warn("Could not mark Staff logout in directory",e);}
+ }
+ try{localStorage.removeItem("ticketdesk-staff-session-v1")}catch{}
+ window.location.href="./staff-portal.html";
+};
+
 document.addEventListener("click",e=>{
  const btn=e.target.closest("[data-dismiss-staff-notice]");if(!btn)return;
  const key=btn.dataset.noticeKey;if(!key)return;
