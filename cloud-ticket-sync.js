@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, setDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg = {
   apiKey: "AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",
@@ -268,16 +268,25 @@ async function publishDaily(record) {
   const store = window.ticketdeskLocalStore;
   const ticket = await store.get("tickets", record.ticketId);
   const catalogTicketId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId)));
-  await setDoc(doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date)), {
+  const ref = doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date));
+  const proposedTime = Date.parse(record.updatedAt || "") || Date.now();
+  const payload = {
     id: dailyDocId(record.departmentId, catalogTicketId, record.date),
     ticketId: catalogTicketId,
     departmentId: record.departmentId,
     date: record.date,
     quantity: Math.max(0, Math.trunc(Number(record.quantity) || 0)),
     notes: String(record.notes || "").slice(0, 1000),
-    updatedAt: record.updatedAt || new Date().toISOString(),
+    updatedAt: new Date(proposedTime).toISOString(),
     sourceUid: auth.currentUser.uid,
     sourceName: staffSession()?.name || auth.currentUser.email || "Owner"
+  };
+  // Serialize concurrent writes so a delayed older device cannot replace a newer quantity.
+  await runTransaction(db, async transaction => {
+    const current = await transaction.get(ref);
+    const currentTime = Date.parse(current.data()?.updatedAt || "") || 0;
+    if (current.exists() && currentTime > proposedTime) return;
+    transaction.set(ref, payload);
   });
 }
 async function publishReset(detail) {
@@ -333,6 +342,11 @@ async function applyDaily(snapshot) {
       sourceUid: remote.sourceUid, sourceName: remote.sourceName || ""
     };
     const current = await store.get("daily", id);
+    const currentTime = Date.parse(current?.updatedAt || "") || 0;
+    const remoteTime = Date.parse(nextRecord.updatedAt || "") || 0;
+    // Firestore can deliver queued snapshots after a newer write. Never let
+    // an older snapshot roll back the visible quantity on this device.
+    if (current && currentTime > remoteTime) continue;
     if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
         String(current.notes || "") !== nextRecord.notes ||
         String(current.updatedAt || "") !== nextRecord.updatedAt) {
