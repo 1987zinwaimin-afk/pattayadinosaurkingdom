@@ -211,17 +211,30 @@ async function applyCatalog(snapshot) {
   for (const remote of remoteRecords) {
     if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
     let local = localTickets.find(t => t.sharedCatalogId === remote.cloudDocId);
-    if (!local && Number.isInteger(remote.slotNumber)) {
-      local = localTickets.find(t => t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber);
+    // Prefer stable identity and exact name matches. Slot numbers are only a
+    // fallback for an empty local starter slot; matching a named ticket by
+    // position can overwrite it when old data contains duplicate slot numbers.
+    if (!local && remote.sourceTicketId) {
+      local = localTickets.find(t => t.departmentId === remote.departmentId && t.id === String(remote.sourceTicketId));
     }
-    if (!local) local = localTickets.find(t => t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
+    if (!local) {
+      local = localTickets.find(t => t.departmentId === remote.departmentId && String(t.name || "").trim().toLowerCase() === String(remote.name).trim().toLowerCase());
+    }
+    if (!local && Number.isInteger(remote.slotNumber)) {
+      local = localTickets.find(t => t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber && !String(t.name || "").trim());
+    }
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
       const updated = { ...local, sharedCatalogId: remote.cloudDocId, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
       else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
-      if (JSON.stringify(local) !== JSON.stringify(updated)) { await store.put("tickets", updated); catalogChanged = true; }
+      if (JSON.stringify(local) !== JSON.stringify(updated)) {
+        await store.put("tickets", updated);
+        const localIndex = localTickets.findIndex(t => t.id === local.id);
+        if (localIndex >= 0) localTickets[localIndex] = updated;
+        catalogChanged = true;
+      }
     } else {
       const created = {
         id: `shared-${remote.cloudDocId}`, sharedCatalogId: remote.cloudDocId,

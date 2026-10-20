@@ -55,7 +55,29 @@ async function get(store,id){return idbOrFallback(store,()=>reqPromise(db.transa
 async function put(store,obj){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readwrite').objectStore(store).put(obj)),()=>fallbackPut(store,obj));}
 async function del(store,id){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readwrite').objectStore(store).delete(id)),()=>{fallbackWrite(store,fallbackRead(store).filter(x=>x.id!==id));});}
 async function clearStore(store){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readwrite').objectStore(store).clear()),()=>fallbackWrite(store,[]));}
-async function seedSlots(){const ts=await all('tickets');for(const d of DEPTS){const have=ts.filter(t=>t.departmentId===d.id);if(have.length<18){for(let i=have.length;i<18;i++)await put('tickets',{id:uid(),departmentId:d.id,name:'',imageId:null,notes:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),slot:true,slotNumber:i+1});}}}
+async function seedSlots(){
+ const ts=await all('tickets');
+ for(const d of DEPTS){
+  const have=ts.filter(t=>t.departmentId===d.id);
+  // Keep named tickets in their existing positions. Repair duplicate/missing
+  // positions only on blank starter slots, so deleting one ticket never
+  // creates another slot with a duplicate number.
+  const named=have.filter(t=>String(t.name||'').trim());
+  const used=new Set(named.map(t=>t.slotNumber).filter(n=>Number.isInteger(n)&&n>0));
+  const blank=have.filter(t=>!String(t.name||'').trim()).sort((a,b)=>(a.slotNumber||9999)-(b.slotNumber||9999)||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
+  for(const row of blank){
+   let slotNumber=Number.isInteger(row.slotNumber)&&row.slotNumber>0&&!used.has(row.slotNumber)?row.slotNumber:1;
+   while(used.has(slotNumber))slotNumber++;
+   if(row.slotNumber!==slotNumber)await put('tickets',{...row,slotNumber});
+   used.add(slotNumber);
+  }
+  while(have.length<18){
+   let slotNumber=1;while(used.has(slotNumber))slotNumber++;
+   const row={id:uid(),departmentId:d.id,name:'',imageId:null,notes:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),slot:true,slotNumber};
+   await put('tickets',row);have.push(row);used.add(slotNumber);
+  }
+ }
+}
 async function ticketsFor(deptId){return (await all('tickets')).filter(t=>t.departmentId===deptId&&String(t.name||'').trim().length>0).sort((a,b)=>(a.slotNumber||9999)-(b.slotNumber||9999)||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));}
 async function moveTicket(ticketId,direction){
  const ticket=await get('tickets',ticketId);if(!ticket||!ticket.departmentId)return;
