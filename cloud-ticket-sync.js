@@ -360,8 +360,33 @@ async function publishDaily(record) {
   }
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
-  const ticket = await store.get("tickets", record.ticketId);
-  const catalogTicketId = ticket?.sharedCatalogId || (ticket ? slotCatalogId(ticket) : (String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId)));
+  let ticket = await store.get("tickets", record.ticketId);
+  // Daily quantity documents MUST use the exact ID used by sharedTicketCatalog.
+  // Falling back to slotCatalogId() here is unsafe: Owner catalog publication
+  // uses a stable ticket ID, so the quantity can be saved under a different ID
+  // and then never match the ticket on another device.
+  let catalogTicketId = ticket?.sharedCatalogId || "";
+  if (!catalogTicketId && ticket && role === "owner") {
+    // Ensure the Owner catalog assigns/persists its canonical ID first.
+    await publishOwnerCatalog();
+    ticket = await store.get("tickets", record.ticketId);
+    catalogTicketId = ticket?.sharedCatalogId || "";
+  }
+  if (!catalogTicketId) {
+    const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
+    const candidates = catalog.docs.filter(d => {
+      const x = d.data();
+      return x.departmentId === record.departmentId &&
+        ((ticket && String(x.sourceTicketId || "") === String(ticket.id)) ||
+         (!ticket && (d.id === String(record.ticketId) || d.id === `shared-${record.ticketId}`)));
+    });
+    if (candidates.length === 1) catalogTicketId = candidates[0].id;
+  }
+  if (!catalogTicketId && ticket) {
+    syncStatus("Quantity not synced: waiting for the shared ticket catalog ID. Reopen the page after catalog sync completes.", true);
+    throw new Error("shared-ticket-catalog-id-missing");
+  }
+  if (!catalogTicketId) catalogTicketId = String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId);
   const ref = doc(db, "sharedDaily", dailyDocId(record.departmentId, catalogTicketId, record.date));
   const proposedTime = Date.parse(record.updatedAt || "") || Date.now();
   const payload = {
