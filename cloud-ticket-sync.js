@@ -55,8 +55,16 @@ function queueLatestSnapshot(kind, snapshot) {
       queuedCatalogSnapshot = null;
       catalogApplyRunning = true;
       applyCatalog(latest)
-        .then(() => syncStatus(`Shared catalog loaded: ${latest.size} ticket types.`))
-        .catch(err => syncStatus(`Staff catalog load failed: ${err?.code || err?.message || "unknown error"}`, true))
+        .then(async () => {
+          // New Staff devices may receive daily snapshots before the catalog is
+          // applied. Re-read shared quantities after ticket IDs/images exist.
+          if (role === "staff" && auth.currentUser) {
+            const dailySnapshot = await getDocs(collection(db, "sharedDaily"));
+            await applyDaily(dailySnapshot);
+          }
+          syncStatus("Shared catalog loaded: " + latest.size + " ticket types.");
+        })
+        .catch(err => syncStatus("Staff catalog load failed: " + (err?.code || err?.message || "unknown error"), true))
         .finally(() => {
           catalogApplyRunning = false;
           if (queuedCatalogSnapshot) queueLatestSnapshot("catalog", queuedCatalogSnapshot);
