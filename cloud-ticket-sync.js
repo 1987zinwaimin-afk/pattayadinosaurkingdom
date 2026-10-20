@@ -317,12 +317,13 @@ async function publishExistingOwnerDaily() {
     await publishDaily({ ...record, ticketId: ticket.id });
   }
 }
-async function applyDaily(snapshot) {
+async function applyDaily(snapshot, retryAfterCatalog = true) {
   if (role !== "owner" && role !== "staff") return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
-  const tickets = await store.all("tickets");
+  let tickets = await store.all("tickets");
   let dailyChanged = false;
+  let missingTicketMatch = false;
   for (const d of snapshot.docs) {
     const remote = d.data();
     if (!DEPTS.includes(remote.departmentId) || !remote.date || !remote.ticketId) continue;
@@ -332,8 +333,8 @@ async function applyDaily(snapshot) {
       const session = staffSession();
       if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
     }
-    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || slotCatalogId(t) === remote.ticketId);
-    if (!ticket) continue;
+    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || t.id === `shared-${remote.ticketId}` || slotCatalogId(t) === remote.ticketId);
+    if (!ticket) { missingTicketMatch = true; continue; }
     const id = `${ticket.id}__${remote.date}`;
     const nextRecord = {
       id, ticketId: ticket.id, departmentId: remote.departmentId, date: remote.date,
@@ -357,6 +358,18 @@ async function applyDaily(snapshot) {
   if (dailyChanged) {
     window.ticketdeskLocalStore.refresh?.();
     document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
+  }
+  // A new/old Staff device can receive quantity snapshots before its catalog
+  // mapping is ready. Reconcile the catalog once, then replay this exact snapshot
+  // so those quantities are not silently skipped until a later Firestore event.
+  if (missingTicketMatch && retryAfterCatalog && role === "staff" && auth.currentUser) {
+    try {
+      const catalog = await getDocs(collection(db, "sharedTicketCatalog"));
+      await applyCatalog(catalog);
+      await applyDaily(snapshot, false);
+    } catch (err) {
+      syncStatus("Some quantities are waiting for ticket catalog mapping: " + (err?.code || err?.message || "sync error"), true);
+    }
   }
 }
 // Firestore listeners provide live updates. These safe pull checks recover from
