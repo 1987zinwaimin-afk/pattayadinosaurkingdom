@@ -87,3 +87,44 @@ body.staff-login-wallpaper main>.panel{
     backdrop-filter:blur(4px);
   }
 }
+
+
+/* Refined compact premium login card for small phone screens */
+body.auth-pending .auth-card{
+  max-width:340px;
+  border-radius:20px!important;
+  background:rgba(255,255,255,.62)!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 14px 34px rgba(4,18,38,.18)!important;
+}
+body.auth-pending .auth-card input{
+  background:rgba(255,255,255,.90)!important;
+  border:1px solid rgba(210,222,235,.92)!important;
+}
+body.auth-pending .auth-card #ownerLoginButton{
+  box-shadow:0 5px 12px rgba(16,31,58,.16);
+}
+@media(max-width:600px){
+  body.auth-pending .auth-gate{padding:7px!important}
+  body.auth-pending .auth-card{
+    width:min(100%,330px)!important;
+    max-width:330px!important;
+    padding:10px 11px 9px!important;
+    border-radius:17px!important;
+  }
+  body.auth-pending .auth-brand{width:42px!important;height:42px!important;margin-bottom:4px!important;border-radius:12px!important}
+  body.auth-pending .auth-kicker{font-size:7.5px!important;letter-spacing:.9px!important;margin-bottom:2px!important}
+  body.auth-pending .auth-card h1{font-size:18px!important;margin-bottom:4px!important}
+  body.auth-pending .auth-description{font-size:10px!important;line-height:1.22!important;margin-bottom:6px!important}
+  body.auth-pending .auth-card #ownerLoginForm .field{margin-bottom:5px!important;gap:2px!important}
+  body.auth-pending .auth-card #ownerLoginForm label{font-size:10px!important;line-height:1.2!important}
+  body.auth-pending .auth-card #ownerLoginForm input{min-height:34px!important;padding:6px 9px!important;font-size:13px!important;border-radius:9px!important}
+  body.auth-pending .auth-card #ownerLoginButton{min-height:36px!important;padding:6px 9px!important;font-size:13px!important;border-radius:9px!important}
+  body.auth-pending .auth-card>a.btn{min-height:34px!important;margin-top:5px!important;padding:6px 8px!important;font-size:11px!important;border-radius:9px!important}
+  body.auth-pending .auth-status{font-size:9px!important;line-height:1.2!important;margin-top:5px!important}
+}
+@media(max-height:780px) and (max-width:600px){
+  body.auth-pending .auth-card{padding-top:8px!important;padding-bottom:8px!important}
+  body.auth-pending .auth-brand{width:38px!important;height:38px!important}
+  body.auth-pending .auth-description{margin-bottom:5px!important}
+}
