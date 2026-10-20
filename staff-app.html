@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101d35"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="PDK Staff"><link rel="manifest" href="./staff-manifest.webmanifest?v=staff-app-start-20261020a"><link rel="apple-touch-icon" href="./file_000000006da082119bbf212e4f6fad52.png?v=staff-login-logo-center-20261019b"><title>PDK Staff</title></head>
+<body style="font-family:system-ui,sans-serif;background:#101d35;color:#fff;display:grid;place-items:center;min-height:100vh;margin:0"><p>Opening Staff workspace…</p>
+<script>
+(function(){
+ let staff=null;
+ try{staff=JSON.parse(localStorage.getItem("ticketdesk-staff-session-v1")||"null")}catch{}
+ const valid=staff&&typeof staff.name==="string"&&["sales","entry","playing","event","leader"].includes(staff.department);
+ location.replace(valid?"./index.html?staff-app=1":"./staff-portal.html?staff-app=1");
+})();
+</script></body></html>
