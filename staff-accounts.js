@@ -1,9 +1,13 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, query, orderBy, doc, writeBatch, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, orderBy, doc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const config={apiKey:"AIzaSyAviNd7mh8B_1cie1tdKfHiQt4Y1EPRa98",authDomain:"pattaya-dinosaur-ticket-desk.firebaseapp.com",projectId:"pattaya-dinosaur-ticket-desk",storageBucket:"pattaya-dinosaur-ticket-desk.firebasestorage.app",messagingSenderId:"386652978138",appId:"1:386652978138:web:32c00c1b19caacda7cdee3"};
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(config),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
+const dismissedKey="ticketdesk-owner-dismissed-staff-notices-v1";
+function readDismissed(){try{return JSON.parse(localStorage.getItem(dismissedKey)||"{}")}catch{return {}}}
+function staffGroupKey(name,department){return String(name||"").trim().toLocaleLowerCase()+"::"+String(department||"").trim().toLowerCase();}
+function latestStamp(a){const d=dateValue(a.lastSeenAt||a.lastSeenClientTime);return d?d.toISOString():"";}
 // Keep the selected Staff account green only while its app is actively sending heartbeats.
 let staffHeartbeatBusy=false;
 async function sendStaffHeartbeat(){
@@ -57,23 +61,20 @@ async function loadStaffAccounts(){
   if(at&&(!prev||at>prev)){g.lastSeenAt=a.lastSeenAt||null;g.lastSeenClientTime=a.lastSeenClientTime||null;g.uid=a.uid;}
   grouped.set(key,g);
  }
- const rows=[...grouped.values()].sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
+ const dismissed=readDismissed();
+ const rows=[...grouped.values()].filter(a=>{const key=staffGroupKey(a.name,a.department),saved=dismissed[key];return !saved||latestStamp(a)>saved;}).sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
  root.innerHTML=rows.map(a=>{
   const last=a.lastSeenAt||a.lastSeenClientTime,used=recent(last);
   return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last login: '+esc(when(last))+' · Login count: '+esc(Math.max(a.loginTotal,a.eventTotal))+'</small><br><span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(used?'#16a34a':'#dc2626')+'"></span><span>'+(used?'Active recently':'Logged out / inactive')+'</span></span></div><div><button type="button" class="btn btn-secondary" data-remove-staff-group="'+esc(a.uids.join(','))+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Delete name</button></div></article>';
- }).join('')+'<p class="help-text">Names are grouped by name and department. Green means a heartbeat was received in the last 2 minutes; red means logged out or no recent activity. Active Staff pages send a heartbeat every 30 seconds.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
+ }).join('')+'<p class="help-text">Names are grouped by name and department. Green means a heartbeat was received in the last 2 minutes; red means logged out or no recent activity. Active Staff pages send a heartbeat every 30 seconds. Delete name only dismisses this Owner-side notice on this browser; it does not delete or disable the Staff account.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
-document.addEventListener("click",async e=>{
- const btn=e.target.closest("[data-remove-staff-group]");if(!btn)return;
- const uids=btn.dataset.removeStaffGroup.split(",").filter(Boolean),name=btn.dataset.staffName||"this staff account",dept=departments[btn.dataset.staffDept]||btn.dataset.staffDept||"Unknown department";
- if(!confirm("Delete "+name+" — "+dept+"? This removes all matching login accounts for this name and department. Old login history is kept."))return;
- btn.disabled=true;btn.textContent="Deleting…";
- try{
-  const batch=writeBatch(db);
-  for(const uid of uids){batch.delete(doc(db,"staffDirectory",uid));batch.set(doc(db,"revokedStaff",uid),{uid,name,department:btn.dataset.staffDept||"",revokedAt:serverTimestamp(),revokedBy:auth.currentUser?.uid||"",reason:"owner-removed"});}
-  await batch.commit();await loadStaffAccounts();
- }catch(err){console.error("Could not delete staff name",err);btn.disabled=false;btn.textContent="Delete name";alert("Could not delete name. Check Firestore Rules and try again. ("+(err.code||err.message||"error")+")");}
+document.addEventListener("click",e=>{
+ const btn=e.target.closest("[data-dismiss-staff-notice]");if(!btn)return;
+ const key=btn.dataset.noticeKey;if(!key)return;
+ const dismissed=readDismissed();dismissed[key]=btn.dataset.noticeStamp||new Date().toISOString();
+ try{localStorage.setItem(dismissedKey,JSON.stringify(dismissed));}catch(err){console.warn("Could not save dismissed staff notice",err);}
+ loadStaffAccounts();
 });
 document.addEventListener("DOMContentLoaded",()=>{if($("staffAccountList"))loadStaffAccounts();});
 if(document.readyState!=="loading"&&$("staffAccountList"))loadStaffAccounts();
