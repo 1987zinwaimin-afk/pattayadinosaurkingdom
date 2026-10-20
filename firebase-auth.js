@@ -121,7 +121,7 @@ const logoutButton = document.getElementById('logoutButton');
 if (logoutButton) logoutButton.addEventListener('click', async () => {
   logoutButton.disabled = true;
   try {
-    if (staffSession()) { localStorage.removeItem('ticketdesk-staff-session-v1'); await signOut(auth); window.location.href = './staff-portal.html'; return; }
+    if (staffSession()) { if (typeof window.ticketdeskStaffLogout === 'function') { await window.ticketdeskStaffLogout(); return; } localStorage.removeItem('ticketdesk-staff-session-v1'); await signOut(auth); window.location.href = './staff-portal.html'; return; }
     await signOut(auth); window.location.reload();
   } catch (error) { console.error('Logout failed', error); status('Logout မအောင်မြင်ပါ။ Network ကိုစစ်ပါ။', true); }
   finally { logoutButton.disabled = false; }
