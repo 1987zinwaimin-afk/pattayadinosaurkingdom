@@ -39,7 +39,7 @@ let pendingCatalogPublish = false;
 
 // Firestore emits collection snapshots for individual document writes. Coalesce
 // rapid Owner updates and apply only the latest full snapshot to Staff.
-const SNAPSHOT_COALESCE_MS = 350;
+const SNAPSHOT_COALESCE_MS = 100;
 let catalogApplyTimer = null, dailyApplyTimer = null;
 let queuedCatalogSnapshot = null, queuedDailySnapshot = null;
 let catalogApplyRunning = false, dailyApplyRunning = false;
