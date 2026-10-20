@@ -34,25 +34,32 @@ async function loadStaffAccounts(){
  if(!accounts.size){
   root.innerHTML='<p class="muted">No staff accounts or check-ins found yet.</p>'+(directoryAvailable&&historyAvailable?'':'<p class="notice">Publish the updated firestore.rules in Firebase Console to enable account management.</p>');return;
  }
- const rows=[...accounts.values()].sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
+ const grouped=new Map();
+ for(const a of accounts.values()){
+  const key=String(a.name||"").trim().toLocaleLowerCase()+"::"+String(a.department||"").trim().toLowerCase();
+  const g=grouped.get(key)||{...a,uids:[],loginTotal:0,eventTotal:0,lastSeenAt:null,lastSeenClientTime:null};
+  g.uids.push(a.uid);g.loginTotal+=Number(a.loginCount)||0;g.eventTotal+=Number(a.eventCount)||0;
+  const at=dateValue(a.lastSeenAt||a.lastSeenClientTime),prev=dateValue(g.lastSeenAt||g.lastSeenClientTime);
+  if(at&&(!prev||at>prev)){g.lastSeenAt=a.lastSeenAt||null;g.lastSeenClientTime=a.lastSeenClientTime||null;g.uid=a.uid;}
+  grouped.set(key,g);
+ }
+ const rows=[...grouped.values()].sort((a,b)=>(dateValue(b.lastSeenAt||b.lastSeenClientTime)?.getTime()||0)-(dateValue(a.lastSeenAt||a.lastSeenClientTime)?.getTime()||0));
  root.innerHTML=rows.map(a=>{
   const last=a.lastSeenAt||a.lastSeenClientTime,used=recent(last);
-  return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last used: '+esc(when(last))+' · Recorded logins: '+esc(Math.max(Number(a.loginCount)||0,Number(a.eventCount)||0))+'</small><br><span class="tag '+(used?'':'unsaved')+'">'+(used?'Recently used (last 15 min)':'Not recently used')+'</span></div><div>'+(used?'<span class="muted">In use recently</span>':'<button type="button" class="btn btn-secondary" data-remove-staff="'+esc(a.uid)+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Remove account</button>')+'</div></article>';
- }).join("")+'<p class="help-text">“Recently used” means a check-in in the last 15 minutes; it does not guarantee the person is online now. Removing an account keeps old login history and revokes this Firebase device UID. Names are self-reported and not identity-verified.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Publish the updated firestore.rules in Firebase Console and refresh.</p>':'');
+  return '<article class="summary-line" style="align-items:flex-start;gap:12px"><div style="min-width:0;flex:1"><strong>'+esc(a.name||"Unnamed staff")+'</strong><br><span>'+esc(departments[a.department]||a.department||"Unknown department")+'</span><br><small class="muted">Last login: '+esc(when(last))+' · Login count: '+esc(Math.max(a.loginTotal,a.eventTotal))+'</small><br><span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(used?'#16a34a':'#dc2626')+'"></span><span>'+(used?'Active recently':'Logged out / inactive')+'</span></span></div><div><button type="button" class="btn btn-secondary" data-remove-staff-group="'+esc(a.uids.join(','))+'" data-staff-name="'+esc(a.name||"Unnamed staff")+'" data-staff-dept="'+esc(a.department||"")+'">Delete name</button></div></article>';
+ }).join('')+'<p class="help-text">Names are grouped by name and department. Green means activity within the last 2 minutes; red means no recent activity. Live status requires periodic heartbeat updates from the active Staff page.</p>'+(!directoryAvailable||!historyAvailable?'<p class="notice">Some account data could not load. Check Firestore Rules and refresh.</p>':'');
 }
 window.ticketdeskLoadStaffAccounts=loadStaffAccounts;
 document.addEventListener("click",async e=>{
- const btn=e.target.closest("[data-remove-staff]");if(!btn)return;
- const uid=btn.dataset.removeStaff,name=btn.dataset.staffName||"this staff account",dept=departments[btn.dataset.staffDept]||btn.dataset.staffDept||"Unknown department";
- if(!confirm("Remove access for "+name+" — "+dept+"? Old login history will be kept. This Firebase device UID will be blocked from checking in again."))return;
- btn.disabled=true;btn.textContent="Removing…";
+ const btn=e.target.closest("[data-remove-staff-group]");if(!btn)return;
+ const uids=btn.dataset.removeStaffGroup.split(",").filter(Boolean),name=btn.dataset.staffName||"this staff account",dept=departments[btn.dataset.staffDept]||btn.dataset.staffDept||"Unknown department";
+ if(!confirm("Delete "+name+" — "+dept+"? This removes all matching login accounts for this name and department. Old login history is kept."))return;
+ btn.disabled=true;btn.textContent="Deleting…";
  try{
   const batch=writeBatch(db);
-  batch.delete(doc(db,"staffDirectory",uid));
-  batch.set(doc(db,"revokedStaff",uid),{uid,name,department:btn.dataset.staffDept||"",revokedAt:serverTimestamp(),revokedBy:auth.currentUser?.uid||"",reason:"owner-removed"});
-  await batch.commit();
-  await loadStaffAccounts();
- }catch(err){console.error("Could not remove staff account",err);btn.disabled=false;btn.textContent="Remove account";alert("Could not remove account. Publish the updated firestore.rules in Firebase Console and try again. ("+(err.code||err.message||"error")+")");}
+  for(const uid of uids){batch.delete(doc(db,"staffDirectory",uid));batch.set(doc(db,"revokedStaff",uid),{uid,name,department:btn.dataset.staffDept||"",revokedAt:serverTimestamp(),revokedBy:auth.currentUser?.uid||"",reason:"owner-removed"});}
+  await batch.commit();await loadStaffAccounts();
+ }catch(err){console.error("Could not delete staff name",err);btn.disabled=false;btn.textContent="Delete name";alert("Could not delete name. Check Firestore Rules and try again. ("+(err.code||err.message||"error")+")");}
 });
 document.addEventListener("DOMContentLoaded",()=>{if($("staffAccountList"))loadStaffAccounts();});
 if(document.readyState!=="loading"&&$("staffAccountList"))loadStaffAccounts();
