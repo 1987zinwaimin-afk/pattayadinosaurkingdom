@@ -263,12 +263,16 @@ async function applyCatalog(snapshot) {
       catalogChanged = true;
     }
   }
-  // Remove only ticket entries that were explicitly linked to the Owner's shared catalog.
-  for (const local of localTickets) {
-    if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
-      if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
-      await store.del("tickets", local.id);
-      catalogChanged = true;
+  // Never remove shared tickets based on a cached/offline catalog snapshot.
+  // Firestore may first emit a cache view that is incomplete or stale; treating
+  // it as authoritative makes Owner tickets flicker or disappear on Staff.
+  if (!snapshot.metadata?.fromCache) {
+    for (const local of localTickets) {
+      if (local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)) {
+        if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
+        await store.del("tickets", local.id);
+        catalogChanged = true;
+      }
     }
   }
   lastCatalogIds = nextIds;
