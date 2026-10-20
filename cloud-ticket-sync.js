@@ -141,7 +141,7 @@ async function publishOwnerCatalog() {
   const existingSnapshot = await getDocs(collection(db, "sharedTicketCatalog"));
   const existingById = new Map(existingSnapshot.docs.map(d => [d.id, d.data()]));
   for (const ticket of tickets) {
-    const id = slotCatalogId(ticket);
+    const id = ticket.sharedCatalogId || slotCatalogId(ticket);
     if (!String(ticket.name || "").trim()) continue;
     desired.add(id);
     let imageData = await imageFor(ticket);
