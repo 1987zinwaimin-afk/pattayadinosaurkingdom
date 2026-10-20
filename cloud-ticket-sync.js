@@ -501,7 +501,8 @@ async function recoverCloudSync() {
     // Owner is the source of truth for ticket definitions. Never apply a remote
     // catalog snapshot back onto Owner's local ticket list during recovery.
     if (role === "owner") {
-      await publishOwnerCatalog();
+      // Ticket definitions publish on startup and explicit ticket edits.
+      // Avoid rereading/re-publishing the full catalog on every reconnect.
       await publishExistingOwnerDaily();
     } else {
       const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
@@ -514,23 +515,13 @@ async function recoverCloudSync() {
     syncStatus("Cloud reconnect sync failed: " + (err?.code || err?.message || "network error"), true);
   } finally { recoverySyncRunning = false; }
 }
-window.addEventListener("online", () => {
-  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner reconnect publish failed: " + (err?.code || err?.message || "unknown error"), true));
-  recoverCloudSync();
-});
-window.addEventListener("focus", () => {
-  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner focus publish failed: " + (err?.code || err?.message || "unknown error"), true));
-  recoverCloudSync();
-});
+// Firestore realtime listeners reconnect automatically. Recover only when a device returns active/online;
+// do not poll full collections on a timer across every open device.
+window.addEventListener("online", () => recoverCloudSync());
+window.addEventListener("focus", () => recoverCloudSync());
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") return;
-  if (role === "owner") publishOwnerCatalog().catch(err => syncStatus("Owner visibility publish failed: " + (err?.code || err?.message || "unknown error"), true));
-  recoverCloudSync();
+  if (document.visibilityState === "visible") recoverCloudSync();
 });
-// Realtime Firestore listeners are the primary sync path. Avoid frequent full-collection reads
-// across every open device, which can exhaust the Firestore read quota. Focus/online events recover immediately.
-// Low-frequency fallback handles browsers that suspend listeners.
-setInterval(() => { if (document.visibilityState === "visible") recoverCloudSync(); }, 300000);
 
 function startOwner() {
   if (role === "owner") return;
