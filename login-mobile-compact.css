@@ -128,3 +128,20 @@ body.auth-pending .auth-card #ownerLoginButton{
   body.auth-pending .auth-brand{width:38px!important;height:38px!important}
   body.auth-pending .auth-description{margin-bottom:5px!important}
 }
+
+
+/* Slightly narrower login card with balanced side margins on phones */
+@media(max-width:600px){
+  body.auth-pending .auth-card{
+    width:calc(100% - 28px)!important;
+    max-width:310px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  body.staff-login-wallpaper main>.panel{
+    width:calc(100% - 28px)!important;
+    max-width:310px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+}
