@@ -193,15 +193,15 @@ function queueCatalogPublish(event) {
     (async () => {
       if (!ticket) return;
       const snapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
-      const exactName = String(ticket.name || "").trim().toLocaleLowerCase();
+      // Delete only records linked by stable identity. Name-based deletion is
+      // unsafe: two different ticket types can share a name, and deleting one
+      // must never remove the other from every Staff account.
       const idsToDelete = new Set([ticket.sharedCatalogId, slotCatalogId(ticket)].filter(Boolean));
       for (const item of snapshot.docs) {
         const data = item.data();
         const sameSource = data.departmentId === ticket.departmentId &&
           String(data.sourceTicketId || "") === String(ticket.id);
-        const sameName = exactName && data.departmentId === ticket.departmentId &&
-          String(data.name || "").trim().toLocaleLowerCase() === exactName;
-        if (idsToDelete.has(item.id) || sameSource || sameName) idsToDelete.add(item.id);
+        if (idsToDelete.has(item.id) || sameSource) idsToDelete.add(item.id);
       }
       await Promise.all([...idsToDelete].map(id => deleteDoc(doc(db, "sharedTicketCatalog", id))));
       syncStatus("Deleted ticket and matching legacy cloud catalog records.");
@@ -246,7 +246,7 @@ async function applyCatalog(snapshot) {
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
-      const updated = { ...local, sharedCatalogId: remote.cloudDocId, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: true, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
       else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       if (JSON.stringify(local) !== JSON.stringify(updated)) {
@@ -279,7 +279,7 @@ async function applyCatalog(snapshot) {
     const confirmedSnapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
     const confirmedIds = new Set(confirmedSnapshot.docs.map(d => d.id));
     for (const local of localTickets) {
-      if (local.sharedCatalogId && !confirmedIds.has(local.sharedCatalogId)) {
+      if (local.sharedFromOwner === true && local.sharedCatalogId && !confirmedIds.has(local.sharedCatalogId)) {
         if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
         await store.del("tickets", local.id);
         catalogChanged = true;
