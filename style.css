@@ -1,0 +1,410 @@
+ :root{--navy:#101d35;--navy2:#1b2c4a;--gold:#c9a96e;--gold-light:#f4ead8;--ink:#1b2433;--muted:#697386;--line:#e5e9f0;--bg:#f5f7fb;--white:#fff;--green:#16794b;--red:#b42318;--shadow:0 8px 26px rgba(17,32,57,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans Thai",sans-serif;font-size:14px}button,input,select,textarea{font:inherit}button{cursor:pointer}.app-shell{min-height:100vh}.sidebar{width:250px;background:var(--navy);color:#fff;position:fixed;inset:0 auto 0 0;padding:25px 16px;display:flex;flex-direction:column;z-index:10}.brand{display:flex;gap:11px;align-items:center;padding:0 10px 30px}.brand-mark{width:48px;height:48px;flex:0 0 48px;object-fit:cover;border-radius:12px;display:block;background:transparent;}.brand strong{display:block;font-size:16px}.brand small{display:block;color:#b8c2d4;font-size:11px;margin-top:4px}.nav-group{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#8794aa;padding:8px 12px}.nav-item{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;color:#dce3ef;text-align:left;padding:12px;border-radius:10px;margin:3px 0;font-weight:500}.nav-item .nav-icon{width:22px;text-align:center;font-size:17px}.nav-item.active,.nav-item:hover{background:#263854;color:#fff}.nav-item.active{box-shadow:inset 3px 0 var(--gold)}.sidebar-foot{margin-top:auto;padding:16px 10px 4px;color:#b8c2d4;font-size:11px;display:flex;gap:8px;align-items:center}.status-dot{width:7px;height:7px;background:#4ade80;border-radius:50%}.main{margin-left:250px;min-height:100vh;display:flex;flex-direction:column}.topbar{height:94px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:20px 32px;position:sticky;top:0;z-index:5}.top-title>span{font-size:11px;color:var(--muted)}h1{font-size:23px;margin:4px 0 0;color:var(--navy)}.top-actions{display:flex;align-items:center;gap:10px}.top-actions select{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fff;color:var(--navy);font-weight:600}.language-label{color:var(--muted);font-size:12px}.content{padding:28px 32px;flex:1;max-width:1600px;width:100%;margin:0 auto}.footer{display:flex;justify-content:space-between;padding:16px 32px;color:#8b94a4;font-size:11px}.mobile-menu{display:none}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.page-head p{color:var(--muted);margin:7px 0 0;line-height:1.6}.page-head h2{margin:0;font-size:19px}.actions,.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.btn{border:1px solid transparent;border-radius:9px;padding:10px 14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s}.btn-primary{background:var(--navy);color:#fff}.btn-primary:hover{background:#243b60}.btn-gold{background:var(--gold);color:var(--navy)}.btn-secondary{background:#fff;border-color:#dce2eb;color:var(--navy)}.btn-danger{background:#fff0ee;color:var(--red);border-color:#ffd4ce}.btn-small{padding:7px 9px;font-size:12px}.icon-button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 11px;color:var(--navy)}.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}.stat-card,.panel,.department-card,.ticket-card,.report-card{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow)}.stat-card{padding:19px}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.stat-icon{width:36px;height:36px;border-radius:10px;background:var(--gold-light);display:grid;place-items:center;font-size:18px}.stat-number{font-size:28px;font-weight:700;color:var(--navy);margin-top:15px}.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}.dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.department-card{padding:19px}.dept-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.dept-title{font-size:15px;font-weight:700}.dept-count{font-size:25px;font-weight:700;color:var(--navy);margin:14px 0 3px}.muted{color:var(--muted)}.ticket-preview-row{display:flex;gap:8px;overflow:hidden;margin:15px 0;min-height:50px}.mini-ticket{width:56px;height:48px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#f6f7fa;flex-shrink:0}.mini-ticket img{width:100%;height:100%;object-fit:contain}.mini-ticket.empty{display:grid;place-items:center;color:#b6bfcb}.panel{padding:20px;margin-bottom:18px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.panel-head h3{font-size:15px;margin:0}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field label{font-size:12px;color:#4f5b6e;font-weight:600}.field input,.field select,.field textarea,.search-input{width:100%;padding:10px 11px;border:1px solid #dce2eb;border-radius:9px;background:#fff;color:var(--ink);outline:none}.field input:focus,.field select:focus,.field textarea:focus,.search-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px #c9a96e22}.field textarea{resize:vertical;min-height:80px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.field.full{grid-column:1/-1}.toolbar{justify-content:space-between;margin-bottom:17px}.toolbar-left,.toolbar-right{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.search-input{width:240px}.date-input{border:1px solid #dce2eb;border-radius:9px;padding:10px;background:#fff}.ticket-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.ticket-card{overflow:hidden;display:flex;flex-direction:column}.ticket-image-wrap{height:165px;background:#f1f3f7;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;border-bottom:1px solid var(--line)}.ticket-image-wrap img{width:100%;height:100%;object-fit:contain;padding:10px}.image-placeholder{color:#9aa4b3;text-align:center;display:grid;gap:8px;place-items:center}.image-placeholder span{font-size:27px}.ticket-body{padding:14px;display:flex;flex-direction:column;gap:11px;flex:1}.ticket-name{font-weight:700;font-size:14px;overflow-wrap:anywhere}.ticket-id{font-size:10px;color:var(--muted)}.quantity-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.quantity-row label{font-size:12px;color:var(--muted)}.qty-input{width:90px;border:1px solid #dce2eb;border-radius:8px;padding:9px;text-align:center;font-weight:700}.ticket-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}.ticket-actions .btn{flex:1}.tag{display:inline-flex;padding:4px 7px;border-radius:6px;background:#edf7f1;color:var(--green);font-size:10px;font-weight:700}.tag.unsaved{background:#fff5df;color:#946200}.empty-state{padding:35px 20px;text-align:center;color:var(--muted);border:1px dashed #d6dce6;border-radius:12px;background:#fbfcfe}.empty-state .empty-icon{font-size:30px;margin-bottom:10px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:12px}th{color:#6b7585;background:#f8f9fc;font-weight:700}td strong{color:var(--navy)}.report-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.report-card{padding:17px}.report-card h3{margin:0 0 8px;font-size:15px}.report-meta{display:flex;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:11px;margin:12px 0}.report-total{font-size:23px;font-weight:700;color:var(--navy)}.report-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.report-line{display:flex;align-items:center;gap:10px}.report-thumb{width:48px;height:38px;background:#f3f5f8;border-radius:6px;object-fit:contain}.notice{padding:12px 14px;background:#fff8e9;border:1px solid #f0dba9;border-radius:10px;color:#76571c;font-size:12px;line-height:1.5;margin-bottom:16px}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.modal{border:0;border-radius:16px;padding:0;width:min(620px,calc(100% - 28px));max-height:90vh;box-shadow:0 20px 70px #09152b55}.modal::backdrop{background:#0b1529a8;backdrop-filter:blur(3px)}#modalContent{padding:24px;overflow:auto;max-height:90vh}.modal-title{font-size:19px;margin:0 0 20px}.modal-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}.image-preview-dialog{width:min(900px,calc(100% - 20px))}.large-preview{max-width:100%;max-height:75vh;object-fit:contain;display:block;margin:auto}.toast-region{position:fixed;right:20px;bottom:20px;z-index:50;display:grid;gap:8px}.toast{background:var(--navy);color:#fff;padding:12px 16px;border-radius:10px;box-shadow:var(--shadow);max-width:min(380px,calc(100vw - 40px));animation:toast-in .2s ease}.toast.error{background:#9f2822}.toast.success{background:#176b48}@keyframes toast-in{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}.hidden{display:none!important}.footer span:last-child{text-align:right}.summary-line{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.summary-line:last-child{border:0}.backup-actions{display:flex;gap:10px;flex-wrap:wrap}.image-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.help-text{font-size:11px;color:var(--muted);line-height:1.5}.print-only{display:none}
+@media(max-width:1150px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:22px}.topbar{padding:18px 22px}}
+@media(max-width:760px){.sidebar{transform:translateX(-100%);transition:transform .2s;width:270px;box-shadow:8px 0 30px #0b152933}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.mobile-menu{display:inline-block}.topbar{height:80px;padding:14px 16px;gap:10px}.top-title{flex:1}.top-title>span{display:none}h1{font-size:19px}.language-label{display:none}.top-actions select{padding:9px 8px;max-width:120px}.content{padding:17px 14px 25px}.footer{padding:14px;font-size:10px;gap:10px}.stats-grid{gap:10px}.stat-card{padding:14px}.stat-number{font-size:23px}.dashboard-grid,.settings-grid,.report-list{grid-template-columns:1fr}.ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ticket-image-wrap{height:125px}.ticket-body{padding:10px}.ticket-name{font-size:12px}.ticket-actions .btn{padding:7px 5px;font-size:10px}.qty-input{width:70px;padding:8px}.page-head{display:block}.page-head .actions{margin-top:14px}.toolbar{align-items:stretch}.toolbar-left,.toolbar-right{width:100%}.search-input{width:100%;flex:1}.date-input{flex:1;min-width:0}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.panel{padding:14px}.panel-head{align-items:flex-start}.toast-region{right:10px;bottom:10px;left:10px}.toast{max-width:none}.report-actions .btn{flex:1}.table-wrap{margin:0 -5px}.dept-count{font-size:22px}}
+@media(max-width:380px){.ticket-grid{grid-template-columns:1fr}.ticket-image-wrap{height:170px}.stats-grid{grid-template-columns:1fr 1fr}.stat-card{padding:11px}.stat-number{font-size:21px}}
+@media print{body{background:#fff;font-size:11px}.sidebar,.topbar,.footer,.no-print,.toast-region{display:none!important}.main{margin:0}.content{padding:0;max-width:none}.panel,.stat-card,.department-card,.ticket-card,.report-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}.ticket-grid{grid-template-columns:repeat(3,1fr)}.ticket-image-wrap{height:100px}.print-only{display:block}.report-card{margin-bottom:10px}button{display:none!important}table{min-width:0}th,td{padding:7px}.print-heading{display:block!important}}
+
+.ticket-album{background:#071a35;color:#fff;border-radius:18px;padding:14px;overflow:hidden;margin:8px 0 16px;font-family:Arial,"Noto Sans Thai",sans-serif}.album-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 3px 14px;border-bottom:3px solid #d6ad57}.album-brand{display:flex;align-items:center;gap:10px;min-width:0}.album-brand-mark{width:48px;height:48px;display:grid;place-items:center;border:3px solid #f4d487;border-radius:10px;color:#f4d487;font-size:29px;flex-shrink:0}.album-kicker{font-size:8px;letter-spacing:1px;color:#f4d487;font-weight:800}.album-header h1{margin:5px 0;color:#f4d487;font-family:Georgia,serif;font-size:clamp(17px,3vw,26px);line-height:1.05}.album-department{font-family:Georgia,serif;font-size:clamp(13px,2vw,18px)}.album-date{margin-top:7px;font-size:12px}.album-header-art{font-size:43px}.album-total-card{margin:12px 0;padding:11px;border:2px solid #f2d18a;border-radius:14px;background:#fffaf0;color:#071a35;display:grid;grid-template-columns:48px 1fr;align-items:center;gap:10px}.album-total-icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#071a35;color:#f4d487;font-size:24px;border:4px solid #f4e3b7}.album-total-number{border-right:1px solid #d6ad57}.album-total-number span{display:block;font-size:11px;font-weight:800;text-transform:uppercase}.album-total-number strong{display:block;font-size:43px;line-height:1}.album-total-meta{grid-column:1/-1;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:7px;border-top:1px solid #e5cf9b;padding-top:8px;font-size:12px}.album-total-meta span{color:#63728a}.album-total-meta b{margin-left:auto;background:#f6e4b7;border-radius:20px;padding:5px 8px}.album-section-title{display:flex;align-items:center;gap:9px;margin:12px 0;color:#f4d487}.album-section-title h2{font:bold 18px Georgia,serif;white-space:nowrap;margin:0}.album-section-title span{height:2px;background:#d6ad57;flex:1}.album-ticket-list{display:grid;gap:9px}.album-ticket{display:grid;grid-template-columns:minmax(90px,34%) 1fr 55px;align-items:center;gap:8px;padding:8px;background:#fff;border:2px solid #dfe4eb;border-radius:13px;color:#071a35;min-height:90px;break-inside:avoid}.album-ticket-image{position:relative;height:74px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#edf0f4;border-radius:7px;isolation:isolate}.album-ticket-image::before{content:'';position:absolute;inset:0;background-image:var(--ticket-image);background-size:cover;background-position:center;filter:blur(8px);opacity:.28;transform:scale(1.08);z-index:-1}.album-ticket-image img{position:relative;width:100%;height:100%;object-fit:cover;object-position:center;z-index:1}.album-no-image{font-size:34px}.album-ticket-name{font:bold 16px Georgia,serif;line-height:1.15;overflow-wrap:anywhere}.album-ticket-notes{margin-top:5px;color:#62728b;font-size:10px}.album-ticket-qty{background:linear-gradient(145deg,#f9e8b7,#dcb45d);border-radius:10px;text-align:center;padding:6px 2px}.album-ticket-qty span{display:block;font-size:9px;font-weight:700}.album-ticket-qty strong{display:block;font-size:25px;line-height:1.2}.album-grand-total{margin-top:13px;padding:9px;border:2px solid #d6ad57;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;color:#f4d487;font-family:Georgia,serif;font-size:15px;font-weight:700}.album-grand-icon{font-size:25px}.album-grand-total strong{font-size:32px}.album-footer{text-align:center;margin-top:16px;color:#e4e9f1;font-size:10px}.album-footer span{padding:0 5px;color:#f4d487}.album-empty{padding:20px;text-align:center;background:#fff;color:#071a35;border-radius:12px}.album-modal-toolbar p{font-size:12px;color:var(--muted);margin-top:-5px}@media(min-width:760px){.album-total-card{grid-template-columns:65px 1fr 1fr}.album-total-meta{grid-column:auto;border-top:0;border-left:1px solid #e5cf9b;padding:0 0 0 12px;flex-direction:column;align-items:flex-start}.album-total-number strong{font-size:56px}.album-ticket{grid-template-columns:minmax(170px,38%) 1fr 72px;min-height:120px}.album-ticket-image{height:98px}.album-ticket-name{font-size:21px}.album-ticket-qty strong{font-size:31px}}
+/* Scenic landmark header for the saved ticket album — design option 7 */
+.ticket-album .album-header{position:relative;display:flex;align-items:flex-end;justify-content:flex-start;min-height:205px;gap:10px;padding:18px 16px 15px;border:2px solid #d6ad57;border-radius:14px;overflow:hidden;background:linear-gradient(90deg,rgba(4,18,36,.88) 0%,rgba(4,18,36,.58) 48%,rgba(4,18,36,.05) 100%),url('dinosaur-kingdom-hero.svg') center 52%/cover no-repeat;box-shadow:inset 0 -48px 60px rgba(3,16,31,.2)}
+.ticket-album .album-brand{position:relative;z-index:1;max-width:80%;align-items:flex-end}
+.ticket-album .album-brand-copy{min-width:0;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+.ticket-album .album-kicker{font-size:10px;letter-spacing:1.4px;color:#ffe4a0}
+.ticket-album .album-header h1{font-size:clamp(19px,3.2vw,30px);line-height:1.08;text-shadow:0 2px 5px #000;margin:8px 0}
+.ticket-album .album-department{font-family:Arial,"Noto Sans Thai",sans-serif;font-weight:700;text-shadow:0 2px 4px #000}
+.ticket-album .album-date{display:inline-block;margin-top:8px;padding:5px 9px;border-radius:20px;background:rgba(4,18,36,.78);color:#fff0c5;text-shadow:none}
+@media(max-width:480px){.ticket-album .album-header{min-height:175px;padding:12px 10px 12px;background-position:center center}.ticket-album .album-brand{max-width:95%}.ticket-album .album-kicker{font-size:8px;letter-spacing:1px}.ticket-album .album-header h1{font-size:19px}.ticket-album .album-department{font-size:12px}}
+
+/* Mobile navigation closes when the dimmed area outside the drawer is tapped */
+.sidebar-backdrop{display:none}
+@media(max-width:760px){.sidebar-backdrop.open{display:block;position:fixed;inset:0;width:100%;height:100%;padding:0;border:0;border-radius:0;background:rgba(8,18,35,.42);z-index:9;cursor:pointer}.sidebar{z-index:10}}
+
+/* Firebase Gmail owner sign-in gate */
+body.auth-pending .app-shell,body.auth-pending .toast-region,body.auth-pending .modal{display:none!important}
+.auth-gate{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at top right,#253d60 0,#101d35 48%,#081326 100%);color:#f7f8fb}
+body.auth-pending .auth-gate{display:flex}
+.auth-card{width:min(100%,440px);background:#fff;border:1px solid rgba(244,234,216,.8);border-radius:24px;padding:30px 24px;box-shadow:0 22px 70px rgba(0,0,0,.28);color:#17243b;text-align:center}
+.auth-brand{width:96px;height:96px;object-fit:contain;border-radius:20px;display:block;margin:0 auto 18px;background:transparent;box-shadow:none;}
+.auth-kicker{font-size:11px;letter-spacing:2px;color:#9a783f;font-weight:700;margin:0 0 8px}
+.auth-card h1{font-size:25px;line-height:1.2;margin:0 0 12px}
+.auth-description{color:#697386;line-height:1.6;margin:0 0 22px}
+.auth-google-button{width:100%;min-height:48px;border:1px solid #d9dee7;border-radius:12px;background:#fff;color:#1b2433;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;margin:10px 0}
+.auth-google-button:disabled{opacity:.6;cursor:wait}
+.google-g{font-size:21px;font-weight:800;color:#4285f4}
+.auth-status{font-size:13px;line-height:1.5;color:#697386;margin:14px 0 0}
+.auth-status.error{color:#b42318}
+.auth-link-existing{margin-top:18px;text-align:left;border-top:1px solid #e5e9f0;padding-top:16px}
+.auth-link-existing p{font-size:13px;line-height:1.5;color:#697386}
+.auth-link-existing label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}
+.auth-link-existing input{width:100%;border:1px solid #d5dbe5;border-radius:10px;padding:12px;color:#17243b;background:#fff}
+
+/* Option 7: scenic landmark + separate ticket-album title panel */
+.ticket-album .album-header{height:clamp(150px,24vw,245px);min-height:0;padding:0;border:2px solid #d6ad57;border-radius:14px 14px 0 0;background:linear-gradient(90deg,rgba(4,18,36,.05),rgba(4,18,36,0)),url("dinosaur-kingdom-hero.svg") center 52%/cover no-repeat;box-shadow:none}
+.ticket-album .album-report-heading{display:flex;align-items:center;gap:14px;margin:0 0 12px;padding:12px 14px;background:#071a35;border:2px solid #d6ad57;border-top:0;border-radius:0 0 14px 14px;color:#fff}
+.ticket-album .album-report-icon{width:58px;height:58px;flex:0 0 58px;display:grid;place-items:center;border:2px solid #f4d487;border-radius:12px;color:#f4d487;font-size:34px}
+.ticket-album .album-report-copy{min-width:0}
+.ticket-album .album-report-copy h1{margin:0 0 5px;color:#f4d487;font:700 clamp(18px,3vw,28px) Georgia,serif;line-height:1.1}
+.ticket-album .album-report-copy .album-department{font-size:14px}
+.ticket-album .album-report-copy .album-date{margin-top:5px;font-size:12px}
+@media(max-width:480px){.ticket-album .album-header{height:150px}.ticket-album .album-report-heading{gap:10px;padding:10px}.ticket-album .album-report-icon{width:46px;height:46px;flex-basis:46px;font-size:27px}.ticket-album .album-report-copy h1{font-size:17px}}
+
+/* Option 7: use a real image element so Save as Image and Print capture the scenic banner reliably */
+.ticket-album .album-header{position:relative;display:block;height:clamp(150px,25vw,250px);min-height:150px;padding:0!important;overflow:hidden;border:2px solid #d6ad57;border-radius:14px 14px 0 0;background:#071a35!important;}
+.ticket-album .album-header .album-hero-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center 52%;}
+.ticket-album .album-header .album-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,18,36,0) 55%,rgba(4,18,36,.2));pointer-events:none;}
+.ticket-album .album-report-heading{margin-top:0;border-radius:0 0 14px 14px;}
+@media(max-width:480px){.ticket-album .album-header{height:165px;min-height:165px;}}
+
+/* Installable app: Download here */
+.install-app-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 13px;border:1px solid #c9a96e;border-radius:10px;background:#101d35;color:#ffe5a1;font-weight:800;white-space:nowrap;box-shadow:0 3px 10px rgba(16,29,53,.12)}
+.install-app-button:hover{background:#1b2c4a}
+.install-app-button:focus-visible{outline:3px solid #e5c16d;outline-offset:2px}
+@media(max-width:480px){.topbar{padding:12px}.top-actions{gap:6px}.install-app-button{padding:8px 9px;min-height:38px;font-size:12px}.language-label{display:none}.top-actions select{padding:8px 5px;max-width:96px}}
+
+/* Safer ticket actions: Edit stays prominent; Delete is tucked into More. */
+.ticket-actions{align-items:stretch;gap:8px;position:relative}
+.ticket-actions .ticket-edit-button{flex:1;min-height:42px;font-size:13px}
+.ticket-more{position:relative;flex:0 0 auto}
+.ticket-more>summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:4px;min-height:42px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--navy);font-weight:700;cursor:pointer;user-select:none}
+.ticket-more>summary::-webkit-details-marker{display:none}
+.ticket-more[open]>summary{background:#f5f7fb;border-color:#b9c4d4}
+.ticket-more-menu{position:absolute;right:0;bottom:calc(100% + 7px);z-index:8;min-width:130px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px #09152b24}
+.ticket-delete-option{display:block;width:100%;padding:11px 12px;border:0;border-radius:7px;background:#fff;color:var(--red);text-align:left;font-weight:700;cursor:pointer}
+.ticket-delete-option:active,.ticket-delete-option:hover{background:#fff0ee}
+@media(max-width:760px){.ticket-actions .ticket-edit-button{min-height:42px;font-size:12px}.ticket-more>summary{min-height:42px;padding:0 10px;font-size:11px}.ticket-more-menu{min-width:124px}}
+
+/* Pattaya Dinosaur Kingdom report header branding */
+.ticket-album .album-header .album-hero-brand{position:absolute;z-index:2;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(14px,3vw,30px);color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.8);pointer-events:none;max-width:100%}
+.ticket-album .album-header .album-hero-kicker{font-size:clamp(9px,1.5vw,14px);font-weight:800;letter-spacing:clamp(2px,.5vw,5px);color:#ffe2a0;margin-bottom:5px}
+.ticket-album .album-header .album-hero-brand strong{font-family:Georgia,serif;font-size:clamp(24px,5.4vw,56px);line-height:.98;letter-spacing:1px;color:#fff0c2}
+.ticket-album .album-header .album-hero-brand b{font-family:Georgia,serif;font-size:clamp(19px,4.2vw,43px);line-height:1.08;color:#fff;font-weight:900;letter-spacing:.2px;overflow-wrap:anywhere}
+.ticket-album .album-header .album-hero-tagline{font-size:clamp(8px,1.35vw,12px);font-weight:800;letter-spacing:clamp(1px,.3vw,3px);margin-top:10px;color:#fff}
+@media(max-width:480px){.ticket-album .album-header .album-hero-brand{padding:12px}.ticket-album .album-header .album-hero-brand strong{font-size:25px}.ticket-album .album-header .album-hero-brand b{font-size:19px}.ticket-album .album-header .album-hero-tagline{font-size:8px;letter-spacing:1px}}
+@media print{.ticket-album .album-header .album-hero-brand{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+
+/* Option 2: compact report layout with two-column ticket cards */
+.ticket-album .album-header{height:150px!important;min-height:150px!important;border-radius:14px 14px 0 0!important}
+.ticket-album .album-hero-brand{padding:14px!important}
+.ticket-album .album-hero-kicker{font-size:9px!important;letter-spacing:2px!important}
+.ticket-album .album-hero-brand strong{font-size:30px!important}
+.ticket-album .album-hero-brand b{font-size:24px!important}
+.ticket-album .album-hero-tagline{font-size:8px!important;letter-spacing:1px!important;margin-top:5px!important}
+.ticket-album .album-report-heading{padding:8px 12px!important;margin-bottom:8px!important}
+.ticket-album .album-report-icon{width:42px!important;height:42px!important;flex-basis:42px!important;font-size:24px!important}
+.ticket-album .album-department{font-size:16px!important}
+.ticket-album .album-date{margin-top:4px!important;font-size:12px!important}
+.ticket-album .album-total-card{margin:8px 0!important;padding:10px!important;grid-template-columns:44px 1fr 1fr!important;gap:8px!important}
+.ticket-album .album-total-icon{font-size:25px!important}
+.ticket-album .album-total-number strong{font-size:36px!important}
+.ticket-album .album-total-number span{font-size:10px!important}
+.ticket-album .album-total-meta{font-size:10px!important}
+.ticket-album .album-section-title{margin:8px 0!important}
+.ticket-album .album-ticket-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.ticket-album .album-ticket{grid-template-columns:minmax(0,40%) minmax(0,1fr) 40px!important;gap:5px!important;padding:5px!important;min-height:74px!important;border-radius:10px!important}
+.ticket-album .album-ticket-image{height:62px!important}
+.ticket-album .album-ticket-name{font-size:12px!important;overflow-wrap:anywhere!important}
+.ticket-album .album-ticket-notes{display:none!important}
+.ticket-album .album-ticket-qty{padding:5px 1px!important}
+.ticket-album .album-ticket-qty span{font-size:7px!important}
+.ticket-album .album-ticket-qty strong{font-size:19px!important}
+.ticket-album .album-grand-total{margin-top:9px!important;padding:7px!important;font-size:13px!important}
+.ticket-album .album-grand-total strong{font-size:30px!important}
+.ticket-album .album-footer{margin-top:8px!important;font-size:10px!important}
+@media(max-width:420px){.ticket-album{padding:8px!important}.ticket-album .album-header{height:125px!important;min-height:125px!important}.ticket-album .album-hero-brand strong{font-size:24px!important}.ticket-album .album-hero-brand b{font-size:19px!important}.ticket-album .album-ticket{grid-template-columns:minmax(0,36%) minmax(0,1fr) 36px!important;gap:4px!important;padding:4px!important}.ticket-album .album-ticket-image{height:56px!important}.ticket-album .album-ticket-name{font-size:10px!important}.ticket-album .album-ticket-qty strong{font-size:16px!important}.ticket-album .album-total-card{grid-template-columns:32px 1fr 1fr!important;padding:7px!important}.ticket-album .album-total-number strong{font-size:30px!important}}
+
+
+/* Compact premium refresh — global app UI only; report/album styling remains intact */
+:root{--shadow:0 5px 18px rgba(17,32,57,.055)}
+body{font-size:13.5px;background:#f3f6fb}
+.sidebar{padding:18px 13px;width:238px}
+.brand{padding:0 8px 22px;gap:9px}
+.brand-mark{width:36px;height:36px;border-radius:11px;font-size:20px}
+.nav-item{padding:10px 11px;gap:10px;margin:2px 0;border-radius:9px}
+.main{margin-left:238px}
+.topbar{height:78px;padding:14px 24px}
+h1{font-size:21px}
+.content{padding:22px 24px;max-width:1540px}
+.footer{padding:12px 24px}
+.page-head{margin-bottom:16px;gap:12px}
+.page-head h2{font-size:18px}
+.page-head p{margin-top:5px;line-height:1.45}
+.stats-grid{gap:12px;margin-bottom:16px}
+.stat-card{padding:15px;border-radius:13px}
+.stat-icon{width:32px;height:32px;border-radius:9px}
+.stat-number{font-size:25px;margin-top:10px}
+.dashboard-grid{gap:12px}
+.department-card{padding:15px;border-radius:13px}
+.dept-count{font-size:23px;margin:10px 0 2px}
+.ticket-preview-row{margin:10px 0;min-height:44px}
+.mini-ticket{width:50px;height:42px}
+.panel{padding:16px;margin-bottom:14px;border-radius:13px}
+.panel-head{margin-bottom:12px}
+.form-grid{gap:12px}
+.field{gap:5px}
+.field input,.field select,.field textarea,.search-input,.date-input{padding:9px 10px;border-radius:8px}
+.toolbar{margin-bottom:13px;gap:8px}
+.toolbar-left,.toolbar-right,.actions{gap:7px}
+.btn{padding:9px 12px;border-radius:8px}
+.btn-small{padding:6px 8px}
+.ticket-grid{gap:12px}
+.ticket-card{border-radius:13px}
+.ticket-image-wrap{height:138px}
+.ticket-image-wrap img{padding:8px}
+.ticket-body{padding:11px;gap:9px}
+.ticket-name{font-size:14px;line-height:1.35}
+.quantity-row{gap:7px}
+.qty-input{min-height:40px;padding:8px 9px;border-radius:9px}
+.ticket-actions{gap:7px}
+.ticket-actions .ticket-edit-button,.ticket-more>summary{min-height:39px}
+.report-card{border-radius:13px}
+@media(max-width:1150px){
+ .main{margin-left:238px}
+ .content{padding:18px}
+ .topbar{padding:12px 18px}
+ .ticket-grid{gap:10px}
+ .ticket-image-wrap{height:125px}
+ .ticket-body{padding:10px}
+}
+@media(max-width:760px){
+ .sidebar{width:270px;padding:20px 14px}
+ .main{margin-left:0}
+ .topbar{height:auto;min-height:68px;padding:10px 12px;gap:8px}
+ .top-title{min-width:0}
+ .top-title h1{font-size:clamp(16px,4.5vw,20px);line-height:1.18;margin-top:0}
+ .content{padding:14px 12px}
+ .footer{padding:12px}
+ .page-head{margin-bottom:13px;align-items:center}
+ .page-head h2{font-size:17px}
+ .stats-grid{gap:9px;margin-bottom:12px}
+ .stat-card{padding:11px;border-radius:12px}
+ .stat-number{font-size:22px;margin-top:7px}
+ .stat-sub{font-size:10px}
+ .dashboard-grid{gap:10px}
+ .department-card{padding:12px}
+ .dept-count{font-size:21px}
+ .panel{padding:12px;margin-bottom:11px}
+ .panel-head{gap:8px;margin-bottom:10px}
+ .form-grid{gap:10px}
+ .toolbar{gap:7px;margin-bottom:11px}
+ .toolbar-left,.toolbar-right{gap:7px}
+ .search-input{width:100%;min-width:0}
+ .ticket-grid{gap:9px}
+ .ticket-image-wrap{height:112px}
+ .ticket-image-wrap img{padding:6px}
+ .ticket-body{padding:9px;gap:8px}
+ .ticket-name{font-size:13px;line-height:1.3}
+ .ticket-id{font-size:9px}
+ .quantity-row{align-items:center;gap:5px}
+ .quantity-row label{font-size:11px}
+ .qty-input{width:82px;min-height:38px;padding:7px 6px;font-size:15px}
+ .ticket-actions{gap:6px}
+ .ticket-actions .ticket-edit-button,.ticket-more>summary{min-height:39px}
+ .ticket-more>summary{padding:0 9px}
+ .btn{padding:8px 10px}
+}
+@media(max-width:380px){
+ .content{padding:11px 9px}
+ .ticket-grid{gap:7px}
+ .ticket-image-wrap{height:96px}
+ .ticket-body{padding:8px;gap:7px}
+ .ticket-name{font-size:12px}
+ .qty-input{width:70px}
+ .ticket-actions .ticket-edit-button{font-size:11px}
+}
+
+.logout-button{white-space:nowrap;min-height:40px}@media(max-width:760px){.top-actions{gap:7px}.logout-button{padding:9px 10px;font-size:12px}}
+
+/* Ensure native hidden fields stay hidden even when .field sets display:flex. */
+[hidden]{display:none!important}
+
+/* Four-box PIN input used for Leader check-in. */
+.pin-inputs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:340px;margin:4px auto 0;width:100%}.pin-digit{width:100%;min-width:0;height:58px;text-align:center;font-size:24px;font-weight:800;color:var(--navy);border:1px solid #dce2eb;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(17,32,57,.04)}.pin-digit:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px #c9a96e33}.pin-digit.filled{border-color:#9ab4dc;background:#f2f6fc}@media(max-width:420px){.pin-inputs{gap:8px}.pin-digit{height:52px;font-size:22px}}
+
+/* Professional business UI: theme and selectable device layout */
+:root[data-theme="dark"],body[data-theme="dark"]{color-scheme:dark;--ink:#edf2fb;--muted:#a9b5c8;--line:#34445d;--bg:#0c1424;--white:#172338;--gold-light:#2b3548;--green:#4bc59a;--red:#ff7b72;--shadow:0 10px 30px rgba(0,0,0,.24)}
+body[data-theme="dark"] .app-shell,body[data-theme="dark"] .main{background:var(--bg);color:var(--ink)}
+body[data-theme="dark"] .panel,body[data-theme="dark"] .topbar,body[data-theme="dark"] .content-card,body[data-theme="dark"] .modal{background:var(--white);color:var(--ink);border-color:var(--line)}
+body[data-theme="dark"] input,body[data-theme="dark"] select,body[data-theme="dark"] textarea,body[data-theme="dark"] .date-input{background:#101b2e;color:var(--ink);border-color:var(--line)}
+body[data-theme="dark"] .muted,body[data-theme="dark"] .help-text,body[data-theme="dark"] .footer{color:var(--muted)}
+body[data-theme="dark"] .summary-line{border-color:var(--line)}
+body[data-layout="laptop"] .app-shell{width:100%;max-width:none}body[data-layout="laptop"] .content{max-width:none}
+body[data-layout="phone"] .app-shell{width:min(100%,560px);margin:0 auto;min-height:100dvh}
+body[data-layout="phone"] .sidebar{width:100%;height:auto;position:fixed;left:0;right:0;top:auto;bottom:0;z-index:60;display:flex;flex-direction:column;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(15,30,55,.12)}
+body[data-layout="phone"] .sidebar .brand,body[data-layout="phone"] .sidebar .sidebar-foot,body[data-layout="phone"] .sidebar .nav-group{display:none}
+body[data-layout="phone"] .sidebar nav{display:flex;overflow-x:auto;gap:5px;align-items:stretch}
+body[data-layout="phone"] .sidebar .nav-item{flex:0 0 auto;min-width:70px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;padding:8px 10px;font-size:11px;white-space:nowrap}
+body[data-layout="phone"] .sidebar .nav-icon{font-size:18px}body[data-layout="phone"] .main{margin-left:0!important;width:100%;padding-bottom:100px}body[data-layout="phone"] .topbar{position:sticky;top:0;z-index:20}body[data-layout="phone"] .sidebar-backdrop{display:none}
+@media(max-width:760px){body[data-layout="laptop"] .sidebar{width:min(86vw,300px)}body[data-layout="phone"] .sidebar{width:100%}}
+
+
+/* Dashboard ticket total displayed one digit per tile */
+.quantity-digit-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:76px;margin:14px 0 16px;}
+.quantity-digit{display:flex;align-items:center;justify-content:center;width:clamp(44px,13vw,64px);height:clamp(54px,11vw,76px);border:1px solid var(--line);border-radius:13px;background:#f4f6fa;color:var(--navy);font-size:clamp(24px,6vw,34px);font-weight:800;box-shadow:inset 0 1px 2px rgba(17,32,57,.05);font-variant-numeric:tabular-nums;}
+body[data-theme="dark"] .quantity-digit{background:#202b3d;color:#fff;border-color:#3b475a;}
+@media(max-width:420px){.quantity-digit-row{gap:6px}.quantity-digit{width:42px;height:54px;border-radius:10px}}
+
+
+/* UI/UX refinement — responsive spacing and accessible touch targets.
+   CSS-only: does not alter ticket records, Firebase, sync logic, or calculations. */
+:where(button,a,select,input,textarea,[role="button"]){scroll-margin-top:90px}
+:where(button,a,select,input,textarea):focus-visible{outline:3px solid #c9a96e;outline-offset:2px}
+.sidebar{overflow-y:auto;overscroll-behavior:contain}
+.sidebar-backdrop{touch-action:manipulation}
+.top-actions select,.logout-button,.mobile-menu{min-height:42px}
+.stat-card,.department-card,.panel,.report-card{min-width:0}
+.stat-top,.dept-top,.panel-head{min-width:0}
+.stat-top>*,.dept-top>*{overflow-wrap:anywhere}
+@media(max-width:760px){
+  .topbar{flex-wrap:nowrap}
+  .top-title{min-width:0}
+  .top-title h1{overflow-wrap:anywhere}
+  .top-actions{flex:0 0 auto}
+  .logout-button{min-height:42px;padding:9px 10px}
+  .top-actions select{min-height:42px;max-width:104px}
+  .content{padding-left:12px;padding-right:12px}
+  .page-head{gap:12px}
+  .page-head p{font-size:14px;line-height:1.55}
+  .page-head .actions .btn,.actions .btn{min-height:42px}
+  .stat-card{min-width:0;padding:12px}
+  .stat-top{align-items:flex-start;gap:8px}
+  .stat-number{overflow-wrap:anywhere}
+  .department-card{padding:14px}
+  .ticket-preview-row{max-width:100%;overflow-x:auto;padding-bottom:4px}
+  .panel-head{flex-wrap:wrap}
+  .table-wrap{-webkit-overflow-scrolling:touch}
+  .sidebar .nav-item{min-height:44px}
+  .sidebar-foot{line-height:1.45}
+  .auth-card{width:calc(100% - 24px);padding:26px 18px;border-radius:20px}
+  .auth-card h1{font-size:clamp(22px,6vw,26px)}
+  .auth-description{font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+  .auth-status{overflow-wrap:anywhere}
+}
+@media(max-width:380px){
+  .topbar{padding-left:9px;padding-right:9px;gap:6px}
+  .top-title h1{font-size:17px}
+  .top-actions{gap:5px}
+  .logout-button{font-size:11px;padding:8px}
+  .top-actions select{max-width:88px;font-size:12px}
+  .stats-grid{gap:8px}
+  .stat-card{padding:10px}
+  .stat-top{font-size:11px}
+  .stat-icon{width:30px;height:30px;font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+
+/* Cross-platform responsive refinement: Android, iOS, tablet and desktop.
+   Presentation only; no ticket, account, or Firebase data is changed. */
+:root{color-scheme:light}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:90px}
+body{min-width:320px;min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent}
+button,a,select,input,textarea,summary{touch-action:manipulation}
+button,a,[role="button"],summary{ -webkit-user-select:none; user-select:none }
+input,select,textarea{font-size:16px}
+img,video,canvas,svg{max-width:100%}
+.app-shell,.main,.content,.panel,.ticket-card,.department-card,.report-card{min-width:0}
+.ticket-name,.ticket-id,.stat-top,.dept-title,.panel-head,.notice,.help-text{overflow-wrap:anywhere}
+.sidebar{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.topbar{padding-top:max(12px,env(safe-area-inset-top))}
+.footer{padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.modal{max-height:calc(100dvh - 24px);overscroll-behavior:contain}
+#modalContent{max-height:calc(100dvh - 24px);overscroll-behavior:contain}
+@supports(height:100dvh){.app-shell,.main{min-height:100dvh}.auth-gate{min-height:100dvh}}
+@media(max-width:760px){
+  .topbar{min-height:72px;height:auto;min-height:72px;flex-wrap:nowrap}
+  .top-title{min-width:0}
+  .top-title h1,h1{overflow-wrap:anywhere}
+  .top-actions{min-width:0;flex-shrink:0}
+  .top-actions .btn{min-height:42px}
+  .top-actions select{min-height:42px}
+  .mobile-menu{min-width:42px;min-height:42px}
+  .content{padding-left:clamp(10px,3.5vw,16px);padding-right:clamp(10px,3.5vw,16px)}
+  .stats-grid,.ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ticket-card{min-width:0}
+  .ticket-image-wrap{height:clamp(92px,28vw,150px)}
+  .ticket-body{min-width:0}
+  .quantity-row{flex-wrap:wrap}
+  .qty-input{max-width:100%;min-width:0}
+  .ticket-actions{display:grid;grid-template-columns:minmax(0,1fr) auto}
+  .ticket-actions .btn{min-width:0;white-space:normal}
+  .toolbar-left,.toolbar-right{min-width:0}
+  .table-wrap{max-width:100%;overflow:auto;overscroll-behavior-x:contain}
+  .sidebar{padding-top:max(18px,env(safe-area-inset-top))}
+  .sidebar-backdrop.open{touch-action:manipulation}
+}
+@media(max-width:390px){
+  .topbar{gap:6px;padding-left:8px;padding-right:8px}
+  .top-title h1{font-size:16px;line-height:1.15}
+  .top-actions{gap:5px}
+  .top-actions .btn{padding:8px 7px;font-size:11px}
+  .top-actions select{max-width:82px;padding:7px 3px;font-size:12px}
+  .stats-grid,.ticket-grid{gap:8px}
+  .stat-card{padding:10px}
+  .ticket-body{padding:8px}
+  .ticket-name{font-size:12px}
+  .ticket-actions{gap:5px}
+  .ticket-actions .btn{font-size:10px;padding:7px 4px}
+}
+@media(hover:none){
+  .nav-item:hover,.btn:hover{filter:none}
+  .btn:active,.nav-item:active{transform:scale(.99)}
+}
+
+
+/* Login wallpaper: shared Owner and Staff background, using the supplied scenic image */
+.auth-gate,
+body.staff-login-wallpaper{
+  background-image:linear-gradient(rgba(5,18,38,.30),rgba(5,18,38,.42)),url("./1792253599844.jpg?v=login-wallpaper-20261020b");
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-attachment:scroll;
+}
+body.staff-login-wallpaper{
+  min-height:100vh;
+  min-height:100svh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+}
+body.staff-login-wallpaper main{width:100%;max-width:420px!important;margin:0 auto!important;padding:12px!important}
+body.staff-login-wallpaper main>.panel{
+  width:100%;
+  padding:18px 16px;
+  border-radius:20px;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:0 16px 48px rgba(3,16,36,.25);
+  backdrop-filter:blur(8px);
+}
+body.auth-pending .auth-gate{
+  min-height:100vh;
+  min-height:100svh;
+  padding:12px;
+  background-color:#071a35;
+  background-image:linear-gradient(rgba(5,18,38,.22),rgba(5,18,38,.38)),url("./1792253599844.jpg?v=login-wallpaper-20261020b");
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-attachment:scroll;
+}
+@media(max-width:600px){
+  .auth-gate{padding:10px!important}
+  .auth-card{width:min(100%,370px);padding:17px 15px;border-radius:20px}
+  .auth-brand{width:62px;height:62px;margin-bottom:8px}
+  .auth-kicker{font-size:9px;letter-spacing:1.3px;margin-bottom:5px}
+  .auth-card h1{font-size:22px;margin-bottom:7px}
+  .auth-description{font-size:12px;line-height:1.45;margin-bottom:12px}
+  .auth-card #ownerLoginForm .field{margin-bottom:9px!important}
+  .auth-card #ownerLoginForm input{min-height:42px;padding:9px 10px}
+  .auth-card #ownerLoginButton{min-height:44px!important}
+  body.staff-login-wallpaper main>.panel{max-width:370px;padding:16px 14px}
+  body.staff-login-wallpaper main>.panel img{width:64px!important;height:64px!important}
+  body.staff-login-wallpaper main>.panel h2{font-size:clamp(15px,4.2vw,19px)!important}
+  body.staff-login-wallpaper .form-grid{gap:9px}
+  body.staff-login-wallpaper .field input,body.staff-login-wallpaper .field select{min-height:42px}
+}
