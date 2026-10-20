@@ -283,6 +283,30 @@ async function publishReset(detail) {
   if (!detail || !Array.isArray(detail.records)) return;
   for (const rec of detail.records) await publishDaily({ ...rec, quantity: 0, updatedAt: new Date().toISOString() });
 }
+
+// Publish existing Owner daily quantities on sign-in. Skip cloud records that
+// are at least as new, so stale local data cannot overwrite newer shared data.
+async function publishExistingOwnerDaily() {
+  if (role !== "owner" || !auth.currentUser || auth.currentUser.email?.toLowerCase() !== OWNER) return;
+  await waitForLocalStore();
+  const store = window.ticketdeskLocalStore;
+  const results = await Promise.all([store.all("daily"), getDocs(collection(db, "sharedDaily")), store.all("tickets")]);
+  const records = results[0], cloudSnapshot = results[1], tickets = results[2];
+  const cloudById = new Map(cloudSnapshot.docs.map(d => [d.id, d.data()]));
+  const ticketById = new Map(tickets.map(t => [t.id, t]));
+  for (const record of records) {
+    if (!record || !DEPTS.includes(record.departmentId) || !record.date || !record.ticketId) continue;
+    const ticket = ticketById.get(record.ticketId);
+    if (!ticket || !String(ticket.name || "").trim()) continue;
+    const cloudTicketId = ticket.sharedCatalogId || slotCatalogId(ticket);
+    const cloudId = dailyDocId(record.departmentId, cloudTicketId, record.date);
+    const remote = cloudById.get(cloudId);
+    const localTime = Date.parse(record.updatedAt || "") || 0;
+    const remoteTime = Date.parse(remote?.updatedAt || "") || 0;
+    if (remote && remoteTime >= localTime) continue;
+    await publishDaily({ ...record, ticketId: ticket.id });
+  }
+}
 async function applyDaily(snapshot) {
   if (role !== "owner" && role !== "staff") return;
   await waitForLocalStore();
@@ -326,7 +350,7 @@ function startOwner() {
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; preparing ticket catalog sync…");
-  waitForLocalStore().then(() => publishOwnerCatalog()).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return publishOwnerCatalog(); } }).catch(err => syncStatus(`Initial catalog sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+  waitForLocalStore().then(() => publishOwnerCatalog()).then(() => { if (pendingCatalogPublish) { pendingCatalogPublish = false; return publishOwnerCatalog(); } }).then(() => publishExistingOwnerDaily()).then(() => syncStatus("Owner catalog and existing daily quantities synced.")).catch(err => syncStatus("Initial Owner sync failed: " + (err?.code || err?.message || "unknown error"), true));
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => applyDaily(snapshot).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
