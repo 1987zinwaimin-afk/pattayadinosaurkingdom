@@ -82,14 +82,22 @@ function queueLatestSnapshot(kind, snapshot) {
     if (dailyApplyRunning || !queuedDailySnapshot) return;
     const latest = queuedDailySnapshot;
     queuedDailySnapshot = null;
+    // Firestore snapshots contain the full collection, but only documents in
+    // docChanges() need reconciliation after the initial snapshot. Processing
+    // every historical daily record serially made a single quantity update slow
+    // as the shared collection grew. The first snapshot reports every document
+    // as added, so it still initializes the full local view.
+    const changedDocs = latest.docChanges().filter(change => change.type !== "removed").map(change => change.doc);
+    if (!changedDocs.length) return;
+    const changedSnapshot = { docs: changedDocs, size: changedDocs.length };
     dailyApplyRunning = true;
-    applyDaily(latest)
+    applyDaily(changedSnapshot)
       .then(() => {
         // Keep the currently open Owner/Staff screen in sync without reloading
         // the whole website. app.js defers rendering while a quantity is edited.
         window.ticketdeskLocalStore?.refresh?.();
         document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
-        syncStatus(`Shared ticket quantities updated: ${latest.size} records.`);
+        syncStatus(`Shared ticket updates applied: ${changedDocs.length} changed records.`);
       })
       .catch(err => syncStatus(`Staff quantity sync failed: ${err?.code || err?.message || "unknown error"}`, true))
       .finally(() => {
