@@ -120,9 +120,21 @@ let renderAfterQtyFocus=false;let cloudRenderTimer=null;
 function scheduleCloudRefresh(){
  clearTimeout(cloudRenderTimer);
  cloudRenderTimer=setTimeout(()=>{
-  // Do not replace a quantity field while the user is typing.
+  // Never replace a quantity field while the user is typing. If a cloud
+  // update arrives during editing, remember it and render immediately on blur
+  // instead of silently dropping the refresh until the whole page is reloaded.
   const active=document.activeElement;
-  if(active&&active.matches&&active.matches('[data-qty]'))return;
+  if(active&&active.matches&&active.matches('[data-qty]')){
+   if(!active.dataset.cloudRefreshOnBlur){
+    active.dataset.cloudRefreshOnBlur='1';
+    active.addEventListener('blur',()=>{
+     delete active.dataset.cloudRefreshOnBlur;
+     clearTimeout(cloudRenderTimer);
+     cloudRenderTimer=setTimeout(()=>renderPage(),0);
+    },{once:true});
+   }
+   return;
+  }
   renderPage();
  },80);
 }
