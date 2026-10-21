@@ -460,7 +460,45 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
       const session = staffSession();
       if (!session || (session.department !== "leader" && session.department !== remote.departmentId)) continue;
     }
-    const ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || t.id === `shared-${remote.ticketId}` || slotCatalogId(t) === remote.ticketId);
+    let ticket = tickets.find(t => t.sharedCatalogId === remote.ticketId || t.id === remote.ticketId || t.id === `shared-${remote.ticketId}` || slotCatalogId(t) === remote.ticketId);
+    // Legacy quantity documents may reference a canonical catalog ID while
+    // an older Staff browser still has a local ticket without that mapping.
+    // Resolve the catalog record by its document ID, then attach that identity
+    // to the one unambiguous local ticket for the same source ID or department/slot.
+    if (!ticket) {
+      try {
+        const catalogSnap = await getDoc(doc(db, "sharedTicketCatalog", String(remote.ticketId)));
+        if (catalogSnap.exists()) {
+          const catalog = catalogSnap.data();
+          if (catalog.departmentId === remote.departmentId) {
+            if (catalog.sourceTicketId) {
+              ticket = tickets.find(t =>
+                t.departmentId === catalog.departmentId &&
+                String(t.id) === String(catalog.sourceTicketId)
+              );
+            }
+            if (!ticket && Number.isInteger(catalog.slotNumber)) {
+              const slotMatches = tickets.filter(t =>
+                t.departmentId === catalog.departmentId &&
+                t.slotNumber === catalog.slotNumber &&
+                (!t.sharedCatalogId || t.sharedCatalogId === remote.ticketId) &&
+                t.sharedFromOwner !== true
+              );
+              if (slotMatches.length === 1) ticket = slotMatches[0];
+            }
+            if (ticket && ticket.sharedCatalogId !== remote.ticketId) {
+              const mappedTicket = { ...ticket, sharedCatalogId: String(remote.ticketId), sharedFromOwner: true };
+              await store.put("tickets", mappedTicket);
+              const index = tickets.findIndex(t => String(t.id) === String(ticket.id));
+              if (index >= 0) tickets[index] = mappedTicket;
+              ticket = mappedTicket;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not resolve legacy shared quantity ticket mapping:", err?.code || err?.message || err);
+      }
+    }
     if (!ticket) { missingTicketMatch = true; continue; }
     const id = `${ticket.id}__${remote.date}`;
     const nextRecord = {
