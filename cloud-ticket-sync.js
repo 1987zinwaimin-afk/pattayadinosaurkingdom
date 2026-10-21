@@ -506,21 +506,14 @@ async function recoverCloudSync() {
   lastRecoveryStartedAt = now;
   recoverySyncRunning = true;
   try {
-    // Owner is the source of truth for ticket definitions. Never apply a remote
-    // catalog snapshot back onto Owner's local ticket list during recovery.
-    if (role === "owner") {
-      // Ticket definitions publish on startup and explicit ticket edits.
-      // Avoid rereading/re-publishing the full catalog on every reconnect.
-      await publishExistingOwnerDaily();
-    } else {
-      const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
-      await applyCatalog(catalog);
-      const daily = await getDocsFromServer(collection(db, "sharedDaily"));
-      await applyDaily(daily);
-    }
-    syncStatus("Cloud sync connected; latest tickets and quantities checked.");
+    // The catalog and daily quantities both have active onSnapshot listeners.
+    // Firestore automatically resumes those listeners after mobile reconnects,
+    // so doing getDocsFromServer(sharedDaily) here duplicates a full collection
+    // read on focus/online/visibility events and can exhaust the read quota.
+    // Keep this recovery hook read-free; the live listeners remain authoritative.
+    syncStatus("Cloud realtime listeners active; waiting for the latest shared updates.");
   } catch (err) {
-    syncStatus("Cloud reconnect sync failed: " + (err?.code || err?.message || "network error"), true);
+    syncStatus("Cloud reconnect check failed: " + (err?.code || err?.message || "network error"), true);
   } finally { recoverySyncRunning = false; }
 }
 // Firestore realtime listeners reconnect automatically. Mobile browsers can emit online,
