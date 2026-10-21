@@ -285,7 +285,18 @@ async function applyCatalog(snapshot) {
     // Never use ticket name as identity. Duplicate names are valid ticket types;
     // matching by name merges them and makes Staff show fewer types than Owner.
     if (!local && Number.isInteger(remote.slotNumber)) {
-      local = localTickets.find(t => isUnclaimed(t) && t.departmentId === remote.departmentId && t.slotNumber === remote.slotNumber && !String(t.name || "").trim());
+      // Existing Staff browsers may already contain locally named ticket records.
+      // Reuse a unique matching department/slot record even when it has a name;
+      // otherwise Staff gets a duplicate "shared-..." card instead of the Owner
+      // ticket. Never guess when multiple unclaimed local records share the slot.
+      const slotMatches = localTickets.filter(t =>
+        isUnclaimed(t) &&
+        t.departmentId === remote.departmentId &&
+        t.slotNumber === remote.slotNumber &&
+        !t.sharedCatalogId &&
+        t.sharedFromOwner !== true
+      );
+      if (slotMatches.length === 1) local = slotMatches[0];
     }
     if (local) claimedLocalIds.add(String(local.id));
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
