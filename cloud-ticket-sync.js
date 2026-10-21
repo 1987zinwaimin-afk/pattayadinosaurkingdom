@@ -605,7 +605,7 @@ document.addEventListener("visibilitychange", () => {
 function startOwner() {
   if (role === "owner") return;
   role = "owner"; started = true;
-  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => console.error("Daily sync failed:", err)));
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).then(() => syncStatus("Daily quantity saved to shared cloud.")).catch(err => syncStatus(`Daily sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => syncStatus(`Daily reset sync failed: ${err?.code || err?.message || "unknown error"}`, true)));
   syncStatus("Owner connected; checking local and shared ticket catalog…");
   waitForLocalStore().then(async () => {
