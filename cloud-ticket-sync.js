@@ -66,6 +66,17 @@ function queueLatestSnapshot(kind, snapshot) {
           // in-memory views without a full page refresh.
           window.ticketdeskLocalStore?.refresh?.();
           document.dispatchEvent(new Event("ticketdesk-cloud-catalog-updated"));
+          // A quantity snapshot can arrive before its ticket's catalog mapping is
+          // ready. Replay the current server quantity records after catalog mapping
+          // finishes, so the value appears without requiring a later write/refresh.
+          if (auth.currentUser && (role === "staff" || role === "owner")) {
+            try {
+              const dailySnapshot = await getDocsFromServer(collection(db, "sharedDaily"));
+              if (!dailySnapshot.empty) await applyDaily(dailySnapshot, false);
+            } catch (err) {
+              syncStatus("Could not reconcile quantities after catalog update: " + (err?.code || err?.message || "sync error"), true);
+            }
+          }
           syncStatus("Shared catalog loaded: " + latest.size + " ticket types.");
         })
         .catch(err => syncStatus("Staff catalog load failed: " + (err?.code || err?.message || "unknown error"), true))
