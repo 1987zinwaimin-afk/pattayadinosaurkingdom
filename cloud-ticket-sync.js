@@ -516,9 +516,8 @@ async function recoverCloudSync() {
     syncStatus("Cloud reconnect check failed: " + (err?.code || err?.message || "network error"), true);
   } finally { recoverySyncRunning = false; }
 }
-// Firestore realtime listeners reconnect automatically. Mobile browsers can emit online,
-// focus and visibilitychange together; debounce these signals so one resume causes at most
-// one recovery read, avoiding repeated full-collection reads and resource-exhausted errors.
+// Mobile browsers can emit online, focus and visibilitychange together; debounce
+// these signals to avoid redundant status updates while live listeners reconnect.
 let recoveryDebounceTimer = null;
 function scheduleCloudRecovery() {
   clearTimeout(recoveryDebounceTimer);
