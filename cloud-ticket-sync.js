@@ -56,13 +56,10 @@ function queueLatestSnapshot(kind, snapshot) {
       catalogApplyRunning = true;
       applyCatalog(latest)
         .then(async catalogChanged => {
-          // Re-read shared quantities only when the catalog actually changed.
-          // Previously every catalog snapshot caused an extra server read of the
-          // entire daily collection, slowing Owner/Staff sync unnecessarily.
-          if (role === "staff" && auth.currentUser && catalogChanged) {
-            const dailySnapshot = await getDocsFromServer(collection(db, "sharedDaily"));
-            await applyDaily(dailySnapshot);
-          }
+          // Quantity updates are already delivered by the dedicated sharedDaily
+          // realtime listener below. Do not fetch the entire collection again
+          // when ticket definitions change: that duplicates reads and can trigger
+          // Firestore resource-exhausted errors on mobile.
           // Notify the UI after every completed cloud snapshot, even when the
           // local record comparison says no fields changed. This repairs stale
           // in-memory views without a full page refresh.
