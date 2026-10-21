@@ -124,7 +124,7 @@ function scheduleCloudRefresh(){
   // update arrives during editing, remember it and render immediately on blur
   // instead of silently dropping the refresh until the whole page is reloaded.
   const active=document.activeElement;
-  if(active&&active.matches&&active.matches('[data-qty]')){
+  if(active&&active.matches&&active.matches('[data-qty]')&&String(active.value||'').trim()!==''){
    if(!active.dataset.cloudRefreshOnBlur){
     active.dataset.cloudRefreshOnBlur='1';
     active.addEventListener('blur',()=>{
