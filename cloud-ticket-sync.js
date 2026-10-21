@@ -461,9 +461,20 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
     const current = await store.get("daily", id);
     const currentTime = Date.parse(current?.updatedAt || "") || 0;
     const remoteTime = Date.parse(nextRecord.updatedAt || "") || 0;
-    // Firestore can deliver queued snapshots after a newer write. Never let
-    // an older snapshot roll back the visible quantity on this device.
-    if (current && currentTime > remoteTime) continue;
+    // A newer local record without sourceUid has not been confirmed as a
+    // cloud-applied record yet. Publish it through the same transaction so the
+    // other device can converge on one shared value instead of leaving the
+    // local screen permanently different from the cloud snapshot.
+    if (current && currentTime > remoteTime) {
+      if (!current.sourceUid && Number.isFinite(currentTime)) {
+        try {
+          await publishDaily({ ...current, ticketId: ticket.id });
+        } catch (err) {
+          syncStatus("Local quantity is newer but could not be shared: " + (err?.code || err?.message || "sync error"), true);
+        }
+      }
+      continue;
+    }
     if (!current || Number(current.quantity || 0) !== nextRecord.quantity ||
         String(current.notes || "") !== nextRecord.notes ||
         String(current.updatedAt || "") !== nextRecord.updatedAt) {
