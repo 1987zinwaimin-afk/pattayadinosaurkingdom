@@ -42,6 +42,7 @@ let pendingCatalogPublish = false;
 const SNAPSHOT_COALESCE_MS = 100;
 let catalogApplyTimer = null, dailyApplyTimer = null;
 let queuedCatalogSnapshot = null, queuedDailySnapshot = null;
+let queuedDailyChanges = new Map();
 let catalogApplyRunning = false, dailyApplyRunning = false;
 
 function queueLatestSnapshot(kind, snapshot) {
@@ -76,25 +77,26 @@ function queueLatestSnapshot(kind, snapshot) {
     return;
   }
   queuedDailySnapshot = snapshot;
+  // Merge document changes across coalesced snapshots. Firestore's docChanges()
+  // is incremental per snapshot; keeping only the latest snapshot can discard
+  // a quantity write from an earlier callback when another write arrives quickly.
+  for (const change of snapshot.docChanges()) {
+    if (change.type === "removed") queuedDailyChanges.delete(change.doc.id);
+    else queuedDailyChanges.set(change.doc.id, change.doc);
+  }
   clearTimeout(dailyApplyTimer);
   dailyApplyTimer = setTimeout(() => {
     dailyApplyTimer = null;
     if (dailyApplyRunning || !queuedDailySnapshot) return;
     const latest = queuedDailySnapshot;
     queuedDailySnapshot = null;
-    // Firestore snapshots contain the full collection, but only documents in
-    // docChanges() need reconciliation after the initial snapshot. Processing
-    // every historical daily record serially made a single quantity update slow
-    // as the shared collection grew. The first snapshot reports every document
-    // as added, so it still initializes the full local view.
-    const changedDocs = latest.docChanges().filter(change => change.type !== "removed").map(change => change.doc);
+    const changedDocs = [...queuedDailyChanges.values()];
+    queuedDailyChanges = new Map();
     if (!changedDocs.length) return;
     const changedSnapshot = { docs: changedDocs, size: changedDocs.length };
     dailyApplyRunning = true;
     applyDaily(changedSnapshot)
       .then(() => {
-        // Keep the currently open Owner/Staff screen in sync without reloading
-        // the whole website. app.js defers rendering while a quantity is edited.
         window.ticketdeskLocalStore?.refresh?.();
         document.dispatchEvent(new Event("ticketdesk-cloud-daily-updated"));
         syncStatus(`Shared ticket updates applied: ${changedDocs.length} changed records.`);
