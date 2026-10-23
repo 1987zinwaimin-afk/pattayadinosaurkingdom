@@ -145,3 +145,29 @@ body.auth-pending .auth-card #ownerLoginButton{
     margin-right:auto!important;
   }
 }
+
+
+/* Login field visibility fix: keep typed text and caret readable on mobile browsers. */
+body.auth-pending .auth-card input,
+body.staff-login-wallpaper main>.panel input,
+body.staff-login-wallpaper main>.panel select{
+  color:#101c33!important;
+  -webkit-text-fill-color:#101c33!important;
+  caret-color:#101c33!important;
+  opacity:1!important;
+  visibility:visible!important;
+  font-family:Inter,"Noto Sans Thai",sans-serif!important;
+  text-shadow:none!important;
+}
+body.auth-pending .auth-card input::placeholder,
+body.staff-login-wallpaper main>.panel input::placeholder{
+  color:#697386!important;
+  -webkit-text-fill-color:#697386!important;
+  opacity:1!important;
+}
+body.auth-pending .auth-card input:focus,
+body.staff-login-wallpaper main>.panel input:focus{
+  color:#101c33!important;
+  -webkit-text-fill-color:#101c33!important;
+  caret-color:#101c33!important;
+}
