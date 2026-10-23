@@ -352,7 +352,33 @@ async function applyCatalog(snapshot) {
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
   const localTickets = await store.all("tickets");
-  const remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+  let remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
+  // Repair duplicate Staff records by creator + source ID + department, never by name.
+  // Only delete duplicates when the snapshot is confirmed from the server.
+  if (!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
+    const staffGroups = new Map();
+    for (const remote of remoteRecords) {
+      if (!remote.sourceUid || !remote.sourceTicketId || !remote.cloudDocId.startsWith("staff__")) continue;
+      const key = String(remote.sourceUid) + "__" + String(remote.departmentId) + "__" + String(remote.sourceTicketId);
+      if (!staffGroups.has(key)) staffGroups.set(key, []);
+      staffGroups.get(key).push(remote);
+    }
+    const duplicateIds = [];
+    for (const group of staffGroups.values()) {
+      if (group.length < 2) continue;
+      const first = group[0];
+      const canonicalId = "staff__" + first.sourceUid + "__" + String(first.sourceTicketId).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const canonical = group.find(item => item.cloudDocId === canonicalId) ||
+        group.slice().sort((a, b) => String(a.updatedAt || "").localeCompare(String(b.updatedAt || ""))).at(-1);
+      for (const duplicate of group) if (duplicate.cloudDocId !== canonical.cloudDocId) duplicateIds.push(duplicate.cloudDocId);
+    }
+    if (duplicateIds.length) {
+      await Promise.all(duplicateIds.map(id => deleteDoc(doc(db, "sharedTicketCatalog", id))));
+      const removed = new Set(duplicateIds);
+      remoteRecords = remoteRecords.filter(item => !removed.has(item.cloudDocId));
+      syncStatus("Duplicate Staff ticket records were reconciled by stable identity.");
+    }
+  }
   let catalogChanged = false;
   const nextIds = new Set(remoteRecords.map(x => x.cloudDocId));
   // One local ticket must map to at most one cloud record. Without this guard,
