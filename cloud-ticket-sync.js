@@ -243,10 +243,11 @@ async function publishStaffTicket(ticket) {
   if (!String(ticket.name || "").trim()) {
     syncStatus("Ticket not synced: add a ticket name before saving.", true); return;
   }
-  if (ticket.sharedCatalogId || ticket.sharedFromOwner === true) return;
+  if (ticket.sharedFromOwner === true) return;
   const id = `staff__${user.uid}__${String(ticket.id).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
-  // Reconcile by creator UID + original ticket ID before writing. This repairs
-  // legacy duplicate catalog docs without collapsing different ticket types.
+  // Always publish subsequent edits to the same stable document. Previously,
+  // any local sharedCatalogId caused an early return, so edits after first save
+  // never reached other devices.
   const existing = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
   const sameStaffTicket = existing.docs.filter(item => {
     const data = item.data();
@@ -272,7 +273,7 @@ async function publishStaffTicket(ticket) {
   const duplicates = sameStaffTicket.filter(item => item.id !== canonicalId);
   await Promise.all(duplicates.map(item => deleteDoc(doc(db,"sharedTicketCatalog",item.id))));
   await window.ticketdeskLocalStore.put("tickets",{...ticket,sharedCatalogId:canonicalId,sharedFromOwner:false});
-  syncStatus("Staff ticket saved to shared cloud; Owner will receive it automatically.");
+  syncStatus("Staff ticket saved to shared cloud; all connected devices will receive updates automatically.");
 }
 
 function queueCatalogPublish(event) {
