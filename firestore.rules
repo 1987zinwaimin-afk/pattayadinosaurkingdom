@@ -149,10 +149,32 @@ service cloud.firestore {
     // Shared ticket catalog: all signed-in sessions can read; only verified Owner can publish.
     match /sharedTicketCatalog/{catalogId} {
       allow read: if signedIn();
-      allow create, update: if isOwner();
-      // Staff may delete only their own ticket document, with exact UID and source ID.
+      // Owner owns edits. Anonymous Staff sessions may create new, uniquely
+      // attributed ticket records; the client limits department to its Staff session.
+      allow create: if isOwner()
+        || (signedIn()
+          && request.auth.token.firebase.sign_in_provider == 'anonymous'
+          && request.resource.data.sourceUid == request.auth.uid
+          && request.resource.data.catalogId == catalogId
+          && request.resource.data.sourceTicketId is string
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 160
+          && request.resource.data.departmentId in ['sales', 'entry', 'playing', 'event']
+          && request.resource.data.keys().hasOnly([
+            'catalogId','sourceTicketId','sourceUid','sourceName','departmentId',
+            'name','notes','slotNumber','inventory','imageData','updatedAt'
+          ]));
+      allow update: if isOwner()
+        || (signedIn()
+          && request.auth.token.firebase.sign_in_provider == 'anonymous'
+          && resource.data.sourceUid == request.auth.uid
+          && request.resource.data.sourceUid == resource.data.sourceUid
+          && request.resource.data.catalogId == catalogId
+          && request.resource.data.departmentId == resource.data.departmentId);
       allow delete: if isOwner()
         || (signedIn()
+          && request.auth.token.firebase.sign_in_provider == 'anonymous'
           && resource.data.sourceUid == request.auth.uid
           && resource.data.catalogId == catalogId
           && resource.data.sourceTicketId is string
