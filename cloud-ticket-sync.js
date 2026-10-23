@@ -715,6 +715,54 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") scheduleCloudRecovery();
 });
 
+async function applyReports(snapshot) {
+  if (role !== "owner" && role !== "staff") return;
+  await waitForLocalStore();
+  const store = window.ticketdeskLocalStore;
+  const current = await store.all("reports");
+  const session = staffSession();
+  const allowed = report => role === "owner" || (session && (session.department === "leader" || session.department === report.departmentId));
+  const remoteIds = new Set();
+  for (const item of snapshot.docs) {
+    const data = item.data();
+    const departmentId = data.departmentId || data.department;
+    if (!DEPTS.includes(departmentId)) continue;
+    if (!allowed({ ...data, departmentId })) continue;
+    const report = { ...data, id: item.id, departmentId };
+    remoteIds.add(String(item.id));
+    const existing = current.find(x => String(x.id) === String(item.id));
+    if (!existing || JSON.stringify(existing) !== JSON.stringify(report)) await store.put("reports", report);
+  }
+  // Never erase records based on a cached/offline snapshot.
+  if (!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
+    for (const report of current) {
+      if (allowed(report) && !remoteIds.has(String(report.id))) await store.del("reports", report.id);
+    }
+  }
+  window.ticketdeskLocalStore.refresh?.();
+}
+async function publishReportChange(detail) {
+  if (!auth.currentUser || !detail) return;
+  if (detail.action === "delete" && detail.id) {
+    await deleteDoc(doc(db, "reports", String(detail.id)));
+    return;
+  }
+  const report = detail.report;
+  if (detail.action !== "upsert" || !report || !DEPTS.includes(report.departmentId)) return;
+  const session = staffSession();
+  if (role === "staff" && session && session.department !== "leader" && session.department !== report.departmentId) {
+    syncStatus("Report sync blocked: this Staff account cannot update that department.", true);
+    return;
+  }
+  // Firestore rules use department for access checks; retain departmentId for app compatibility.
+  const payload = { ...report, department: report.departmentId, updatedAt: report.updatedAt || new Date().toISOString() };
+  await setDoc(doc(db, "reports", String(report.id)), payload);
+  syncStatus("Report saved to shared cloud.");
+}
+document.addEventListener("ticketdesk-report-changed", event => {
+  publishReportChange(event.detail).catch(err => syncStatus("Report cloud sync failed: " + (err?.code || err?.message || "unknown error"), true));
+});
+
 function startOwner() {
   if (role === "owner") return;
   role = "owner"; started = true;
@@ -741,6 +789,7 @@ function startOwner() {
   }).catch(err => syncStatus("Initial Owner sync failed: " + (err?.code || err?.message || "unknown error"), true));
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  onSnapshot(collection(db, "reports"), snapshot => applyReports(snapshot).catch(err => syncStatus("Cloud report load failed: " + (err?.code || err?.message || "unknown error"), true)), err => syncStatus("Cloud report listener failed: " + (err?.code || err?.message || "unknown error"), true));
 }
 let staffHeartbeatTimer = null;
 async function updateStaffHeartbeat(){
