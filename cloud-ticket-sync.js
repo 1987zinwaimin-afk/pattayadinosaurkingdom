@@ -419,7 +419,10 @@ async function applyCatalog(snapshot) {
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
     if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
     if (local) {
-      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: true, slotNumber: Number.isInteger(remote.slotNumber) ? remote.slotNumber : local.slotNumber, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      // Owner-created catalog entries have no sourceUid; Staff-created entries do.
+      // Preserve that distinction on every device so Staff tickets are not
+      // incorrectly treated as Owner-owned and silently blocked from updates.
+      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: !remote.sourceUid, sharedSourceUid: remote.sourceUid || null, slotNumber: Number.isInteger(remote.slotNumber) ? remote.slotNumber : local.slotNumber, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
       else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       if (JSON.stringify(local) !== JSON.stringify(updated)) {
@@ -431,11 +434,12 @@ async function applyCatalog(snapshot) {
     } else {
       const created = {
         id: `shared-${remote.cloudDocId}`, sharedCatalogId: remote.cloudDocId,
+        // Keep Staff-created tickets distinguishable from Owner-created tickets.
+        sharedFromOwner: !remote.sourceUid, sharedSourceUid: remote.sourceUid || null,
         departmentId: remote.departmentId, name: remote.name, notes: remote.notes || "",
         inventory: remote.inventory ?? null, imageId: remote.imageData ? sharedImageId : null,
         slot: false, slotNumber: remote.slotNumber ?? undefined,
         createdAt: remote.updatedAt || new Date().toISOString(), updatedAt: remote.updatedAt || new Date().toISOString(),
-        sharedFromOwner: true
       };
       await store.put("tickets", created);
       localTickets.push(created);
