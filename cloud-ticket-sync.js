@@ -154,7 +154,7 @@ async function publishOwnerCatalog() {
   if (auth.currentUser.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
-  const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId) && t.sharedFromOwner !== true && !t.sharedCatalogId?.startsWith?.("staff__"));
+  const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId) && !t.sharedSourceUid && !t.sharedCatalogId?.startsWith?.("staff__"));
   // Never erase the cloud catalog when this browser has only empty starter slots (or no local tickets).
   if (!tickets.some(t => String(t.name || "").trim()) && !explicitOwnerDeletePending) {
     console.warn("Cloud catalog publish skipped: no named local tickets to safely reconcile.");
