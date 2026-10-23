@@ -1,0 +1,60 @@
+/* Pattaya Dinosaur Kingdom — additive visual theme only. Keep application behavior in existing files. */
+:root{
+ --navy:#07172f;--navy2:#102b4d;--gold:#ddb45c;--gold-light:#f6d98d;
+ --ink:#edf4ff;--muted:#aabbd2;--line:rgba(160,190,225,.22);--bg:#071326;
+ --white:#10213b;--shadow:0 12px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.06);
+}
+body{background:radial-gradient(ellipse at 80% -10%,#18385f 0,transparent 42%),linear-gradient(145deg,#071326,#0a1b34 60%,#08152a);color:var(--ink)}
+h1,h2,h3,.dept-count,.stat-number,.report-total,td strong{color:#f5f8ff}
+.sidebar{background:linear-gradient(160deg,#102b4b,#071326 72%);border-right:1px solid rgba(221,180,92,.35);box-shadow:10px 0 35px #02091655}
+.brand{border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand strong{color:#f6d98d;letter-spacing:.3px}
+.nav-item{border:1px solid transparent;transition:background .2s,border-color .2s,transform .2s,box-shadow .2s}
+.nav-item.active,.nav-item:hover{background:linear-gradient(135deg,rgba(221,180,92,.24),rgba(31,68,108,.62));border-color:rgba(221,180,92,.42);box-shadow:inset 0 1px rgba(255,255,255,.12),0 5px 14px #02091635}
+.nav-item:hover{transform:translateX(2px)}
+.topbar{background:rgba(8,24,45,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line);box-shadow:0 8px 24px #02091630}
+.top-title>span,.page-head p,.stat-top,.stat-sub,.muted,.footer,.sidebar-foot{color:var(--muted)}
+.stat-card,.panel,.department-card,.ticket-card,.report-card{background:linear-gradient(145deg,rgba(22,48,79,.94),rgba(9,27,50,.96));border:1px solid rgba(157,190,229,.24);border-radius:17px;box-shadow:0 12px 26px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.09);color:var(--ink);transition:transform .2s,border-color .2s,box-shadow .2s}
+.stat-card:hover,.department-card:hover,.report-card:hover{transform:translateY(-2px);border-color:rgba(221,180,92,.52);box-shadow:0 16px 32px #02091655,inset 0 1px 0 #ffffff14}
+.stat-icon{background:linear-gradient(145deg,#f8dfa0,#b88a35);color:#10213b;box-shadow:inset 0 2px 3px #fff8,0 4px 9px #0003}
+.btn{border-radius:11px;transition:transform .15s,box-shadow .15s,filter .15s;border:1px solid transparent}
+.btn:active,.icon-button:active{transform:translateY(2px);box-shadow:inset 0 3px 8px #0004}
+.btn-primary{background:linear-gradient(145deg,#1d4775,#0c2443);border-color:#527ba8;color:#fff;box-shadow:0 5px 0 #061326,0 8px 15px #0003,inset 0 1px #ffffff30}
+.btn-primary:hover{background:linear-gradient(145deg,#28598d,#123356);transform:translateY(-1px)}
+.btn-gold,.auth-card .btn-primary{background:linear-gradient(145deg,#f5d889,#c69a42);border-color:#ffe7a5;color:#17243a;box-shadow:0 5px 0 #8d6927,0 8px 15px #0003,inset 0 1px #fff9}
+.btn-gold:hover,.auth-card .btn-primary:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.btn-secondary,.icon-button{background:linear-gradient(145deg,#183454,#0d223e);border-color:#355575;color:#edf4ff;box-shadow:0 4px 0 #061326,inset 0 1px #ffffff12}
+.field label{color:#d4dfef}
+.field input,.field select,.field textarea,.search-input,.date-input,.top-actions select,.qty-input{background:#091a30;color:#f4f7ff;border:1px solid #314c6b;border-radius:10px}
+.field input::placeholder,.field textarea::placeholder,.search-input::placeholder{color:#8096b2}
+.field input:focus,.field select:focus,.field textarea:focus,.search-input:focus,.qty-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px #ddb45c24}
+.ticket-image-wrap{background:linear-gradient(145deg,#132f50,#091a30);border-bottom:1px solid var(--line)}
+.ticket-body{background:linear-gradient(160deg,rgba(18,43,72,.82),rgba(8,25,46,.95))}
+.ticket-name{color:#f6f8fd}
+.mini-ticket{background:#0c2039;border-color:#36516f}
+.tag{background:#103e39;color:#a6f0d0}.tag.unsaved{background:#4b3918;color:#ffdf91}
+.empty-state{background:rgba(10,27,49,.72);border-color:#3a5574;color:#afc0d6}
+th{background:#122a47;color:#c9d8eb}
+td,th{border-bottom-color:rgba(160,190,225,.17)}
+.modal{background:#0d213b;color:#edf4ff;border:1px solid #426080;box-shadow:0 25px 80px #0009}
+.modal-title{color:#f6d98d}
+.modal::backdrop{background:#020917c9;backdrop-filter:blur(5px)}
+#modalContent{color:#edf4ff}
+.notice{background:#392f1a;border-color:#81652c;color:#ffe4a3}
+.toast{background:#102b4b;border:1px solid #476889;box-shadow:0 12px 30px #0006}
+.toast.error{background:#572421}.toast.success{background:#124c3a}
+.auth-gate{background:radial-gradient(ellipse at 50% 0,#1a3a60 0,transparent 55%),linear-gradient(145deg,#061326,#0c2340)!important}
+.auth-card,.staff-login-wallpaper .panel{background:linear-gradient(145deg,rgba(21,48,79,.96),rgba(7,23,43,.97))!important;color:#edf4ff!important;border:1px solid rgba(221,180,92,.38)!important;border-radius:22px!important;box-shadow:0 24px 60px #0006,inset 0 1px #ffffff18!important}
+.auth-card h1,.staff-login-wallpaper h1,.staff-login-wallpaper h2{color:#f6d98d!important}
+.auth-description,.auth-status,.help-text{color:#b7c8de}
+.auth-card label,.staff-login-wallpaper .field label{color:#d4dfef}
+.auth-card input,.staff-login-wallpaper input,.staff-login-wallpaper select{background:#091a30!important;color:#f4f7ff!important;border:1px solid #355575!important;border-radius:10px!important}
+.staff-login-wallpaper{min-height:100vh;background:radial-gradient(ellipse at 50% 0,#1a3a60 0,transparent 55%),linear-gradient(145deg,#061326,#0c2340)!important;color:#edf4ff}
+@media(max-width:760px){
+ .sidebar{background:linear-gradient(160deg,#102b4b,#071326 72%);border-right:1px solid rgba(221,180,92,.35)}
+ .topbar{background:rgba(8,24,45,.96)}
+ .stat-card,.panel,.department-card,.ticket-card,.report-card{border-radius:14px}
+ .content{padding-top:16px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+@media print{body{background:#fff!important;color:#111!important}.stat-card,.panel,.department-card,.ticket-card,.report-card{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #ddd!important}h1,h2,h3,td strong,.stat-number,.report-total{color:#111!important}}
