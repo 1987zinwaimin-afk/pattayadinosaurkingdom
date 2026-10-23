@@ -159,3 +159,61 @@ body,.app-shell,.main,.content{background:transparent;color:#edf4ff}
  .top-actions select{max-width:90px;font-size:12px}
  #appContent .dashboard-grid,#appContent .stats-grid,#appContent .ticket-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Compact usability pass — Owner and Staff workspace, mobile-first. */
+:root{--ui-gap:12px}
+button,select,input,textarea{font-size:14px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #f6d98d;outline-offset:2px}
+#appContent .page-head{gap:10px;margin-bottom:14px}
+#appContent .page-head .actions{display:flex;flex-wrap:wrap;gap:8px}
+#appContent .panel,#appContent .stat-card,#appContent .department-card,#appContent .ticket-card,#appContent .report-card{border-radius:14px}
+#appContent .stats-grid,#appContent .dashboard-grid,#appContent .ticket-grid{gap:10px}
+#appContent .ticket-card{min-width:0;display:flex;flex-direction:column}
+#appContent .ticket-image-wrap{aspect-ratio:16/9;min-height:0;overflow:hidden}
+#appContent .ticket-image-wrap img{display:block;width:100%;height:100%;object-fit:cover}
+#appContent .ticket-body{gap:10px;padding:11px}
+#appContent .ticket-id{font-size:11px;overflow-wrap:anywhere;opacity:.8}
+#appContent .ticket-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+#appContent .ticket-actions>.btn{min-width:0;padding:9px 10px;white-space:normal}
+#appContent .ticket-more summary{min-height:40px;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;border-radius:10px}
+#appContent .ticket-more-menu{z-index:5;min-width:145px}
+#appContent .ticket-more-menu button{width:100%;min-height:42px;text-align:left;padding:10px 12px}
+#appContent .qty-input{min-height:46px!important;font-size:18px!important}
+#appContent .toolbar{gap:8px;margin-bottom:12px}
+#appContent .toolbar input,#appContent .toolbar select{min-height:42px}
+#appContent .form-grid{gap:12px}
+#appContent label{line-height:1.4}
+#appContent table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#appContent .btn{min-height:42px;border-radius:10px}
+.sidebar{padding:16px 12px}
+.brand{padding:0 8px 18px;margin-bottom:12px}
+.nav-item{padding:10px 11px;margin:2px 0;border-radius:10px}
+.topbar{padding-top:10px;padding-bottom:10px}
+.footer{font-size:11px;padding:10px 14px}
+@media(max-width:760px){
+ .sidebar{width:min(290px,86vw);padding:14px 12px}
+ .main{min-width:0;width:100%}
+ .content{padding:14px 11px 24px}
+ .topbar{gap:8px;padding:10px 11px}
+ .top-title h1,#pageTitle{font-size:18px}
+ .top-actions .logout-button{min-height:40px;padding:8px 10px}
+ #appContent .page-head .actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #appContent .page-head .actions>.btn{width:100%;min-width:0;padding:9px 8px}
+ #appContent .ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #appContent .ticket-body{padding:9px;gap:8px}
+ #appContent .ticket-name{font-size:13px;line-height:1.35}
+ #appContent .ticket-actions{grid-template-columns:minmax(0,1fr) auto;gap:5px}
+ #appContent .ticket-actions>.btn{font-size:12px;padding:8px 7px;min-height:40px}
+ #appContent .ticket-more summary{font-size:12px;padding:7px}
+ #appContent .qty-input{padding:8px!important;min-height:44px!important}
+ #appContent .stat-card,#appContent .department-card{padding:12px}
+ #appContent .toolbar .toolbar-left,#appContent .toolbar .toolbar-right{width:100%;gap:8px}
+ #appContent .toolbar .toolbar-left>* ,#appContent .toolbar .toolbar-right>*{min-width:0;max-width:100%}
+}
+@media(max-width:360px){
+ #appContent .ticket-grid{grid-template-columns:minmax(0,1fr)}
+ #appContent .ticket-image-wrap{aspect-ratio:16/7}
+ #appContent .ticket-body{padding:11px}
+ #appContent .ticket-name{font-size:14px}
+}
