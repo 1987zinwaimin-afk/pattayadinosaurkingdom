@@ -451,21 +451,21 @@ async function applyCatalog(snapshot) {
   // Never remove shared tickets based on a cached/offline catalog snapshot.
   // Firestore may first emit a cache view that is incomplete or stale; treating
   // it as authoritative makes Owner tickets flicker or disappear on Staff.
+  // A server-confirmed catalog is authoritative for every ticket that has a
+  // sharedCatalogId, regardless of whether it was first created by Owner or Staff.
+  // Keeping a missing Staff-origin record locally lets it reappear or be republished
+  // after deletion, and legacy duplicates otherwise survive indefinitely.
   const possibleMissingSharedTicket = localTickets.some(local =>
-    local.sharedFromOwner === true && local.sharedCatalogId && !nextIds.has(local.sharedCatalogId)
+    local?.sharedCatalogId && !nextIds.has(local.sharedCatalogId)
   );
   if (possibleMissingSharedTicket && !snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
-    // Only pay for a second server read when this snapshot appears to omit an
-    // existing shared ticket. Normal quantity/catalog updates avoid this extra
-    // network round-trip; suspected deletions still require server confirmation.
     const confirmedSnapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
     const confirmedIds = new Set(confirmedSnapshot.docs.map(d => d.id));
     for (const local of localTickets) {
-      if (local.sharedFromOwner === true && local.sharedCatalogId && !confirmedIds.has(local.sharedCatalogId)) {
-        if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
-        await store.del("tickets", local.id);
-        catalogChanged = true;
-      }
+      if (!local?.sharedCatalogId || confirmedIds.has(local.sharedCatalogId)) continue;
+      if (String(local.imageId || "").startsWith("shared-img-")) await store.del("images", local.imageId);
+      await store.del("tickets", local.id);
+      catalogChanged = true;
     }
   }
   lastCatalogIds = nextIds;
