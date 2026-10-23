@@ -149,8 +149,6 @@ service cloud.firestore {
     // Shared ticket catalog: all signed-in sessions can read; only verified Owner can publish.
     match /sharedTicketCatalog/{catalogId} {
       allow read: if signedIn();
-      // Owner owns edits. Anonymous Staff sessions may create new, uniquely
-      // attributed ticket records; the client limits department to its Staff session.
       allow create: if isOwner()
         || (signedIn()
           && request.auth.token.firebase.sign_in_provider == 'anonymous'
@@ -165,19 +163,24 @@ service cloud.firestore {
             'catalogId','sourceTicketId','sourceUid','sourceName','departmentId',
             'name','notes','slotNumber','inventory','imageData','updatedAt'
           ]));
+      // Staff can edit/delete shared tickets; restrict mutations to known ticket
+      // fields and a valid department. Owner remains unrestricted.
       allow update: if isOwner()
         || (signedIn()
           && request.auth.token.firebase.sign_in_provider == 'anonymous'
-          && resource.data.sourceUid == request.auth.uid
-          && request.resource.data.sourceUid == resource.data.sourceUid
+          && resource.data.departmentId in ['sales', 'entry', 'playing', 'event']
+          && request.resource.data.departmentId == resource.data.departmentId
           && request.resource.data.catalogId == catalogId
-          && request.resource.data.departmentId == resource.data.departmentId);
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 160
+          && request.resource.data.keys().hasOnly([
+            'catalogId','sourceTicketId','sourceUid','sourceName','departmentId',
+            'name','notes','slotNumber','inventory','imageData','updatedAt'
+          ]));
       allow delete: if isOwner()
         || (signedIn()
           && request.auth.token.firebase.sign_in_provider == 'anonymous'
-          && resource.data.sourceUid == request.auth.uid
-          && resource.data.catalogId == catalogId
-          && resource.data.sourceTicketId is string
           && resource.data.departmentId in ['sales', 'entry', 'playing', 'event']);
     }
 
