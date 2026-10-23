@@ -161,7 +161,7 @@ async function publishOwnerCatalog() {
   if (auth.currentUser.email?.toLowerCase() !== OWNER) return;
   await waitForLocalStore();
   const store = window.ticketdeskLocalStore;
-  const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId));
+  const tickets = (await store.all("tickets")).filter(t => t && DEPTS.includes(t.departmentId) && t.sharedFromOwner !== true && !t.sharedCatalogId?.startsWith?.("staff__"));
   // Never erase the cloud catalog when this browser has only empty starter slots (or no local tickets).
   if (!tickets.some(t => String(t.name || "").trim()) && !explicitOwnerDeletePending) {
     console.warn("Cloud catalog publish skipped: no named local tickets to safely reconcile.");
@@ -245,21 +245,33 @@ async function publishStaffTicket(ticket) {
   }
   if (ticket.sharedCatalogId || ticket.sharedFromOwner === true) return;
   const id = `staff__${user.uid}__${String(ticket.id).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+  // Reconcile by creator UID + original ticket ID before writing. This repairs
+  // legacy duplicate catalog docs without collapsing different ticket types.
+  const existing = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
+  const sameStaffTicket = existing.docs.filter(item => {
+    const data = item.data();
+    return data.sourceUid === user.uid
+      && String(data.sourceTicketId || "") === String(ticket.id)
+      && data.departmentId === ticket.departmentId;
+  });
+  const canonicalId = sameStaffTicket.find(item => item.id === id)?.id || id;
   let imageData = await imageFor(ticket);
   if (imageData && imageData.length > 760000) {
     syncStatus("Ticket details synced, but its image is too large to upload.", true);
     imageData = null;
   }
   const payload = {
-    catalogId:id, sourceTicketId:String(ticket.id), sourceUid:user.uid,
+    catalogId:canonicalId, sourceTicketId:String(ticket.id), sourceUid:user.uid,
     sourceName:String(session.name || "").slice(0,80),
     departmentId:ticket.departmentId, name:String(ticket.name).slice(0,160),
     notes:String(ticket.notes || "").slice(0,1000),
     slotNumber:null, inventory:Number.isFinite(ticket.inventory)?ticket.inventory:null,
     imageData:imageData || null, updatedAt:new Date().toISOString()
   };
-  await setDoc(doc(db,"sharedTicketCatalog",id),payload);
-  await window.ticketdeskLocalStore.put("tickets",{...ticket,sharedCatalogId:id,sharedFromOwner:false});
+  await setDoc(doc(db,"sharedTicketCatalog",canonicalId),{...payload,catalogId:canonicalId});
+  const duplicates = sameStaffTicket.filter(item => item.id !== canonicalId);
+  await Promise.all(duplicates.map(item => deleteDoc(doc(db,"sharedTicketCatalog",item.id))));
+  await window.ticketdeskLocalStore.put("tickets",{...ticket,sharedCatalogId:canonicalId,sharedFromOwner:false});
   syncStatus("Staff ticket saved to shared cloud; Owner will receive it automatically.");
 }
 
