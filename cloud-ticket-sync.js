@@ -243,17 +243,20 @@ async function publishStaffTicket(ticket) {
   if (!String(ticket.name || "").trim()) {
     syncStatus("Ticket not synced: add a ticket name before saving.", true); return;
   }
-  if (ticket.sharedFromOwner === true) return;
-  const id = `staff__${user.uid}__${String(ticket.id).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+  // Staff accounts can edit any shared ticket in their assigned department.
+  // Keep the existing shared catalog ID so edits update the same ticket on every device.
+  const id = ticket.sharedCatalogId || `staff__${user.uid}__${String(ticket.id).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
   // Always publish subsequent edits to the same stable document. Previously,
   // any local sharedCatalogId caused an early return, so edits after first save
   // never reached other devices.
   const existing = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
   const sameStaffTicket = existing.docs.filter(item => {
     const data = item.data();
-    return data.sourceUid === user.uid
-      && String(data.sourceTicketId || "") === String(ticket.id)
-      && data.departmentId === ticket.departmentId;
+    return item.id === id || (
+      data.departmentId === ticket.departmentId &&
+      String(data.sourceTicketId || "") === String(ticket.sourceTicketId || ticket.id) &&
+      (data.sourceUid === user.uid || item.id === ticket.sharedCatalogId)
+    );
   });
   const canonicalId = sameStaffTicket.find(item => item.id === id)?.id || id;
   let imageData = await imageFor(ticket);
@@ -262,7 +265,8 @@ async function publishStaffTicket(ticket) {
     imageData = null;
   }
   const payload = {
-    catalogId:canonicalId, sourceTicketId:String(ticket.id), sourceUid:user.uid,
+    catalogId:canonicalId, sourceTicketId:String(ticket.sourceTicketId || ticket.id),
+    sourceUid:ticket.sharedSourceUid || ticket.sourceUid || user.uid,
     sourceName:String(session.name || "").slice(0,80),
     departmentId:ticket.departmentId, name:String(ticket.name).slice(0,160),
     notes:String(ticket.notes || "").slice(0,1000),
@@ -294,10 +298,8 @@ function queueCatalogPublish(event) {
       const snapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
       const matches = snapshot.docs.filter(item => {
         const data = item.data();
-        return data.departmentId === ticket.departmentId
-          && String(data.sourceTicketId || "") === String(ticket.id)
-          && data.sourceUid === auth.currentUser.uid
-          && (item.id === ticket.sharedCatalogId || item.id === String(ticket.id));
+        return item.id === ticket.sharedCatalogId
+          && data.departmentId === ticket.departmentId;
       });
       await Promise.all(matches.map(item => deleteDoc(doc(db, "sharedTicketCatalog", item.id))));
       if (matches.length) syncStatus("Your Staff-created ticket was removed from the shared catalog.");
