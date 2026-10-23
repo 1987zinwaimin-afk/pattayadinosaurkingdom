@@ -234,6 +234,35 @@ async function publishOwnerCatalog() {
   explicitOwnerDeletePending = false;
   syncStatus(`Cloud sync complete: ${desired.size} named ticket types published.`);
 }
+async function publishStaffTicket(ticket) {
+  const session = staffSession(), user = auth.currentUser;
+  if (role !== "staff" || !session || !user || !user.isAnonymous || !ticket || !DEPTS.includes(ticket.departmentId)) return;
+  if (session.department !== "leader" && session.department !== ticket.departmentId) {
+    syncStatus("Ticket sync blocked: this Staff account cannot add tickets to that department.", true); return;
+  }
+  if (!String(ticket.name || "").trim()) {
+    syncStatus("Ticket not synced: add a ticket name before saving.", true); return;
+  }
+  if (ticket.sharedCatalogId || ticket.sharedFromOwner === true) return;
+  const id = `staff__${user.uid}__${String(ticket.id).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+  let imageData = await imageFor(ticket);
+  if (imageData && imageData.length > 760000) {
+    syncStatus("Ticket details synced, but its image is too large to upload.", true);
+    imageData = null;
+  }
+  const payload = {
+    catalogId:id, sourceTicketId:String(ticket.id), sourceUid:user.uid,
+    sourceName:String(session.name || "").slice(0,80),
+    departmentId:ticket.departmentId, name:String(ticket.name).slice(0,160),
+    notes:String(ticket.notes || "").slice(0,1000),
+    slotNumber:null, inventory:Number.isFinite(ticket.inventory)?ticket.inventory:null,
+    imageData:imageData || null, updatedAt:new Date().toISOString()
+  };
+  await setDoc(doc(db,"sharedTicketCatalog",id),payload);
+  await window.ticketdeskLocalStore.put("tickets",{...ticket,sharedCatalogId:id,sharedFromOwner:false});
+  syncStatus("Staff ticket saved to shared cloud; Owner will receive it automatically.");
+}
+
 function queueCatalogPublish(event) {
   if (!role) {
     // Ticket edits can happen while Firebase is still restoring the Owner session.
@@ -242,6 +271,10 @@ function queueCatalogPublish(event) {
   }
   const detail = event?.detail || {};
   if (role === "staff") {
+    if (detail.action === "upsert" && detail.ticket) {
+      publishStaffTicket(detail.ticket).catch(err => syncStatus(`Staff ticket publish failed: ${err?.code || err?.message || "unknown error"}`, true));
+      return;
+    }
     if (detail.action !== "delete" || !auth.currentUser || !detail.ticket) return;
     const ticket = detail.ticket;
     (async () => {
@@ -658,7 +691,7 @@ function startOwner() {
     await publishExistingOwnerDaily();
     syncStatus("Owner catalog and existing daily quantities synced.");
   }).catch(err => syncStatus("Initial Owner sync failed: " + (err?.code || err?.message || "unknown error"), true));
-  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), snapshot => { lastCatalogIds = new Set(snapshot.docs.map(d => d.id)); syncStatus("Owner catalog snapshot observed; local Owner tickets remain authoritative."); }, err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Owner catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Daily sync listener failed: ${err?.code || err?.message || "unknown error"}`, true));
 }
 let staffHeartbeatTimer = null;
