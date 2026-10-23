@@ -58,3 +58,34 @@ td,th{border-bottom-color:rgba(160,190,225,.17)}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 @media print{body{background:#fff!important;color:#111!important}.stat-card,.panel,.department-card,.ticket-card,.report-card{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #ddd!important}h1,h2,h3,td strong,.stat-number,.report-total{color:#111!important}}
+
+/* Dashboard polish pass: ensure legacy light surfaces are overridden by the luxury theme. */
+html{background:#071326}
+body,.app-shell,.main,.content{background:transparent;color:#edf4ff}
+.topbar{color:#edf4ff}
+.top-title h1,#pageTitle{color:#f5d98d}
+.page-head h2,.page-head h1{color:#f5d98d}
+.page-head p{color:#b8c9df}
+.content{isolation:isolate}
+.content::before{content:"";position:fixed;inset:94px 0 0 250px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 90% 0,rgba(31,74,119,.32),transparent 45%),linear-gradient(145deg,rgba(7,19,38,.2),rgba(9,27,50,.12))}
+#appContent .panel,#appContent .stat-card,#appContent .department-card,#appContent .ticket-card,#appContent .report-card,
+#appContent [class*="card"],#appContent [class*="panel"]{background:linear-gradient(145deg,rgba(20,45,74,.98),rgba(8,25,47,.98));color:#edf4ff;border-color:rgba(221,180,92,.2);box-shadow:0 12px 26px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.08)}
+#appContent .stat-top,#appContent .stat-sub,#appContent .muted,#appContent small{color:#b8c9df}
+#appContent .dept-title,#appContent .ticket-name,#appContent label{color:#edf4ff}
+#appContent .stat-number,#appContent .dept-count,#appContent .report-total{color:#f6d98d}
+#appContent input,#appContent select,#appContent textarea{background:#091a30;color:#f4f7ff;border:1px solid #355575}
+#appContent input::placeholder,#appContent textarea::placeholder{color:#91a5bf}
+#appContent .toolbar,#appContent .actions{color:#e8eff9}
+#appContent table{background:rgba(8,25,47,.9);color:#edf4ff;border-color:rgba(160,190,225,.18)}
+#appContent td{color:#e7eef9;background:transparent}
+#appContent tr:hover td{background:rgba(221,180,92,.06)}
+#appContent .btn-gold{background:linear-gradient(145deg,#f5d889,#c69a42);color:#17243a;border:1px solid #ffe7a5;box-shadow:0 5px 0 #8d6927,0 8px 15px #0003,inset 0 1px #fff9}
+#appContent .btn-secondary{background:linear-gradient(145deg,#183454,#0d223e);color:#edf4ff;border-color:#355575}
+#appContent .date-input,#appContent input[type="date"]{min-width:0;max-width:100%}
+@media(max-width:760px){
+ .main{margin-left:0}
+ .content::before{inset:76px 0 0 0}
+ .topbar{color:#edf4ff}
+ .top-actions select{background:#0d223e;color:#edf4ff}
+ .footer{color:#aabbd2}
+}
