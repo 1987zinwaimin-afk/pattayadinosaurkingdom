@@ -149,26 +149,26 @@ service cloud.firestore {
     // Shared ticket catalog: all signed-in sessions can read; only verified Owner can publish.
     match /sharedTicketCatalog/{catalogId} {
       allow read: if signedIn();
+      // Staff catalog writes require an approved profile and assigned department.
+      // Owner can manage all departments.
       allow create: if isOwner()
-        || (signedIn()
-          && request.auth.token.firebase.sign_in_provider == 'anonymous'
+        || (hasApprovedProfile()
+          && validDepartment(request.resource.data.departmentId)
+          && canUseDepartment(request.resource.data.departmentId)
           && request.resource.data.sourceUid == request.auth.uid
           && request.resource.data.catalogId == catalogId
           && request.resource.data.sourceTicketId is string
           && request.resource.data.name is string
           && request.resource.data.name.size() >= 1
           && request.resource.data.name.size() <= 160
-          && request.resource.data.departmentId in ['sales', 'entry', 'playing', 'event']
           && request.resource.data.keys().hasOnly([
             'catalogId','sourceTicketId','sourceUid','sourceName','departmentId',
             'name','notes','slotNumber','inventory','imageData','updatedAt'
           ]));
-      // Staff can edit/delete shared tickets; restrict mutations to known ticket
-      // fields and a valid department. Owner remains unrestricted.
       allow update: if isOwner()
-        || (signedIn()
-          && request.auth.token.firebase.sign_in_provider == 'anonymous'
-          && resource.data.departmentId in ['sales', 'entry', 'playing', 'event']
+        || (hasApprovedProfile()
+          && validDepartment(resource.data.departmentId)
+          && canUseDepartment(resource.data.departmentId)
           && request.resource.data.departmentId == resource.data.departmentId
           && request.resource.data.catalogId == catalogId
           && request.resource.data.name is string
@@ -179,9 +179,9 @@ service cloud.firestore {
             'name','notes','slotNumber','inventory','imageData','updatedAt'
           ]));
       allow delete: if isOwner()
-        || (signedIn()
-          && request.auth.token.firebase.sign_in_provider == 'anonymous'
-          && resource.data.departmentId in ['sales', 'entry', 'playing', 'event']);
+        || (hasApprovedProfile()
+          && validDepartment(resource.data.departmentId)
+          && canUseDepartment(resource.data.departmentId));
     }
 
     match /sharedDaily/{recordId} {
