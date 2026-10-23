@@ -38,23 +38,38 @@ function todayLabel(){return fmtDate(localDate());}
 function toast(message,type='success'){const el=document.createElement('div');el.className='toast '+type;el.textContent=message;$('#toastRegion').append(el);setTimeout(()=>el.remove(),3600);}
 function confirmBox(message){return window.confirm(message);}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
-const DB_NAME='ticket-desk-db', DB_VERSION=1;
-let db;
-let fallbackStorage=false;
+// Cloud-first storage: application records exist in memory only. Firestore listeners
+// repopulate them after authentication; no ticket/report/image data is written to
+// IndexedDB or localStorage. Staff login and appearance preferences remain separate.
 const STORE_NAMES=['tickets','daily','reports','images'];
-const fallbackKey=store=>'ticketdesk-fallback-'+store;
 const memoryStore={tickets:[],daily:[],reports:[],images:[]};
-function fallbackRead(store){try{const raw=localStorage.getItem(fallbackKey(store));if(raw!==null){const parsed=JSON.parse(raw);if(Array.isArray(parsed))return parsed.filter(item=>item&&typeof item==='object');console.warn('Ignoring invalid stored data for',store);}}catch(err){console.warn('Browser storage read unavailable; using in-memory storage',err);}return Array.isArray(memoryStore[store])?memoryStore[store]:[];}
-function fallbackWrite(store,items){memoryStore[store]=items;try{localStorage.setItem(fallbackKey(store),JSON.stringify(items));}catch(err){console.warn('Browser storage write unavailable; keeping data for this open session',err);}}
-function openDB(){return new Promise((resolve)=>{if(!('indexedDB' in window)){fallbackStorage=true;db=null;resolve(null);return;}let request;try{request=indexedDB.open(DB_NAME,DB_VERSION);}catch(err){console.warn('IndexedDB unavailable; using localStorage fallback',err);fallbackStorage=true;resolve(null);return;}request.onupgradeneeded=()=>{const upgradeDb=request.result;for(const name of STORE_NAMES){if(!upgradeDb.objectStoreNames.contains(name))upgradeDb.createObjectStore(name,{keyPath:'id'});}};request.onerror=()=>{console.warn('IndexedDB could not be opened; using localStorage fallback',request.error);fallbackStorage=true;db=null;resolve(null);};request.onblocked=()=>{console.warn('IndexedDB upgrade blocked; keeping localStorage fallback');fallbackStorage=true;db=null;resolve(null);};request.onsuccess=async()=>{const opened=request.result;try{for(const name of STORE_NAMES){const localItems=fallbackRead(name);if(!localItems.length)continue;const existing=await new Promise((res,rej)=>{const tx=opened.transaction(name,'readonly');const q=tx.objectStore(name).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error);});const known=new Set(existing.map(item=>item&&item.id).filter(Boolean));const missing=localItems.filter(item=>item&&item.id&&!known.has(item.id));if(missing.length){await new Promise((res,rej)=>{const tx=opened.transaction(name,'readwrite');const store=tx.objectStore(name);for(const item of missing)store.put(item);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error||new Error('Data migration failed'));tx.onabort=()=>rej(tx.error||new Error('Data migration aborted'));});}}db=opened;fallbackStorage=false;resolve(db);}catch(err){console.error('Data migration to IndexedDB failed; original localStorage data has been kept',err);try{opened.close();}catch{}db=null;fallbackStorage=true;resolve(null);}};});}
-function reqPromise(req){return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
-function fallbackPut(store,obj){const items=fallbackRead(store),i=items.findIndex(x=>x.id===obj.id);if(i<0)items.push(obj);else items[i]=obj;fallbackWrite(store,items);return obj;}
-async function idbOrFallback(store,operation,fallback){if(fallbackStorage)return fallback();try{if(!db)throw new Error('IndexedDB connection unavailable');return await operation();}catch(err){console.warn('IndexedDB operation failed; switching to localStorage fallback',store,err);fallbackStorage=true;return fallback();}}
-async function all(store){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readonly').objectStore(store).getAll()),()=>fallbackRead(store));}
-async function get(store,id){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readonly').objectStore(store).get(id)),()=>fallbackRead(store).find(x=>x.id===id));}
-async function put(store,obj){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readwrite').objectStore(store).put(obj)),()=>fallbackPut(store,obj));}
-async function del(store,id){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readwrite').objectStore(store).delete(id)),()=>{fallbackWrite(store,fallbackRead(store).filter(x=>x.id!==id));});}
-async function clearStore(store){return idbOrFallback(store,()=>reqPromise(db.transaction(store,'readwrite').objectStore(store).clear()),()=>fallbackWrite(store,[]));}
+let fallbackStorage=true;
+async function openDB(){
+  // This project is explicitly switching away from device-local record storage.
+  // Remove only the app's old record stores; preserve Staff login and UI preferences.
+  for(const name of STORE_NAMES){try{localStorage.removeItem('ticketdesk-fallback-'+name);}catch{}}
+  if('indexedDB' in window){
+    await new Promise(resolve=>{
+      let request;
+      try{request=indexedDB.deleteDatabase('ticket-desk-db');}
+      catch{resolve();return;}
+      request.onsuccess=()=>resolve();
+      request.onerror=()=>resolve();
+      request.onblocked=()=>{console.warn('Old local ticket database deletion is blocked by another open tab.');resolve();};
+    });
+  }
+  return null;
+}
+async function all(store){return (memoryStore[store]||[]).map(item=>({...item}));}
+async function get(store,id){const item=(memoryStore[store]||[]).find(x=>x.id===id);return item?{...item}:undefined;}
+async function put(store,obj){
+  if(!memoryStore[store])throw new Error('Unknown in-memory store: '+store);
+  const items=memoryStore[store],index=items.findIndex(x=>x.id===obj.id);
+  if(index<0)items.push({...obj});else items[index]={...obj};
+  return obj;
+}
+async function del(store,id){if(!memoryStore[store])return;memoryStore[store]=memoryStore[store].filter(x=>x.id!==id);}
+async function clearStore(store){if(memoryStore[store])memoryStore[store]=[];}
 async function seedSlots(){
  const ts=await all('tickets');
  for(const d of DEPTS){
