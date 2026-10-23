@@ -89,3 +89,73 @@ body,.app-shell,.main,.content{background:transparent;color:#edf4ff}
  .top-actions select{background:#0d223e;color:#edf4ff}
  .footer{color:#aabbd2}
 }
+
+/* Mobile refinement: align the page heading, make quantity fields match the dark 3D theme,
+   and preserve comfortable tap targets without changing ticket behavior. */
+#appContent .qty-input,
+#appContent input.qty-input,
+#appContent input[type="number"],
+#appContent input[type="date"],
+#appContent .date-input,
+#appContent #dashboardDate,
+#appContent #departmentDate{
+ background:linear-gradient(145deg,#0b203a,#07172c)!important;
+ color:#f6d98d!important;
+ border:1px solid rgba(221,180,92,.48)!important;
+ border-radius:12px!important;
+ box-shadow:inset 0 2px 5px rgba(0,0,0,.28),0 1px 0 rgba(255,255,255,.06)!important;
+ color-scheme:dark;
+}
+#appContent .qty-input{width:100%;min-height:54px;padding:12px 14px;font-size:20px;font-weight:700;text-align:center}
+#appContent .qty-input::placeholder{color:#aabbd2!important;opacity:.9}
+#appContent .quantity-row{gap:9px}
+#appContent .quantity-row label{color:#dce7f5}
+#appContent .page-head{align-items:flex-start;flex-wrap:wrap;row-gap:12px}
+#appContent .page-head>div:first-child{min-width:0;flex:1 1 220px}
+#appContent .page-head h2{line-height:1.3;overflow-wrap:anywhere}
+#appContent .page-head p{line-height:1.55;overflow-wrap:anywhere}
+#appContent .page-head .actions{flex:0 1 auto}
+#appContent .panel{overflow:hidden}
+#appContent .toolbar{flex-wrap:wrap;gap:12px}
+#appContent .toolbar>div{min-width:0}
+#appContent .search-input{width:100%;min-width:0}
+#appContent .ticket-grid{align-items:stretch}
+#appContent .ticket-card{overflow:hidden}
+#appContent .ticket-body{min-width:0}
+#appContent .ticket-name{overflow-wrap:anywhere;line-height:1.4}
+#appContent .ticket-actions{flex-wrap:wrap;align-items:center;gap:8px}
+#appContent .btn,#appContent .icon-button{min-height:40px}
+.topbar{min-height:86px;height:auto}
+.top-title{min-width:0}
+.top-title h1{line-height:1.25;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .topbar{min-height:76px;height:auto;padding:12px 14px;gap:10px}
+ .top-title{flex:1;min-width:0}
+ .top-title h1,#pageTitle{font-size:20px}
+ .top-title>span{font-size:10px}
+ .top-actions{gap:6px;flex-shrink:0}
+ .top-actions .btn{padding:9px 10px;min-height:42px}
+ .top-actions select{max-width:112px;padding:9px 8px}
+ .content{padding:18px 14px 28px}
+ #appContent .page-head{margin-bottom:16px}
+ #appContent .page-head h2{font-size:19px}
+ #appContent .page-head p{font-size:13px}
+ #appContent .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #appContent .stat-card,#appContent .department-card{padding:14px}
+ #appContent .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #appContent .dept-title{font-size:13px;overflow-wrap:anywhere}
+ #appContent .dept-count{font-size:24px}
+ #appContent .ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #appContent .quantity-row{align-items:stretch}
+ #appContent .qty-input{min-height:50px;font-size:18px}
+ #appContent .panel{border-radius:15px}
+ #appContent .toolbar .toolbar-left,#appContent .toolbar .toolbar-right{width:100%}
+ #appContent .date-input,#appContent input[type="date"]{width:100%;min-width:0}
+}
+@media(max-width:380px){
+ .topbar{padding:10px 9px;gap:7px}
+ .top-title h1,#pageTitle{font-size:18px}
+ .top-actions .btn{font-size:12px;padding:8px}
+ .top-actions select{max-width:90px;font-size:12px}
+ #appContent .dashboard-grid,#appContent .stats-grid,#appContent .ticket-grid{grid-template-columns:minmax(0,1fr)}
+}
