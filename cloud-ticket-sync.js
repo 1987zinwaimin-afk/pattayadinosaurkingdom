@@ -258,7 +258,7 @@ async function publishStaffTicket(ticket) {
       (data.sourceUid === user.uid || item.id === ticket.sharedCatalogId)
     );
   });
-  const canonicalId = sameStaffTicket.find(item => item.id === id)?.id || id;
+  const canonicalId = ticket.sharedCatalogId || sameStaffTicket.find(item => item.id === id)?.id || id;
   let imageData = await imageFor(ticket);
   if (imageData && imageData.length > 760000) {
     syncStatus("Ticket details synced, but its image is too large to upload.", true);
