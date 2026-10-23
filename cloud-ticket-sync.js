@@ -807,6 +807,7 @@ function startStaff() {
   document.addEventListener("visibilitychange", updateStaffHeartbeat);
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
+  onSnapshot(collection(db, "reports"), { includeMetadataChanges: true }, snapshot => applyReports(snapshot).catch(err => syncStatus("Cloud report load failed: " + (err?.code || err?.message || "unknown error"), true)), err => syncStatus("Cloud report listener failed: " + (err?.code || err?.message || "unknown error"), true));
   document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
