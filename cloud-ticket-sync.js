@@ -360,7 +360,9 @@ async function applyCatalog(snapshot) {
     const staffGroups = new Map();
     for (const remote of remoteRecords) {
       if (!remote.sourceUid || !remote.sourceTicketId || !remote.cloudDocId.startsWith("staff__")) continue;
-      if (role === "staff" && remote.sourceUid !== auth.currentUser?.uid) continue;
+      // Every connected account must reconcile duplicates for every creator,
+      // not only its own UID; otherwise different Staff devices can show
+      // duplicate cards for the same shared ticket record.
       const key = String(remote.sourceUid) + "__" + String(remote.departmentId) + "__" + String(remote.sourceTicketId);
       if (!staffGroups.has(key)) staffGroups.set(key, []);
       staffGroups.get(key).push(remote);
