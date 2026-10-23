@@ -1,4 +1,4 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-catalog-quantity-reconcile-v112";
+const CACHE_NAME = "pattaya-dinosaur-kingdom-main-luxury-theme-v117";
 const APP_SHELL = ["./", "./index.html", "./style.css?v=android-ios-responsive-20261020e", "./app.js?v=staff-link-no-chatgpt-20261021c", "./firebase-auth.js?v=staff-logout-presence-20261020j", "./cloud-ticket-sync.js?v=reconcile-daily-after-catalog-20261021e", "./staff-accounts.js?v=presence-state-fix-20261020i", "./pwa.js?v=staff-home-launch-20261020a", "./manifest.webmanifest", "./staff-portal.html?v=staff-route-fallback-20261020a", "./staff-install.html", "./staff-app.html", "./staff-portal.js?v=staff-route-fallback-20261020a", "./staff-manifest.webmanifest", "./staff-manifest.webmanifest?v=staff-app-start-20261020a", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
