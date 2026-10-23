@@ -285,7 +285,11 @@ function queueCatalogPublish(event) {
         const exactKnownIdentity = item.id === ticket.sharedCatalogId &&
           data.departmentId === ticket.departmentId &&
           (!data.sourceTicketId || String(data.sourceTicketId) === String(ticket.id));
-        if (sameSource || exactKnownIdentity) idsToDelete.add(item.id);
+        // Some older Staff-created tickets stored the local ticket ID directly
+        // as the Firestore document ID and did not populate sharedCatalogId.
+        const exactLegacyDocumentId = item.id === String(ticket.id) &&
+          data.departmentId === ticket.departmentId;
+        if (sameSource || exactKnownIdentity || exactLegacyDocumentId) idsToDelete.add(item.id);
       }
       await Promise.all([...idsToDelete].map(id => deleteDoc(doc(db, "sharedTicketCatalog", id))));
       syncStatus("Deleted ticket and matching legacy cloud catalog records.");
