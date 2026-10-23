@@ -149,7 +149,14 @@ service cloud.firestore {
     // Shared ticket catalog: all signed-in sessions can read; only verified Owner can publish.
     match /sharedTicketCatalog/{catalogId} {
       allow read: if signedIn();
-      allow create, update, delete: if isOwner();
+      allow create, update: if isOwner();
+      // Staff may delete only their own ticket document, with exact UID and source ID.
+      allow delete: if isOwner()
+        || (signedIn()
+          && resource.data.sourceUid == request.auth.uid
+          && resource.data.catalogId == catalogId
+          && resource.data.sourceTicketId is string
+          && resource.data.departmentId in ['sales', 'entry', 'playing', 'event']);
     }
 
     match /sharedDaily/{recordId} {
