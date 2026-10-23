@@ -349,33 +349,37 @@ async function applyCatalog(snapshot) {
   const store = window.ticketdeskLocalStore;
   const localTickets = await store.all("tickets");
   let remoteRecords = snapshot.docs.map(d => ({ ...d.data(), cloudDocId: d.id }));
-  // Repair duplicate Staff records by creator + source ID + department, never by name.
-  // Only delete duplicates when the snapshot is confirmed from the server.
+  // Reconcile duplicate cloud ticket definitions by stable creator identity, never by name.
+  // Owner-created records are keyed by department + sourceTicketId; Staff-created
+  // records additionally include sourceUid so separate Staff tickets remain distinct.
+  // Only mutate Firestore from a confirmed server snapshot.
   if (!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites) {
-    const staffGroups = new Map();
+    const groups = new Map();
     for (const remote of remoteRecords) {
-      if (!remote.sourceUid || !remote.sourceTicketId || !remote.cloudDocId.startsWith("staff__")) continue;
-      // Every connected account must reconcile duplicates for every creator,
-      // not only its own UID; otherwise different Staff devices can show
-      // duplicate cards for the same shared ticket record.
-      const key = String(remote.sourceUid) + "__" + String(remote.departmentId) + "__" + String(remote.sourceTicketId);
-      if (!staffGroups.has(key)) staffGroups.set(key, []);
-      staffGroups.get(key).push(remote);
+      if (!remote.sourceTicketId || !DEPTS.includes(remote.departmentId)) continue;
+      const creatorKey = remote.sourceUid ? "staff:" + String(remote.sourceUid) : "owner";
+      const key = creatorKey + "__" + String(remote.departmentId) + "__" + String(remote.sourceTicketId);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(remote);
     }
     const duplicateIds = [];
-    for (const group of staffGroups.values()) {
+    for (const group of groups.values()) {
       if (group.length < 2) continue;
       const first = group[0];
-      const canonicalId = "staff__" + first.sourceUid + "__" + String(first.sourceTicketId).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const canonicalId = first.sourceUid
+        ? "staff__" + first.sourceUid + "__" + String(first.sourceTicketId).replace(/[^a-zA-Z0-9_-]/g, "_")
+        : String(first.departmentId) + "__ticket__" + String(first.sourceTicketId);
       const canonical = group.find(item => item.cloudDocId === canonicalId) ||
         group.slice().sort((a, b) => String(a.updatedAt || "").localeCompare(String(b.updatedAt || ""))).at(-1);
-      for (const duplicate of group) if (duplicate.cloudDocId !== canonical.cloudDocId) duplicateIds.push(duplicate.cloudDocId);
+      for (const duplicate of group) {
+        if (duplicate.cloudDocId !== canonical.cloudDocId) duplicateIds.push(duplicate.cloudDocId);
+      }
     }
     if (duplicateIds.length) {
       await Promise.all(duplicateIds.map(id => deleteDoc(doc(db, "sharedTicketCatalog", id))));
       const removed = new Set(duplicateIds);
       remoteRecords = remoteRecords.filter(item => !removed.has(item.cloudDocId));
-      syncStatus("Duplicate Staff ticket records were reconciled by stable identity.");
+      syncStatus("Duplicate ticket records were reconciled by stable identity.");
     }
   }
   let catalogChanged = false;
