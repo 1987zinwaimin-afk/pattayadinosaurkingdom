@@ -251,7 +251,7 @@ function queueCatalogPublish(event) {
         return data.departmentId === ticket.departmentId
           && String(data.sourceTicketId || "") === String(ticket.id)
           && data.sourceUid === auth.currentUser.uid
-          && item.id === ticket.sharedCatalogId;
+          && (item.id === ticket.sharedCatalogId || item.id === String(ticket.id));
       });
       await Promise.all(matches.map(item => deleteDoc(doc(db, "sharedTicketCatalog", item.id))));
       if (matches.length) syncStatus("Your Staff-created ticket was removed from the shared catalog.");
