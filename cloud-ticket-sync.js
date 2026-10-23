@@ -240,9 +240,26 @@ function queueCatalogPublish(event) {
     pendingCatalogPublish = true;
     return;
   }
-  // Staff sessions are not allowed to publish or delete the Owner catalog.
-  if (role !== "owner" || auth.currentUser?.email?.toLowerCase() !== OWNER) return;
   const detail = event?.detail || {};
+  if (role === "staff") {
+    if (detail.action !== "delete" || !auth.currentUser || !detail.ticket) return;
+    const ticket = detail.ticket;
+    (async () => {
+      const snapshot = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
+      const matches = snapshot.docs.filter(item => {
+        const data = item.data();
+        return data.departmentId === ticket.departmentId
+          && String(data.sourceTicketId || "") === String(ticket.id)
+          && data.sourceUid === auth.currentUser.uid
+          && item.id === ticket.sharedCatalogId;
+      });
+      await Promise.all(matches.map(item => deleteDoc(doc(db, "sharedTicketCatalog", item.id))));
+      if (matches.length) syncStatus("Your Staff-created ticket was removed from the shared catalog.");
+      else syncStatus("Ticket removed locally; shared catalog was not changed because ownership could not be verified.", true);
+    })().catch(err => syncStatus(`Staff ticket delete sync failed: ${err?.code || err?.message || "unknown error"}`, true));
+    return;
+  }
+  if (role !== "owner" || auth.currentUser?.email?.toLowerCase() !== OWNER) return;
   if (detail.action === "delete") {
     const ticket = detail.ticket;
     // Legacy catalog records may use an older document ID than sharedCatalogId
