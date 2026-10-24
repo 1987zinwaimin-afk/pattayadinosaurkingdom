@@ -172,3 +172,37 @@ body.auth-pending #authStatus{color:#d7e4f2!important;font-size:11px!important;t
  body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{min-height:46px!important;font-size:14px!important}
  body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{min-height:49px!important;font-size:15px!important}
 }
+
+
+/* Fix: make typed login text readable on Android/Chrome, including autofill. */
+body.auth-pending .auth-card .login-mode-panel input,
+body.auth-pending .auth-card .login-mode-panel input[type="email"],
+body.auth-pending .auth-card .login-mode-panel input[type="password"],
+body.auth-pending .auth-card .login-mode-panel input[type="text"],
+body.auth-pending .auth-card .login-mode-panel input:not([type]),
+body.auth-pending .auth-card .field input {
+  background-color:#071a30!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  caret-color:#ffe08a!important;
+  opacity:1!important;
+  color-scheme:dark;
+}
+body.auth-pending .auth-card .login-mode-panel input::placeholder,
+body.auth-pending .auth-card .field input::placeholder {
+  color:#bdc9da!important;
+  -webkit-text-fill-color:#bdc9da!important;
+  opacity:1!important;
+}
+body.auth-pending .auth-card .login-mode-panel input:-webkit-autofill,
+body.auth-pending .auth-card .login-mode-panel input:-webkit-autofill:hover,
+body.auth-pending .auth-card .login-mode-panel input:-webkit-autofill:focus,
+body.auth-pending .auth-card .field input:-webkit-autofill,
+body.auth-pending .auth-card .field input:-webkit-autofill:hover,
+body.auth-pending .auth-card .field input:-webkit-autofill:focus {
+  -webkit-text-fill-color:#fff!important;
+  caret-color:#ffe08a!important;
+  -webkit-box-shadow:0 0 0 1000px #071a30 inset!important;
+  box-shadow:0 0 0 1000px #071a30 inset!important;
+  border-color:#f0d27a!important;
+}
