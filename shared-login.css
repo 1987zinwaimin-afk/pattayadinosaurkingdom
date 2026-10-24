@@ -1,0 +1,19 @@
+/* Shared Owner + Staff login screen. Presentation-only; authentication handlers remain in existing modules. */
+body.auth-pending{min-height:100vh;background:#06152b url("./1792253599844.jpg?v=20261017") center/cover fixed no-repeat!important;position:relative}
+body.auth-pending:before{content:"";position:fixed;inset:0;background:linear-gradient(125deg,rgba(3,13,29,.68),rgba(5,22,43,.78));backdrop-filter:blur(2px);pointer-events:none}
+body.auth-pending .auth-gate{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;min-height:100vh;min-height:100svh;padding:28px 18px;background:transparent!important}
+body.auth-pending .auth-card{width:min(100%,440px);margin:0;padding:26px 24px 22px;border:1px solid rgba(235,198,115,.62);border-radius:24px;background:linear-gradient(145deg,rgba(11,31,56,.88),rgba(5,20,39,.9));box-shadow:0 24px 70px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.16);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#f4f7ff}
+body.auth-pending .auth-card h1,body.auth-pending .auth-card .auth-kicker{color:#f5d58b}
+body.auth-pending .auth-card .auth-description{color:#d0dbea}
+body.auth-pending .auth-card .field input,body.auth-pending .auth-card .field select{background:rgba(4,17,34,.88)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid rgba(231,197,124,.62)!important;border-radius:12px;min-height:48px;padding:12px 13px;caret-color:#f5d58b}
+body.auth-pending .auth-card input::placeholder{color:#bdc9da!important;-webkit-text-fill-color:#bdc9da!important;opacity:1}
+body.auth-pending .auth-card .field label{color:#e8edf6}
+body.auth-pending .auth-card #ownerLoginButton,body.auth-pending .staff-auth-card #submitBtn{width:100%;min-height:50px;border-radius:12px;font-weight:800}
+body.auth-pending .staff-auth-card #submitBtn{background:linear-gradient(145deg,#f5d889,#c69a42)!important;color:#10213b!important;border-color:#ffe7a5!important;box-shadow:0 5px 0 #8d6927,0 8px 15px #0003}
+body.auth-pending .staff-auth-card .form-grid{display:grid;grid-template-columns:1fr;gap:10px}
+body.auth-pending .staff-auth-card .field{display:flex;flex-direction:column;gap:5px}
+body.auth-pending .staff-auth-card [hidden]{display:none!important}
+body.auth-pending .staff-auth-card .auth-brand{width:68px;height:68px;object-fit:contain}
+body.auth-pending .auth-card .auth-status,body.auth-pending .staff-auth-card .notice{color:#dbe8fa}
+body.auth-pending .auth-card .notice.error,body.auth-pending .auth-card .auth-status.error{color:#ffd0ce}
+@media(max-width:760px){body.auth-pending .auth-gate{align-items:flex-start;gap:14px;padding:14px 12px 24px}body.auth-pending .auth-card{width:min(100%,430px);padding:18px 16px;border-radius:19px}body.auth-pending .auth-brand{width:56px;height:56px}body.auth-pending .auth-card h1{font-size:22px}body.auth-pending .auth-description{font-size:12px;line-height:1.45}body.auth-pending .auth-card .field input,body.auth-pending .auth-card .field select{min-height:44px}body.auth-pending .auth-card #ownerLoginButton,body.auth-pending .staff-auth-card #submitBtn{min-height:46px}}
