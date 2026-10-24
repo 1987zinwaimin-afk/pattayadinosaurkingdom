@@ -501,17 +501,27 @@ async function publishDaily(record) {
     catalogTicketId = ticket?.sharedCatalogId || "";
   }
   if (!catalogTicketId) {
-    const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
-    const candidates = catalog.docs.filter(d => {
-      const x = d.data();
-      return x.departmentId === record.departmentId &&
-        ((ticket && String(x.sourceTicketId || "") === String(ticket.id)) ||
-         (!ticket && (d.id === String(record.ticketId) || d.id === `shared-${record.ticketId}`)));
-    });
-    if (candidates.length === 1) catalogTicketId = candidates[0].id;
+    // Catalog publication and quantity entry can race on mobile devices.
+    // Re-read the canonical catalog a few times before failing the quantity write.
+    for (let attempt = 0; attempt < 4 && !catalogTicketId; attempt++) {
+      if (attempt > 0) await new Promise(resolve => setTimeout(resolve, 350 * attempt));
+      const catalog = await getDocsFromServer(collection(db, "sharedTicketCatalog"));
+      const candidates = catalog.docs.filter(d => {
+        const x = d.data();
+        return x.departmentId === record.departmentId &&
+          ((ticket && String(x.sourceTicketId || "") === String(ticket.id)) ||
+           (!ticket && (d.id === String(record.ticketId) || d.id === `shared-${record.ticketId}`)));
+      });
+      if (candidates.length === 1) catalogTicketId = candidates[0].id;
+      if (!catalogTicketId && ticket && role === "owner" && attempt === 0) {
+        await publishOwnerCatalog();
+        ticket = await store.get("tickets", record.ticketId);
+        catalogTicketId = ticket?.sharedCatalogId || "";
+      }
+    }
   }
   if (!catalogTicketId && ticket) {
-    syncStatus("Quantity not synced: waiting for the shared ticket catalog ID. Reopen the page after catalog sync completes.", true);
+    syncStatus("Quantity not synced: this ticket has no matching shared catalog ID. Check that the ticket appears in the shared catalog on this device.", true);
     throw new Error("shared-ticket-catalog-id-missing");
   }
   if (!catalogTicketId) catalogTicketId = String(record.ticketId).startsWith("shared-") ? String(record.ticketId).slice(7) : String(record.ticketId);
