@@ -581,6 +581,17 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
   let tickets = await store.all("tickets");
   let dailyChanged = false;
   let missingTicketMatch = false;
+  // Fetch the shared catalog at most once per daily snapshot when a local ticket
+  // mapping is missing. A per-ticket getDoc inside this loop serialized many
+  // network round-trips and made mobile refresh/reconciliation unnecessarily slow.
+  let catalogLookupPromise = null;
+  const getCatalogRecord = async ticketId => {
+    if (!catalogLookupPromise) {
+      catalogLookupPromise = getDocsFromServer(collection(db, "sharedTicketCatalog"));
+    }
+    const catalogSnapshot = await catalogLookupPromise;
+    return catalogSnapshot.docs.find(item => item.id === String(ticketId)) || null;
+  };
   for (const d of snapshot.docs) {
     const remote = d.data();
     if (!DEPTS.includes(remote.departmentId) || !remote.date || !remote.ticketId) continue;
@@ -597,8 +608,8 @@ async function applyDaily(snapshot, retryAfterCatalog = true) {
     // to the one unambiguous local ticket for the same source ID or department/slot.
     if (!ticket) {
       try {
-        const catalogSnap = await getDoc(doc(db, "sharedTicketCatalog", String(remote.ticketId)));
-        if (catalogSnap.exists()) {
+        const catalogSnap = await getCatalogRecord(remote.ticketId);
+        if (catalogSnap) {
           const catalog = catalogSnap.data();
           if (catalog.departmentId === remote.departmentId) {
             if (catalog.sourceTicketId) {
@@ -815,7 +826,9 @@ function startStaff() {
   stopCatalog = onSnapshot(collection(db, "sharedTicketCatalog"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("catalog", snapshot), err => syncStatus(`Staff catalog listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   stopDaily = onSnapshot(collection(db, "sharedDaily"), { includeMetadataChanges: true }, snapshot => queueLatestSnapshot("daily", snapshot), err => syncStatus(`Staff quantity listener failed: ${err?.code || err?.message || "unknown error"}`, true));
   onSnapshot(collection(db, "reports"), { includeMetadataChanges: true }, snapshot => applyReports(snapshot).catch(err => syncStatus("Cloud report load failed: " + (err?.code || err?.message || "unknown error"), true)), err => syncStatus("Cloud report listener failed: " + (err?.code || err?.message || "unknown error"), true));
-  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail).catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
+  document.addEventListener("ticketdesk-daily-changed", e => publishDaily(e.detail)
+    .then(() => syncStatus("Daily quantity saved to shared cloud."))
+    .catch(err => syncStatus(`Daily publish failed: ${err?.code || err?.message || "unknown error"}`, true)));
   document.addEventListener("ticketdesk-daily-reset", e => publishReset(e.detail).catch(err => console.error("Daily reset sync failed:", err)));
 }
 onAuthStateChanged(auth, user => {
