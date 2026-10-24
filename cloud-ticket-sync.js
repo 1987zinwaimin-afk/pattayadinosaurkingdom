@@ -389,6 +389,28 @@ async function applyCatalog(snapshot) {
   // the same local ticket, leaving Staff with one fewer ticket type than Owner.
   const claimedLocalIds = new Set();
   const isUnclaimed = ticket => ticket && !claimedLocalIds.has(String(ticket.id));
+
+  // Prepare shared images concurrently before reconciling ticket records. The
+  // previous per-ticket read/write awaited every image one after another, so a
+  // catalog with many images could leave mobile users staring at a spinner for
+  // minutes. Keep the same image IDs and data semantics; only parallelize I/O.
+  const imageStateByCatalogId = new Map();
+  await Promise.all(remoteRecords.filter(remote =>
+    DEPTS.includes(remote.departmentId) && remote.name && remote.imageData
+  ).map(async remote => {
+    const imageId = `shared-img-${remote.cloudDocId}`;
+    const previousImage = await store.get("images", imageId);
+    const imageChanged = !previousImage || previousImage.data !== remote.imageData;
+    await store.put("images", {
+      id: imageId, data: remote.imageData, shared: true,
+      updatedAt: remote.updatedAt || new Date().toISOString()
+    });
+    imageStateByCatalogId.set(remote.cloudDocId, { imageId, imageChanged });
+  }));
+  if ([...imageStateByCatalogId.values()].some(image => image.imageChanged)) {
+    document.dispatchEvent(new Event("ticketdesk-cloud-image-updated"));
+  }
+
   for (const remote of remoteRecords) {
     if (!DEPTS.includes(remote.departmentId) || !remote.name) continue;
     let local = localTickets.find(t => isUnclaimed(t) && t.sharedCatalogId === remote.cloudDocId);
@@ -416,15 +438,7 @@ async function applyCatalog(snapshot) {
     }
     if (local) claimedLocalIds.add(String(local.id));
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
-    if (remote.imageData) {
-      // Replace the local shared-image payload before notifying the UI. The image
-      // record can change while its stable imageId stays the same, so ticket-object
-      // equality cannot tell the renderer that the image itself was replaced.
-      const previousImage = await store.get("images", sharedImageId);
-      const imageChanged = !previousImage || previousImage.data !== remote.imageData;
-      await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
-      if (imageChanged) document.dispatchEvent(new Event("ticketdesk-cloud-image-updated"));
-    }
+    const preparedImage = imageStateByCatalogId.get(remote.cloudDocId);
     if (local) {
       // Owner-created catalog entries have no sourceUid; Staff-created entries do.
       // Preserve that distinction on every device so Staff tickets are not
