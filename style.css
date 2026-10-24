@@ -578,3 +578,199 @@ body.auth-pending .auth-gate{
   }
   #appContent:has(#staffDailyDate) .toolbar-right .btn{width:auto!important;}
 }
+
+
+/* Premium Glass redesign: Monthly Summary + Reports / Saved Albums.
+   Presentation-only CSS; no data, permissions, sync or report logic changes. */
+#appContent:has(#staffDailyDate),
+#appContent:has(#reportDeptFilter),
+#appContent:has([data-report-open]){
+  --summary-glass:rgba(18,39,64,.88);
+  --summary-edge:rgba(224,192,115,.22);
+  --summary-gold:#e7c879;
+}
+#appContent:has(#staffDailyDate) .panel,
+#appContent:has(#reportDeptFilter) .panel{
+  background:linear-gradient(145deg,rgba(22,47,75,.96),rgba(10,27,48,.96))!important;
+  border:1px solid var(--summary-edge)!important;
+  border-radius:20px!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  padding:clamp(15px,3.8vw,24px)!important;
+  margin-bottom:16px!important;
+}
+#appContent:has(#staffDailyDate) .page-head,
+#appContent:has(#reportDeptFilter) .page-head{
+  margin-bottom:16px!important;
+}
+#appContent:has(#staffDailyDate) .page-head h2,
+#appContent:has(#reportDeptFilter) .page-head h2{
+  color:var(--summary-gold)!important;
+  font-size:clamp(22px,5vw,29px)!important;
+  line-height:1.15!important;
+  letter-spacing:-.025em;
+  margin:0 0 7px!important;
+}
+#appContent:has(#staffDailyDate) .panel h3,
+#appContent:has(#reportDeptFilter) .panel h3{
+  font-size:clamp(17px,4.2vw,21px)!important;
+  line-height:1.3!important;
+  margin:0 0 9px!important;
+}
+#appContent:has(#staffDailyDate) .panel>.muted,
+#appContent:has(#reportDeptFilter) .panel>.muted{
+  color:#b8c7da!important;
+  line-height:1.5!important;
+  margin:0 0 16px!important;
+}
+#appContent:has(#staffDailyDate) .toolbar,
+#appContent:has(#reportDeptFilter) .toolbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+}
+#appContent:has(#staffDailyDate) .toolbar-left,
+#appContent:has(#staffDailyDate) .toolbar-right,
+#appContent:has(#reportDeptFilter) .toolbar-left,
+#appContent:has(#reportDeptFilter) .toolbar-right{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:9px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#appContent:has(#staffDailyDate) .toolbar-left>label,
+#appContent:has(#reportDeptFilter) .toolbar-left>label{
+  margin:0!important;
+  color:#d9e3f0!important;
+  font-size:13px!important;
+  font-weight:600!important;
+}
+#appContent:has(#staffDailyDate) .toolbar .date-input,
+#appContent:has(#staffDailyDate) .toolbar input,
+#appContent:has(#staffDailyDate) .toolbar select,
+#appContent:has(#reportDeptFilter) .toolbar .date-input,
+#appContent:has(#reportDeptFilter) .toolbar input,
+#appContent:has(#reportDeptFilter) .toolbar select{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:46px!important;
+  box-sizing:border-box!important;
+  border-radius:13px!important;
+  border:1px solid rgba(231,200,121,.38)!important;
+  background:rgba(5,19,37,.62)!important;
+  color:#f1d991!important;
+  padding:10px 12px!important;
+}
+#appContent:has(#staffDailyDate) .toolbar-right .btn,
+#appContent:has(#reportDeptFilter) .toolbar-right .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:normal!important;
+  line-height:1.25!important;
+  border-radius:14px!important;
+  font-weight:650!important;
+}
+#appContent:has(#staffDailyDate) .help-text{
+  margin:12px 0!important;
+  padding:10px 12px!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.035)!important;
+  line-height:1.45!important;
+}
+#appContent:has(#staffDailyDate) hr{margin:17px 0!important;border-color:rgba(231,200,121,.28)!important;}
+#appContent:has(#reportDeptFilter) .report-list{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:13px!important;
+}
+#appContent:has(#reportDeptFilter) .report-card{
+  min-width:0!important;
+  padding:16px!important;
+  border-radius:18px!important;
+  border:1px solid rgba(231,200,121,.24)!important;
+  background:linear-gradient(150deg,rgba(21,46,73,.95),rgba(9,25,45,.96))!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.14)!important;
+}
+#appContent:has(#reportDeptFilter) .report-card .dept-title{
+  color:#f0d58f!important;
+  font-size:16px!important;
+  line-height:1.35!important;
+  font-weight:700!important;
+  margin-bottom:10px!important;
+}
+#appContent:has(#reportDeptFilter) .report-card .report-meta{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:7px 12px!important;
+  line-height:1.4!important;
+  overflow-wrap:anywhere!important;
+}
+#appContent:has(#reportDeptFilter) .report-card .report-total{
+  margin:13px 0!important;
+  padding:11px 12px!important;
+  border-radius:12px!important;
+  background:rgba(231,200,121,.075)!important;
+  color:#f1d991!important;
+  font-size:25px!important;
+  font-weight:750!important;
+}
+#appContent:has(#reportDeptFilter) .report-card .report-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-top:14px!important;
+}
+#appContent:has(#reportDeptFilter) .report-card .report-actions .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  padding:8px 7px!important;
+  border-radius:11px!important;
+  white-space:normal!important;
+  line-height:1.2!important;
+  font-size:12px!important;
+}
+#appContent:has(#reportDeptFilter) .empty-state{
+  border:1px dashed rgba(231,200,121,.3)!important;
+  border-radius:18px!important;
+  padding:28px 16px!important;
+  background:rgba(255,255,255,.025)!important;
+}
+@media(min-width:700px){
+  #appContent:has(#staffDailyDate) .toolbar,
+  #appContent:has(#reportDeptFilter) .toolbar{
+    display:flex!important;
+    flex-direction:row!important;
+    justify-content:space-between!important;
+    align-items:flex-end!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-left,
+  #appContent:has(#reportDeptFilter) .toolbar-left{
+    flex-direction:row!important;
+    align-items:center!important;
+    width:auto!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-left>.date-input,
+  #appContent:has(#reportDeptFilter) .toolbar-left>.date-input,
+  #appContent:has(#reportDeptFilter) .toolbar-left>select{
+    width:auto!important;
+    min-width:180px!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-right,
+  #appContent:has(#reportDeptFilter) .toolbar-right{
+    flex-direction:row!important;
+    align-items:center!important;
+    width:auto!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-right .btn,
+  #appContent:has(#reportDeptFilter) .toolbar-right .btn{width:auto!important;}
+  #appContent:has(#reportDeptFilter) .report-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
