@@ -42,3 +42,11 @@ body.auth-pending .staff-auth-card .auth-description:last-child{max-width:100%;o
  body.auth-pending .auth-card #ownerLoginButton,body.auth-pending .staff-auth-card #submitBtn{min-height:44px}
  body.auth-pending .staff-auth-card .auth-description:last-child{font-size:10px;margin-top:7px}
 }
+
+/* Mobile refinement: tighter cards and no overlapping helper text. */
+body.auth-pending .staff-auth-card .auth-description:last-child{margin:8px 0 0;font-size:11px;line-height:1.35;color:#b9c9dc;overflow-wrap:anywhere}
+body.auth-pending .auth-card .auth-brand{width:56px;height:56px;object-fit:contain;margin:0 auto 7px}
+body.auth-pending .auth-card .field{margin-bottom:9px!important}
+body.auth-pending .staff-auth-card .form-grid{gap:7px}
+body.auth-pending .staff-auth-card .field{margin:0!important}
+@media(max-width:760px){body.auth-pending:before{background:linear-gradient(180deg,rgba(3,13,29,.34),rgba(5,22,43,.56))}body.auth-pending .auth-gate{gap:12px;padding:12px 12px 20px}body.auth-pending .auth-card{padding:16px 15px 14px;border-radius:20px}body.auth-pending .auth-card h1{font-size:22px;margin-bottom:6px}body.auth-pending .auth-card .auth-description{font-size:12px;line-height:1.38;margin-bottom:9px}body.auth-pending .auth-card .field input,body.auth-pending .auth-card .field select{min-height:43px;padding:10px 12px}body.auth-pending .auth-card #ownerLoginButton,body.auth-pending .staff-auth-card #submitBtn{min-height:44px}body.auth-pending .staff-auth-card .auth-description:last-child{font-size:10px;margin-top:7px}}
