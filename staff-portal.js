@@ -13,6 +13,8 @@ function getSavedStaffSession(){
  }catch{return null;}
 }
 async function restoreStaffSession(){
+ // The shared Owner/Staff login page must not auto-redirect while a user is choosing a login card.
+ if(!document.body.classList.contains("staff-login-wallpaper"))return;
  const saved=getSavedStaffSession();
  if(!saved)return;
  form.hidden=true;
