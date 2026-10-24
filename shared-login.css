@@ -206,3 +206,28 @@ body.auth-pending .auth-card .field input:-webkit-autofill:focus {
   box-shadow:0 0 0 1000px #071a30 inset!important;
   border-color:#f0d27a!important;
 }
+
+
+/* Final contrast safeguard: autofilled values stay readable even if Android paints a light field. */
+body.auth-pending .auth-card input,
+body.auth-pending .auth-card input[type="email"],
+body.auth-pending .auth-card input[type="password"],
+body.auth-pending .auth-card input[type="text"],
+body.auth-pending .auth-card input:not([type]) {
+  background:#071a30!important;
+  background-color:#071a30!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  opacity:1!important;
+}
+body.auth-pending .auth-card input:-webkit-autofill,
+body.auth-pending .auth-card input:-webkit-autofill:active,
+body.auth-pending .auth-card input:-webkit-autofill:focus,
+body.auth-pending .auth-card input:-webkit-autofill:hover {
+  background:#071a30!important;
+  background-color:#071a30!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  -webkit-box-shadow:0 0 0 1000px #071a30 inset!important;
+  box-shadow:0 0 0 1000px #071a30 inset!important;
+}
