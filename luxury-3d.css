@@ -256,3 +256,27 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   #appContent .dept-title{font-size:11px}
   #appContent .stat-top{font-size:10px}
 }
+
+
+/* Dashboard department-card action layout: prevent squeezed/wrapped buttons on narrow phones. */
+#appContent .department-card .dept-top{align-items:flex-start;min-width:0}
+#appContent .department-card .dept-top>div{min-width:0;flex:1}
+#appContent .department-card .tag{flex:0 0 auto;white-space:nowrap;word-break:normal;overflow-wrap:normal;max-width:none;padding:6px 9px;font-size:11px;line-height:1.15;text-align:center}
+#appContent .department-card .ticket-actions{display:grid!important;grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr)!important;align-items:stretch;gap:7px!important;margin-top:14px}
+#appContent .department-card .ticket-actions>.btn{width:100%;min-width:0;min-height:44px!important;margin:0;padding:8px 7px!important;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;overflow-wrap:normal;word-break:normal;line-height:1.2;font-size:12px!important;border-radius:12px!important}
+#appContent .department-card .ticket-actions [data-open-dept]{flex-direction:column;gap:2px}
+#appContent .department-card .ticket-actions [data-save-report]{white-space:nowrap;font-size:11px!important;letter-spacing:-.15px}
+#appContent .department-card .quantity-digit-row{margin-top:10px;min-height:0}
+#appContent .department-card .quantity-digit{min-width:46px;min-height:52px;padding:6px 10px;font-size:27px;line-height:1.1;border-radius:13px}
+@media(max-width:760px){
+ #appContent .department-card .ticket-actions{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)!important;gap:6px!important;margin-top:12px}
+ #appContent .department-card .ticket-actions>.btn{font-size:11px!important;min-height:42px!important;padding:7px 5px!important}
+ #appContent .department-card .ticket-actions [data-save-report]{font-size:10px!important}
+ #appContent .department-card .tag{font-size:10px;padding:5px 7px}
+ #appContent .department-card .quantity-digit{min-width:42px;min-height:48px;font-size:25px}
+}
+@media(max-width:360px){
+ #appContent .dashboard-grid{grid-template-columns:minmax(0,1fr)!important}
+ #appContent .department-card .ticket-actions{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)!important}
+ #appContent .department-card .ticket-actions [data-save-report]{font-size:12px!important}
+}
