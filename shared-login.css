@@ -101,3 +101,19 @@ body.auth-pending.staff-mode-active .auth-card{padding-bottom:20px}
  body.auth-pending .login-mode-panel #status{margin-top:7px}
  body.auth-pending #authStatus{margin-top:8px;font-size:10px}
 }
+
+/* Final visual pass to match the approved cinematic login reference */
+body.auth-pending{background:#06152b url("./dinosaur-login-wallpaper.svg?v=20261024a") center center/cover fixed no-repeat!important}
+body.auth-pending:before{background:linear-gradient(180deg,rgba(3,15,30,.06) 0%,rgba(3,15,30,.18) 42%,rgba(3,15,30,.28) 100%)!important;backdrop-filter:none!important}
+body.auth-pending .auth-gate{background:transparent!important}
+body.auth-pending .auth-card{background:linear-gradient(145deg,rgba(4,28,54,.82),rgba(3,18,37,.91))!important;border:1.5px solid rgba(255,213,106,.92)!important;box-shadow:0 0 18px rgba(255,193,65,.28),0 18px 55px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.16)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;color:#f7f9ff!important}
+body.auth-pending .auth-card .auth-description,body.auth-pending .auth-card .field label,body.auth-pending #authStatus,body.auth-pending .staff-auth-card .notice{color:#e3edf9!important}
+body.auth-pending .login-mode-switch{border-color:#f3d46d!important;background:rgba(3,17,34,.84)!important}
+body.auth-pending .login-mode-tab.is-active{background:linear-gradient(135deg,#ffe58a,#d8a52e)!important;color:#081a30!important}
+body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{background:rgba(3,20,39,.88)!important;border-color:#51cce8!important;box-shadow:inset 0 0 12px rgba(36,194,230,.08)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{background:linear-gradient(110deg,#ffe887,#e7b63d 65%,#ca9026)!important;color:#07172b!important;border-color:#fff0a8!important;box-shadow:0 4px 0 #8a6221,0 0 18px rgba(255,194,45,.22)!important}
+@media(max-width:760px){
+ body.auth-pending{background-attachment:scroll!important;background-position:center center!important}
+ body.auth-pending .auth-gate{padding:18px 14px!important}
+ body.auth-pending .auth-card{width:min(100%,390px)!important;padding:20px 18px 18px!important}
+}
