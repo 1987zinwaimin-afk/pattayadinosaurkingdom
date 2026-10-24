@@ -280,3 +280,29 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  #appContent .department-card .ticket-actions{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)!important}
  #appContent .department-card .ticket-actions [data-save-report]{font-size:12px!important}
 }
+
+
+/* Dashboard compact cards v3: reduce vertical whitespace and keep actions inside each card. */
+@media(max-width:760px){
+ #appContent .dashboard-grid{align-items:stretch!important;gap:8px!important}
+ #appContent .department-card{position:relative!important;display:flex!important;flex-direction:column!important;gap:0!important;padding:10px!important;min-height:0!important;height:auto!important;border-radius:15px!important;overflow:hidden}
+ #appContent .department-card .dept-top{display:block!important;position:relative!important;padding-right:0!important;margin:0 0 6px!important;min-height:0!important}
+ #appContent .department-card .dept-top>div{width:100%;min-width:0!important;padding-right:0!important}
+ #appContent .department-card .dept-title{font-size:12px!important;line-height:1.22!important;max-width:100%;padding-right:0!important;margin:0 0 5px!important;overflow-wrap:break-word!important}
+ #appContent .department-card .tag{position:absolute!important;right:0!important;top:0!important;max-width:64px!important;padding:5px 6px!important;font-size:9px!important;line-height:1.1!important;white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;border-radius:9px!important}
+ #appContent .department-card .dept-count{font-size:21px!important;line-height:1!important;margin:7px 0 3px!important}
+ #appContent .department-card .quantity-digit-row{margin-top:8px!important;margin-bottom:8px!important;min-height:0!important}
+ #appContent .department-card .quantity-digit{min-width:36px!important;min-height:40px!important;padding:4px 9px!important;font-size:22px!important;line-height:1!important;border-radius:10px!important}
+ #appContent .department-card .ticket-actions{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr)!important;gap:6px!important;margin-top:auto!important;padding-top:4px!important;align-items:stretch!important}
+ #appContent .department-card .ticket-actions>.btn{box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:38px!important;height:auto!important;padding:6px 5px!important;font-size:10px!important;line-height:1.15!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;border-radius:10px!important}
+ #appContent .department-card .ticket-actions [data-open-dept]{flex-direction:row!important;gap:3px!important;align-items:center!important}
+ #appContent .department-card .ticket-actions [data-save-report]{font-size:10px!important;letter-spacing:0!important;white-space:normal!important}
+}
+@media(max-width:380px){
+ #appContent .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #appContent .department-card{padding:8px!important}
+ #appContent .department-card .dept-title{font-size:11px!important}
+ #appContent .department-card .tag{max-width:57px!important;font-size:8px!important}
+ #appContent .department-card .ticket-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important;gap:4px!important}
+ #appContent .department-card .ticket-actions>.btn{font-size:9px!important;padding:6px 3px!important}
+}
