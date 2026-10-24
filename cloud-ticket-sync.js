@@ -418,9 +418,12 @@ async function applyCatalog(snapshot) {
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
     if (remote.imageData) {
       // Replace the local shared-image payload before notifying the UI. The image
-      // record can change while its stable imageId stays the same, so the ticket
-      // object comparison below alone is not enough to trigger a redraw.
+      // record can change while its stable imageId stays the same, so ticket-object
+      // equality cannot tell the renderer that the image itself was replaced.
+      const previousImage = await store.get("images", sharedImageId);
+      const imageChanged = !previousImage || previousImage.data !== remote.imageData;
       await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
+      if (imageChanged) document.dispatchEvent(new Event("ticketdesk-cloud-image-updated"));
     }
     if (local) {
       // Owner-created catalog entries have no sourceUid; Staff-created entries do.
