@@ -121,7 +121,7 @@ body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-m
 /* Approved reference: scenic wallpaper visible around one centered glass login panel */
 body.auth-pending{
  background-color:#06152b!important;
- background-image:url("https://res.klook.com/images/w_1200%2Ch_630%2Cc_fill%2Cq_65/activities/clm4cnansvnk2grpuoog/%E5%8C%97%E4%BA%AC%E7%8E%AF%E7%90%83%E5%BD%B1%E5%9F%8E%E9%97%A8%E7%A5%A8-Klook%E5%AE%A2%E8%B7%AF.jpg")!important;
+ background-image:url("./dinosaur-login-wallpaper.svg?v=20261024c")!important;
  background-repeat:no-repeat!important;
  background-position:center center!important;
  background-size:cover!important;
@@ -149,11 +149,11 @@ body.auth-pending .login-mode-tab{min-height:44px!important;border-radius:999px!
 body.auth-pending .login-mode-tab.is-active{background:linear-gradient(110deg,#ffe991,#e0ac36)!important;color:#081b31!important}
 body.auth-pending .login-mode-panel .field label{font-size:13px!important;color:#edf4fb!important;margin-bottom:5px!important}
 body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{
- min-height:48px!important;border:1.5px solid #58c8dc!important;border-radius:13px!important;
+ min-height:48px!important;border:1.5px solid rgba(255,218,122,.9)!important;border-radius:13px!important;
  background:rgba(4,24,44,.88)!important;color:#f7fbff!important;-webkit-text-fill-color:#f7fbff!important;
- box-shadow:inset 0 0 10px rgba(74,199,220,.08)!important;padding:12px 14px!important
+ box-shadow:inset 0 0 10px rgba(255,218,122,.06)!important;padding:12px 14px!important
 }
-body.auth-pending .login-mode-panel input::placeholder{color:#aebed0!important;-webkit-text-fill-color:#aebed0!important}
+body.auth-pending .login-mode-panel input::placeholder{color:#bdc9da!important;-webkit-text-fill-color:#bdc9da!important}
 body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{
  min-height:52px!important;border-radius:13px!important;background:linear-gradient(105deg,#ffe68a,#e6b53c 68%,#cf9728)!important;
  color:#081a30!important;border:1px solid #fff0ac!important;box-shadow:0 4px 0 #8c6523,0 0 17px rgba(255,193,51,.22)!important;font-size:16px!important
