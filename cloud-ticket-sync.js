@@ -401,10 +401,14 @@ async function applyCatalog(snapshot) {
     const imageId = `shared-img-${remote.cloudDocId}`;
     const previousImage = await store.get("images", imageId);
     const imageChanged = !previousImage || previousImage.data !== remote.imageData;
-    await store.put("images", {
-      id: imageId, data: remote.imageData, shared: true,
-      updatedAt: remote.updatedAt || new Date().toISOString()
-    });
+    // Avoid rewriting large base64 images to IndexedDB on every catalog snapshot.
+    // Repeated writes were competing with first render and made mobile startup slower.
+    if (imageChanged) {
+      await store.put("images", {
+        id: imageId, data: remote.imageData, shared: true,
+        updatedAt: remote.updatedAt || new Date().toISOString()
+      });
+    }
     imageStateByCatalogId.set(remote.cloudDocId, { imageId, imageChanged });
   }));
   if ([...imageStateByCatalogId.values()].some(image => image.imageChanged)) {
