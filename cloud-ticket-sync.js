@@ -416,7 +416,12 @@ async function applyCatalog(snapshot) {
     }
     if (local) claimedLocalIds.add(String(local.id));
     const sharedImageId = `shared-img-${remote.cloudDocId}`;
-    if (remote.imageData) await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
+    if (remote.imageData) {
+      // Replace the local shared-image payload before notifying the UI. The image
+      // record can change while its stable imageId stays the same, so the ticket
+      // object comparison below alone is not enough to trigger a redraw.
+      await store.put("images", { id: sharedImageId, data: remote.imageData, shared: true, updatedAt: remote.updatedAt || new Date().toISOString() });
+    }
     if (local) {
       // Owner-created catalog entries have no sourceUid; Staff-created entries do.
       // Preserve that distinction on every device so Staff tickets are not
