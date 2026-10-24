@@ -121,7 +121,7 @@ body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-m
 /* Approved reference: scenic wallpaper visible around one centered glass login panel */
 body.auth-pending{
  background-color:#06152b!important;
- background-image:url("./dinosaur-login-wallpaper.svg?v=20261024b")!important;
+ background-image:url("https://res.klook.com/images/w_1200%2Ch_630%2Cc_fill%2Cq_65/activities/clm4cnansvnk2grpuoog/%E5%8C%97%E4%BA%AC%E7%8E%AF%E7%90%83%E5%BD%B1%E5%9F%8E%E9%97%A8%E7%A5%A8-Klook%E5%AE%A2%E8%B7%AF.jpg")!important;
  background-repeat:no-repeat!important;
  background-position:center center!important;
  background-size:cover!important;
