@@ -774,3 +774,29 @@ body.auth-pending .auth-gate{
   #appContent:has(#reportDeptFilter) .toolbar-right .btn{width:auto!important;}
   #appContent:has(#reportDeptFilter) .report-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 }
+
+
+/* Ticket prices: visible and readable on all department ticket cards. */
+.ticket-price{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  margin-top:6px;
+  padding:4px 9px;
+  border:1px solid rgba(231,200,121,.38);
+  border-radius:9px;
+  background:rgba(231,200,121,.09);
+  color:#f0d58f;
+  font-size:14px;
+  font-weight:750;
+  line-height:1.25;
+  overflow-wrap:anywhere;
+}
+.ticket-price-unset{
+  color:#aebdd0;
+  border-color:rgba(174,189,208,.22);
+  background:rgba(174,189,208,.05);
+  font-size:11px;
+  font-weight:500;
+}
