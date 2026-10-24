@@ -82,3 +82,22 @@ body.auth-pending.staff-mode-active .auth-card{padding-bottom:20px}
  body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{min-height:49px;font-size:15px}
  body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{min-height:52px}
 }
+
+/* Compact login card for phones: staff form should not look taller than owner form */
+@media(max-width:760px){
+ body.auth-pending .auth-gate{padding:12px 14px;align-items:center;justify-content:center}
+ body.auth-pending .auth-card{padding:17px 17px 15px}
+ body.auth-pending .auth-card .auth-brand{width:54px;height:54px;margin-bottom:5px}
+ body.auth-pending .auth-card .auth-kicker{font-size:9px;margin-bottom:3px;letter-spacing:1.15px}
+ body.auth-pending .auth-card #ownerAuthTitle{font-size:25px;margin-bottom:4px}
+ body.auth-pending .auth-card #loginIntro{font-size:11px;margin-bottom:12px}
+ body.auth-pending .login-mode-switch{padding:4px;margin-bottom:13px}
+ body.auth-pending .login-mode-tab{min-height:39px;font-size:14px}
+ body.auth-pending .login-mode-panel .staff-intro{margin-bottom:7px;font-size:11px}
+ body.auth-pending .login-mode-panel .field{margin-bottom:8px!important;gap:3px}
+ body.auth-pending .login-mode-panel .field label{font-size:12px;margin-bottom:3px}
+ body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{min-height:43px;padding:9px 12px!important;font-size:14px}
+ body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{min-height:46px;font-size:15px}
+ body.auth-pending .login-mode-panel #status{margin-top:7px}
+ body.auth-pending #authStatus{margin-top:8px;font-size:10px}
+}
