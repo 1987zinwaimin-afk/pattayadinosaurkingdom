@@ -18,14 +18,14 @@
   <link rel="stylesheet" href="style.css?v=login-wallpaper-20261020a">
   <link rel="stylesheet" href="login-mobile-compact.css?v=20261024f">
 <link rel="stylesheet" href="luxury-3d.css?v=owner-input-visibility-fix-20261024a">
-  <link rel="stylesheet" href="shared-login.css?v=20261024c"></head>
+  <link rel="stylesheet" href="shared-login.css?v=20261024d"></head>
 <body class="auth-pending">
   <section class="auth-gate" id="ownerAuthGate" aria-labelledby="ownerAuthTitle">
     <div class="auth-card">
       <img class="auth-brand" src="./file_000000006da082119bbf212e4f6fad52.png?v=20261018-loginlogo1" alt="Pattaya Dinosaur Kingdom logo">
       <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
-      <h1 id="ownerAuthTitle">Owner Login</h1>
-      <p class="auth-description">Firebase account ဖြင့် Owner အဖြစ် ဝင်ပါ။ သတ်မှတ်ထားသော Owner Gmail တစ်ခုတည်းကိုသာ ခွင့်ပြုထားသည်။</p>
+      <h1 id="ownerAuthTitle">Welcome Back</h1>
+      <p class="auth-description" id="loginIntro">Sign in to Pattaya Dinosaur Kingdom Ticket Desk.</p>
       <div class="login-mode-switch" role="tablist" aria-label="Choose login type">
         <button type="button" id="ownerModeTab" class="login-mode-tab is-active" role="tab" aria-selected="true" aria-controls="ownerLoginPanel">♛ &nbsp; Owner</button>
         <button type="button" id="staffModeTab" class="login-mode-tab" role="tab" aria-selected="false" aria-controls="staffLoginPanel">♟ &nbsp; Staff</button>
@@ -44,10 +44,7 @@
       </form>
       </section>
       <section id="staffLoginPanel" class="login-mode-panel" role="tabpanel" aria-labelledby="staffModeTab" hidden>
-      <img class="auth-brand" src="./file_000000006da082119bbf212e4f6fad52.png?v=20261018-loginlogo1" alt="Pattaya Dinosaur Kingdom logo">
-      <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
-      <h1 id="staffAuthTitle">Staff Login</h1>
-      <p class="auth-description">Select your name and department to continue to your staff workspace.</p>
+      <p class="auth-description staff-intro">Select your name and department to continue.</p>
       <form id="checkinForm" class="form-grid">
         <div class="field full"><label for="staffName" id="nameLabel">Your name</label><input id="staffName" maxlength="80" required autocomplete="name" placeholder="Enter your name"></div>
         <div class="field full"><label for="department" id="deptLabel">Department</label><select id="department" required><option value="sales">Sales Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="leader">Leader — All Departments</option></select></div>
@@ -83,6 +80,7 @@
   <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
   <script src="language-default.js?v=english-default-migration-v2-20261019b"></script>
   <script src="app.js?v=event-report-location-20261024j"></script>
+  <script src="login-mode.js?v=20261024a"></script>
   <script type="module" src="firebase-auth.js?v=staff-logout-presence-20261020j"></script>
   <script type="module" src="staff-portal.js?v=shared-login-20261024a"></script>
   <script type="module" src="cloud-ticket-sync.js?v=event-report-location-20261024j"></script>
