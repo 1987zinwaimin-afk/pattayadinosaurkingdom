@@ -495,3 +495,86 @@ body.auth-pending .auth-gate{
   dialog#modal #modalContent .form-grid{gap:6px 7px!important;}
   dialog#modal #modalContent .modal-title{font-size:17px!important;}
 }
+
+
+/* Monthly Summary page: orderly responsive controls and consistent spacing. */
+#appContent:has(#staffDailyDate) .panel{
+  padding:clamp(14px,3vw,24px);
+}
+#appContent:has(#staffDailyDate) .panel>h3{
+  margin:0 0 8px;
+  line-height:1.25;
+}
+#appContent:has(#staffDailyDate) .panel>.muted{
+  margin:0 0 16px;
+  line-height:1.45;
+}
+#appContent:has(#staffDailyDate) .toolbar{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:12px!important;
+}
+#appContent:has(#staffDailyDate) .toolbar-left,
+#appContent:has(#staffDailyDate) .toolbar-right{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#appContent:has(#staffDailyDate) .toolbar-left>label{
+  margin:0!important;
+  font-size:14px;
+}
+#appContent:has(#staffDailyDate) .toolbar .date-input,
+#appContent:has(#staffDailyDate) .toolbar select,
+#appContent:has(#staffDailyDate) .toolbar input{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:46px;
+}
+#appContent:has(#staffDailyDate) .toolbar-right .btn{
+  width:100%!important;
+  min-height:46px;
+  justify-content:center;
+  white-space:normal;
+  line-height:1.25;
+}
+#appContent:has(#staffDailyDate) .help-text{
+  margin:12px 0!important;
+  line-height:1.4;
+}
+#appContent:has(#staffDailyDate) hr{
+  margin:16px 0!important;
+  opacity:.65;
+}
+#appContent:has(#staffDailyDate) .panel #monthlyReportDept{
+  margin-bottom:0;
+}
+@media(min-width:700px){
+  #appContent:has(#staffDailyDate) .toolbar{
+    flex-direction:row!important;
+    align-items:flex-end!important;
+    justify-content:space-between!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-left{
+    flex-direction:row!important;
+    align-items:center!important;
+    width:auto!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-left>.date-input,
+  #appContent:has(#staffDailyDate) .toolbar-left>select{
+    width:auto!important;
+    min-width:190px!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-right{
+    flex-direction:row!important;
+    align-items:center!important;
+    width:auto!important;
+  }
+  #appContent:has(#staffDailyDate) .toolbar-right .btn{width:auto!important;}
+}
