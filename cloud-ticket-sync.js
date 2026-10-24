@@ -197,12 +197,13 @@ async function publishOwnerCatalog() {
       sourceTicketId: String(ticket.id),
       departmentId: ticket.departmentId,
       name: String(ticket.name || "").slice(0, 160),
+      price: Number.isFinite(ticket.price) && ticket.price >= 0 ? ticket.price : null,
       notes: String(ticket.notes || "").slice(0, 1000),
       slotNumber: Number.isInteger(ticket.slotNumber) ? ticket.slotNumber : null,
       inventory: Number.isFinite(ticket.inventory) ? ticket.inventory : null,
       imageData
     };
-    const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "notes", "slotNumber", "inventory", "imageData"];
+    const fields = ["catalogId", "sourceTicketId", "departmentId", "name", "price", "notes", "slotNumber", "inventory", "imageData"];
     const unchanged = previousRecord && fields.every(key => (previousRecord[key] ?? null) === (nextRecord[key] ?? null));
     if (!unchanged) {
       await setDoc(catalogRef, { ...nextRecord, updatedAt: new Date().toISOString() });
@@ -262,6 +263,7 @@ async function publishStaffTicket(ticket) {
     sourceUid:ticket.sharedSourceUid || ticket.sourceUid || user.uid,
     sourceName:String(session.name || "").slice(0,80),
     departmentId:ticket.departmentId, name:String(ticket.name).slice(0,160),
+    price:Number.isFinite(ticket.price)&&ticket.price>=0?ticket.price:null,
     notes:String(ticket.notes || "").slice(0,1000),
     slotNumber:null, inventory:Number.isFinite(ticket.inventory)?ticket.inventory:null,
     imageData:imageData || null, updatedAt:new Date().toISOString()
@@ -447,7 +449,7 @@ async function applyCatalog(snapshot) {
       // Owner-created catalog entries have no sourceUid; Staff-created entries do.
       // Preserve that distinction on every device so Staff tickets are not
       // incorrectly treated as Owner-owned and silently blocked from updates.
-      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: !remote.sourceUid, sharedSourceUid: remote.sourceUid || null, slotNumber: Number.isInteger(remote.slotNumber) ? remote.slotNumber : local.slotNumber, name: remote.name, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
+      const updated = { ...local, sharedCatalogId: remote.cloudDocId, sharedFromOwner: !remote.sourceUid, sharedSourceUid: remote.sourceUid || null, slotNumber: Number.isInteger(remote.slotNumber) ? remote.slotNumber : local.slotNumber, name: remote.name, price: remote.price ?? local.price ?? null, notes: remote.notes || "", inventory: remote.inventory ?? local.inventory, updatedAt: remote.updatedAt || local.updatedAt };
       if (remote.imageData) updated.imageId = sharedImageId;
       else if (String(local.imageId || "").startsWith("shared-img-")) { await store.del("images", local.imageId); updated.imageId = null; }
       if (JSON.stringify(local) !== JSON.stringify(updated)) {
@@ -461,7 +463,7 @@ async function applyCatalog(snapshot) {
         id: `shared-${remote.cloudDocId}`, sharedCatalogId: remote.cloudDocId,
         // Keep Staff-created tickets distinguishable from Owner-created tickets.
         sharedFromOwner: !remote.sourceUid, sharedSourceUid: remote.sourceUid || null,
-        departmentId: remote.departmentId, name: remote.name, notes: remote.notes || "",
+        departmentId: remote.departmentId, name: remote.name, price: remote.price ?? null, notes: remote.notes || "",
         inventory: remote.inventory ?? null, imageId: remote.imageData ? sharedImageId : null,
         slot: false, slotNumber: remote.slotNumber ?? undefined,
         createdAt: remote.updatedAt || new Date().toISOString(), updatedAt: remote.updatedAt || new Date().toISOString(),
