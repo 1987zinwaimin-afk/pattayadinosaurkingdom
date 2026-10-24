@@ -217,3 +217,42 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  #appContent .ticket-body{padding:11px}
  #appContent .ticket-name{font-size:14px}
 }
+
+
+/* Compact, scannable dashboard layout for phones: preserve all data and actions. */
+@media(max-width:760px){
+  #appContent .content{padding:12px 10px 22px!important}
+  #appContent .page-head{margin-bottom:12px!important;gap:8px}
+  #appContent .page-head h2{font-size:18px;line-height:1.25}
+  #appContent .page-head p{font-size:12px;line-height:1.4}
+  #appContent .stats-grid{gap:8px!important;margin-bottom:10px!important}
+  #appContent .stat-card{padding:10px!important;min-width:0;border-radius:13px!important}
+  #appContent .stat-top{font-size:11px;line-height:1.3;gap:6px}
+  #appContent .stat-icon{width:30px;height:30px;flex:0 0 30px;border-radius:9px;font-size:15px}
+  #appContent .stat-number{font-size:23px!important;line-height:1.1;margin-top:8px!important}
+  #appContent .stat-sub{font-size:10px;line-height:1.35;margin-top:4px}
+  #appContent .dashboard-grid{gap:8px!important}
+  #appContent .department-card{padding:10px!important;border-radius:13px!important;min-width:0}
+  #appContent .dept-top{gap:6px}
+  #appContent .dept-title{font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+  #appContent .dept-count{font-size:22px;line-height:1.1;margin:8px 0 3px!important}
+  #appContent .department-card .muted,
+  #appContent .department-card small{font-size:10px;line-height:1.35}
+  #appContent .department-card .stat-icon{width:29px;height:29px;flex-basis:29px}
+  #appContent .panel{padding:12px!important;border-radius:13px!important}
+  #appContent .ticket-grid{gap:8px!important}
+  #appContent .ticket-card{min-width:0;border-radius:12px!important}
+  #appContent .ticket-body{padding:10px!important}
+  #appContent .ticket-name{font-size:13px;line-height:1.3}
+  #appContent .ticket-actions{gap:5px}
+  #appContent .ticket-actions button,#appContent .ticket-actions a{min-height:34px;padding:6px 8px;font-size:11px}
+  #appContent .qty-input{min-height:38px;padding:7px;font-size:13px}
+  #appContent .selected-date,.selected-date{gap:8px}
+  #appContent input[type="date"]{min-height:42px;padding:8px 10px;font-size:13px}
+}
+@media(max-width:380px){
+  #appContent .stats-grid,#appContent .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #appContent .stat-card,#appContent .department-card{padding:9px!important}
+  #appContent .dept-title{font-size:11px}
+  #appContent .stat-top{font-size:10px}
+}
