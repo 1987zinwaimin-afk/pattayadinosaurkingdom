@@ -121,7 +121,7 @@ body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-m
 /* Approved reference: scenic wallpaper visible around one centered glass login panel */
 body.auth-pending{
  background-color:#06152b!important;
- background-image:url("./dinosaur-login-wallpaper.svg?v=20261024c")!important;
+ background-image:url("./file_00000000980482119751e46afe4d8511.png?v=20261024c")!important;
  background-repeat:no-repeat!important;
  background-position:center center!important;
  background-size:cover!important;
