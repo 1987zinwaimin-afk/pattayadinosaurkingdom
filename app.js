@@ -45,22 +45,45 @@ function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=doc
 // IndexedDB or localStorage. Staff login and appearance preferences remain separate.
 const STORE_NAMES=['tickets','daily','reports','images'];
 const memoryStore={tickets:[],daily:[],reports:[],images:[]};
-let fallbackStorage=true;
+let fallbackStorage=false;
+let ticketDeskDB=null;
+function requestResult(request){return new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('IndexedDB request failed'));});}
+function transactionDone(tx){return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('IndexedDB transaction failed'));tx.onabort=()=>reject(tx.error||new Error('IndexedDB transaction aborted'));});}
 async function openDB(){
-  // This project is explicitly switching away from device-local record storage.
-  // Remove only the app's old record stores; preserve Staff login and UI preferences.
-  for(const name of STORE_NAMES){try{localStorage.removeItem('ticketdesk-fallback-'+name);}catch{}}
-  if('indexedDB' in window){
-    await new Promise(resolve=>{
-      let request;
-      try{request=indexedDB.deleteDatabase('ticket-desk-db');}
-      catch{resolve();return;}
-      request.onsuccess=()=>resolve();
-      request.onerror=()=>resolve();
-      request.onblocked=()=>{console.warn('Old local ticket database deletion is blocked by another open tab.');resolve();};
-    });
+  // Keep a small persistent local cache so the last known ticket catalog and
+  // images can render immediately on repeat visits. Cloud snapshots remain the
+  // authority and reconcile this cache after authentication.
+  if(!('indexedDB' in window)){fallbackStorage=true;return null;}
+  try{
+    const request=indexedDB.open('ticket-desk-db',1);
+    request.onupgradeneeded=()=>{
+      const db=request.result;
+      for(const name of STORE_NAMES){if(!db.objectStoreNames.contains(name))db.createObjectStore(name,{keyPath:'id'});}
+    };
+    ticketDeskDB=await requestResult(request);
+    ticketDeskDB.onversionchange=()=>{ticketDeskDB.close();ticketDeskDB=null;};
+    for(const name of STORE_NAMES){
+      const tx=ticketDeskDB.transaction(name,'readonly');
+      const rows=await requestResult(tx.objectStore(name).getAll());
+      memoryStore[name]=Array.isArray(rows)?rows:[];
+    }
+    fallbackStorage=false;
+    return ticketDeskDB;
+  }catch(error){
+    console.warn('Ticket Desk local cache unavailable; using memory until cloud sync:',error);
+    ticketDeskDB=null;fallbackStorage=true;return null;
   }
-  return null;
+}
+async function persistRow(store,obj,operation='put'){
+  if(!ticketDeskDB||!STORE_NAMES.includes(store))return;
+  try{
+    const tx=ticketDeskDB.transaction(store,'readwrite');
+    const objectStore=tx.objectStore(store);
+    if(operation==='delete')objectStore.delete(obj);
+    else if(operation==='clear')objectStore.clear();
+    else objectStore.put(obj);
+    await transactionDone(tx);
+  }catch(error){console.warn('Ticket Desk cache write failed for '+store+':',error);}
 }
 async function all(store){return (memoryStore[store]||[]).map(item=>({...item}));}
 async function get(store,id){const item=(memoryStore[store]||[]).find(x=>x.id===id);return item?{...item}:undefined;}
@@ -68,10 +91,11 @@ async function put(store,obj){
   if(!memoryStore[store])throw new Error('Unknown in-memory store: '+store);
   const items=memoryStore[store],index=items.findIndex(x=>x.id===obj.id);
   if(index<0)items.push({...obj});else items[index]={...obj};
+  await persistRow(store,obj);
   return obj;
 }
-async function del(store,id){if(!memoryStore[store])return;memoryStore[store]=memoryStore[store].filter(x=>x.id!==id);}
-async function clearStore(store){if(memoryStore[store])memoryStore[store]=[];}
+async function del(store,id){if(!memoryStore[store])return;memoryStore[store]=memoryStore[store].filter(x=>x.id!==id);await persistRow(store,id,'delete');}
+async function clearStore(store){if(memoryStore[store])memoryStore[store]=[];await persistRow(store,null,'clear');}
 async function seedSlots(){
  const ts=await all('tickets');
  for(const d of DEPTS){
