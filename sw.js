@@ -1,4 +1,4 @@
-const CACHE_NAME = "pattaya-dinosaur-kingdom-dashboard-compact-v151";
+const CACHE_NAME = "pattaya-dinosaur-kingdom-dashboard-actions-v152";
 const APP_SHELL = ["./", "./index.html", "./dinosaur-login-wallpaper.svg?v=20261024c", "./login-mode.js?v=20261024b", "./dinosaur-kingdom-hero.svg?v=20261024b", "./shared-login.css?v=20261024o", "./style.css?v=login-wallpaper-20261020a", "./app.js?v=event-report-location-20261024j", "./firebase-auth.js?v=staff-logout-presence-20261020j", "./cloud-ticket-sync.js?v=event-report-location-20261024j", "./luxury-3d.css?v=compact-usability-20261024a", "./staff-accounts.js?v=presence-state-fix-20261020i", "./pwa.js?v=staff-home-launch-20261020a", "./manifest.webmanifest", "./staff-portal.html?v=staff-route-fallback-20261020a", "./staff-install.html", "./staff-app.html", "./staff-portal.js?v=shared-login-20261024a", "./staff-manifest.webmanifest", "./staff-manifest.webmanifest?v=staff-app-start-20261020a", "./file_000000006da082119bbf212e4f6fad52.png?v=20261018-logo3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
