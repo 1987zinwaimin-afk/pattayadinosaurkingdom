@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#0786e8"/><stop offset=".45" stop-color="#71c9ff"/><stop offset=".72" stop-color="#ffe2a0"/><stop offset="1" stop-color="#173f35"/></linearGradient>
+ <linearGradient id="mount" x2="0" y2="1"><stop stop-color="#788f9c"/><stop offset="1" stop-color="#273d49"/></linearGradient>
+ <linearGradient id="jungle" x2="0" y2="1"><stop stop-color="#48a44e"/><stop offset=".5" stop-color="#14633d"/><stop offset="1" stop-color="#052b29"/></linearGradient>
+ <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#d9a45d"/><stop offset=".45" stop-color="#81502e"/><stop offset="1" stop-color="#3d2921"/></linearGradient>
+ <linearGradient id="path" x2="0" y2="1"><stop stop-color="#e8c98b"/><stop offset="1" stop-color="#8d7350"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff7bf" stop-opacity=".95"/><stop offset="1" stop-color="#ffda67" stop-opacity="0"/></radialGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="800" height="1400" fill="url(#sky)"/>
+<circle cx="640" cy="170" r="200" fill="url(#sun)"/>
+<g fill="#fff" opacity=".48"><ellipse cx="125" cy="180" rx="100" ry="24"/><ellipse cx="190" cy="164" rx="88" ry="34"/><ellipse cx="590" cy="255" rx="105" ry="25"/><ellipse cx="650" cy="240" rx="82" ry="35"/></g>
+<!-- distant mountains -->
+<path d="M0 470L70 350 120 400 215 245 275 360 350 290 430 410 510 300 590 390 680 275 800 425V760H0Z" fill="url(#mount)"/>
+<path d="M130 390L215 245 265 354 235 335 215 306 192 340 174 322Z M440 415L510 300 562 370 535 356 510 328 492 355Z M610 395L680 275 727 365 702 350 680 315 660 350Z" fill="#e8f4f7" opacity=".8"/>
+<!-- waterfall -->
+<path d="M520 360L655 360 705 650 645 725 560 660Z" fill="#315f68"/>
+<path d="M573 370L600 370 606 630 585 680 577 600Z M614 370L631 370 640 630 623 674Z" fill="#c5f4ff" opacity=".9"/>
+<!-- distant jungle layers -->
+<path d="M0 520Q120 450 230 535T470 520T800 500V950H0Z" fill="#2b7946"/>
+<path d="M0 630Q130 520 270 620T520 605T800 620V1100H0Z" fill="url(#jungle)"/>
+<!-- large palms -->
+<g stroke="#503b26" stroke-width="20" stroke-linecap="round" fill="none"><path d="M45 780Q45 480 100 210"/><path d="M750 800Q735 480 690 190"/><path d="M180 780Q190 580 225 390"/></g>
+<g fill="#17663d"><path d="M100 210Q10 110 0 175Q40 165 92 220Q20 205 12 270Q58 246 97 230Q70 305 112 315Q131 270 111 225Q190 270 236 220Q175 210 112 207Q168 140 145 100Q120 127 100 210Z"/><path d="M690 190Q600 90 568 155Q620 150 681 204Q615 194 596 250Q642 230 684 215Q658 288 700 305Q718 260 701 215Q777 255 800 205Q745 205 700 188Q745 128 723 92Q703 125 690 190Z"/><path d="M225 390Q145 320 120 370Q175 363 218 405Q166 398 155 443Q191 426 222 416Q207 470 239 480Q254 445 236 410Q295 446 330 408Q280 404 233 390Q271 344 252 315Q236 344 225 390Z"/></g>
+<!-- entrance gate -->
+<ellipse cx="400" cy="760" rx="280" ry="45" fill="#071c1b" opacity=".6"/>
+<path d="M120 790L150 525 215 470 585 470 650 525 680 790Z" fill="url(#stone)" stroke="#f0c979" stroke-width="9"/>
+<path d="M170 770L195 550 235 515 565 515 605 550 630 770Z" fill="#302b24" stroke="#e0b567" stroke-width="7"/>
+<path d="M130 540L175 450 235 475 210 555Z M590 475L650 450 690 540 610 555Z" fill="url(#stone)" stroke="#edc477" stroke-width="7"/>
+<g fill="#f9d18a" opacity=".8"><rect x="142" y="555" width="28" height="8"/><rect x="630" y="555" width="28" height="8"/><rect x="150" y="650" width="18" height="9"/><rect x="632" y="650" width="18" height="9"/></g>
+<text x="400" y="590" text-anchor="middle" font-family="Georgia,serif" font-size="45" font-weight="bold" fill="#fff0b4" stroke="#482713" stroke-width="5" paint-order="stroke">PATTAYA</text>
+<text x="400" y="652" text-anchor="middle" font-family="Georgia,serif" font-size="45" font-weight="bold" fill="#f7d786" stroke="#482713" stroke-width="5" paint-order="stroke">DINOSAUR</text>
+<text x="400" y="704" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="bold" fill="#f7d786" stroke="#482713" stroke-width="5" paint-order="stroke">KINGDOM</text>
+<!-- T-rex silhouette right -->
+<g transform="translate(590 615) scale(.9)" fill="#7a5536" stroke="#3b3028" stroke-width="8" stroke-linejoin="round">
+<path d="M-15 75Q-45 35 -20 0Q10 -35 48 -5L74 20 55 44 28 34 18 66 35 116 65 150 48 165 12 139 -6 105 -24 145 -50 145 -39 95Z"/>
+<path d="M-13 7Q-48 -15 -53 -43Q-35 -58 -14 -43L7 -26 37 -25 50 -8 20 7Z"/>
+<path d="M-48 -43L-72 -50 -50 -31 -30 -28Z" fill="#f2d39a"/>
+<circle cx="-30" cy="-42" r="5" fill="#fff4b1" stroke="none"/>
+<path d="M-3 73L18 83 7 94 -8 87Z" fill="#c89b59"/>
+</g>
+<!-- sauropod left -->
+<g transform="translate(120 650)" fill="#7c9a61" stroke="#35553b" stroke-width="8" stroke-linejoin="round">
+<ellipse cx="0" cy="20" rx="70" ry="36"/><path d="M35 14Q60 -5 65 -45L73 -90Q78 -115 96 -108Q111 -98 99 -83L91 -43Q91 15 57 45Z"/><path d="M-45 40L-50 105 -25 105 -14 38Z M8 43L15 105 40 105 32 35Z"/><path d="M-60 15L-102 -4 -118 7 -75 31Z"/>
+<circle cx="98" cy="-99" r="5" fill="#fff1b5" stroke="none"/>
+</g>
+<!-- colorful small dino -->
+<g transform="translate(480 740)" stroke="#264b37" stroke-width="5" stroke-linejoin="round"><path d="M-30 10Q-35 -20 -8 -24L22 -12 43 5 30 25 8 20 0 45 -17 45 -12 18Z" fill="#27a6b7"/><path d="M-5 -25L-18 -43 -3 -36 7 -49 12 -28 26 -35 20 -14Z" fill="#f7bc43"/><path d="M25 -9L48 -15 43 1 29 6Z" fill="#ef7b37"/><circle cx="15" cy="-15" r="3" fill="#fff"/></g>
+<!-- foreground pathway -->
+<path d="M300 800L500 800 800 1400H0Z" fill="url(#path)"/>
+<path d="M375 820L425 820 570 1400H230Z" fill="#f4d9a0" opacity=".6"/>
+<g stroke="#6d5942" stroke-width="7" opacity=".7"><path d="M270 900L530 900"/><path d="M225 1010L575 1010"/><path d="M175 1135L625 1135"/><path d="M115 1270L685 1270"/></g>
+<!-- lush foreground plants -->
+<g fill="#0a5b34"><path d="M0 850Q80 780 125 860Q55 845 0 910Z"/><path d="M0 940Q100 860 150 950Q60 930 0 1000Z"/><path d="M800 850Q720 780 675 860Q745 845 800 910Z"/><path d="M800 950Q700 860 650 950Q740 930 800 1010Z"/></g>
+<g fill="#2fa34c"><path d="M0 1040Q120 920 150 1040Q65 1010 0 1100Z"/><path d="M800 1050Q680 930 650 1050Q735 1020 800 1110Z"/><path d="M0 1200Q140 1080 175 1200Q75 1165 0 1260Z"/><path d="M800 1200Q660 1080 625 1200Q725 1165 800 1260Z"/></g>
+<g fill="#f43f8b"><circle cx="48" cy="1080" r="20"/><circle cx="88" cy="1130" r="15"/><circle cx="735" cy="1080" r="20"/><circle cx="690" cy="1130" r="16"/></g>
+<g fill="#f9a72c"><circle cx="130" cy="1240" r="16"/><circle cx="675" cy="1245" r="17"/></g>
+<rect x="8" y="8" width="784" height="1384" rx="30" fill="none" stroke="#f4d487" stroke-width="5" opacity=".8"/>
+</svg>
