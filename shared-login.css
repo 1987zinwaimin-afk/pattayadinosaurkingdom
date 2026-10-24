@@ -50,3 +50,35 @@ body.auth-pending .auth-card .field{margin-bottom:9px!important}
 body.auth-pending .staff-auth-card .form-grid{gap:7px}
 body.auth-pending .staff-auth-card .field{margin:0!important}
 @media(max-width:760px){body.auth-pending:before{background:linear-gradient(180deg,rgba(3,13,29,.34),rgba(5,22,43,.56))}body.auth-pending .auth-gate{gap:12px;padding:12px 12px 20px}body.auth-pending .auth-card{padding:16px 15px 14px;border-radius:20px}body.auth-pending .auth-card h1{font-size:22px;margin-bottom:6px}body.auth-pending .auth-card .auth-description{font-size:12px;line-height:1.38;margin-bottom:9px}body.auth-pending .auth-card .field input,body.auth-pending .auth-card .field select{min-height:43px;padding:10px 12px}body.auth-pending .auth-card #ownerLoginButton,body.auth-pending .staff-auth-card #submitBtn{min-height:44px}body.auth-pending .staff-auth-card .auth-description:last-child{font-size:10px;margin-top:7px}}
+
+/* Single premium login card with Owner/Staff segmented tabs */
+body.auth-pending .auth-gate{min-height:100svh;align-items:center;justify-content:center;padding:22px 16px}
+body.auth-pending .auth-card{width:min(100%,430px);padding:24px 24px 20px;border-color:#f4d27b;background:linear-gradient(150deg,rgba(6,25,51,.94),rgba(3,16,35,.96));box-shadow:0 25px 70px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.12)}
+body.auth-pending .auth-card .auth-brand{width:72px;height:72px;margin:0 auto 9px;display:block}
+body.auth-pending .auth-card .auth-kicker{text-align:center;color:#f4d27b;letter-spacing:2px;font-weight:700}
+body.auth-pending .auth-card #ownerAuthTitle{text-align:center;color:#f4d27b;font-size:30px;margin:0 0 7px}
+body.auth-pending .auth-card #loginIntro{text-align:center;font-size:13px;line-height:1.45;margin:0 0 18px;color:#d2deee}
+body.auth-pending .login-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;margin:0 0 20px;border:1px solid rgba(244,210,123,.62);border-radius:999px;background:rgba(3,15,32,.78)}
+body.auth-pending .login-mode-tab{min-height:46px;border:1px solid transparent;border-radius:999px;background:transparent;color:#f2f5fb;font:700 16px Inter,Arial,sans-serif;cursor:pointer}
+body.auth-pending .login-mode-tab.is-active{background:linear-gradient(135deg,#ffe69c,#d3a344);color:#0a1d38;box-shadow:0 3px 12px rgba(220,174,78,.24)}
+body.auth-pending .login-mode-panel[hidden]{display:none!important}
+body.auth-pending .login-mode-panel{min-width:0}
+body.auth-pending .login-mode-panel .field{margin-bottom:13px!important}
+body.auth-pending .login-mode-panel .field label{display:block;margin-bottom:6px;font-size:13px;font-weight:700}
+body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{width:100%;box-sizing:border-box;min-height:52px;border:1px solid #71849c!important;border-radius:13px!important;background:rgba(3,18,38,.9)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;padding:13px 15px!important;font-size:15px}
+body.auth-pending .login-mode-panel input::placeholder{color:#aebed2!important;-webkit-text-fill-color:#aebed2!important}
+body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{width:100%;min-height:56px;border:1px solid #ffe5a0;border-radius:13px;background:linear-gradient(135deg,#ffe69a,#d0a044)!important;color:#0b1e38!important;font-size:16px;font-weight:800;box-shadow:0 4px 0 #8c6728}
+body.auth-pending .login-mode-panel .staff-intro{font-size:12px;line-height:1.4;margin:0 0 12px;color:#d2deee}
+body.auth-pending .login-mode-panel #status{margin:10px 0 0;font-size:12px;overflow-wrap:anywhere}
+body.auth-pending #authStatus{margin:12px 0 0;text-align:center;font-size:11px;line-height:1.4}
+body.auth-pending.staff-mode-active .auth-card{padding-bottom:20px}
+@media(max-width:760px){
+ body.auth-pending .auth-gate{padding:16px 14px;min-height:100svh}
+ body.auth-pending .auth-card{width:min(100%,390px);padding:20px 18px 18px;border-radius:24px}
+ body.auth-pending .auth-card .auth-brand{width:62px;height:62px;margin-bottom:7px}
+ body.auth-pending .auth-card #ownerAuthTitle{font-size:28px}
+ body.auth-pending .login-mode-switch{margin-bottom:17px}
+ body.auth-pending .login-mode-tab{min-height:44px;font-size:15px}
+ body.auth-pending .login-mode-panel input,body.auth-pending .login-mode-panel select{min-height:49px;font-size:15px}
+ body.auth-pending .login-mode-panel #ownerLoginButton,body.auth-pending .login-mode-panel #submitBtn{min-height:52px}
+}
