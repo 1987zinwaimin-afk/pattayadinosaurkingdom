@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="style.css?v=login-wallpaper-20261020a">
   <link rel="stylesheet" href="login-mobile-compact.css?v=20261024f">
 <link rel="stylesheet" href="luxury-3d.css?v=owner-input-visibility-fix-20261024a">
-  <link rel="stylesheet" href="shared-login.css?v=20261024b"></head>
+  <link rel="stylesheet" href="shared-login.css?v=20261024c"></head>
 <body class="auth-pending">
   <section class="auth-gate" id="ownerAuthGate" aria-labelledby="ownerAuthTitle">
     <div class="auth-card">
@@ -26,6 +26,11 @@
       <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
       <h1 id="ownerAuthTitle">Owner Login</h1>
       <p class="auth-description">Firebase account ဖြင့် Owner အဖြစ် ဝင်ပါ။ သတ်မှတ်ထားသော Owner Gmail တစ်ခုတည်းကိုသာ ခွင့်ပြုထားသည်။</p>
+      <div class="login-mode-switch" role="tablist" aria-label="Choose login type">
+        <button type="button" id="ownerModeTab" class="login-mode-tab is-active" role="tab" aria-selected="true" aria-controls="ownerLoginPanel">♛ &nbsp; Owner</button>
+        <button type="button" id="staffModeTab" class="login-mode-tab" role="tab" aria-selected="false" aria-controls="staffLoginPanel">♟ &nbsp; Staff</button>
+      </div>
+      <section id="ownerLoginPanel" class="login-mode-panel" role="tabpanel" aria-labelledby="ownerModeTab">
       <form id="ownerLoginForm" autocomplete="on">
         <div class="field" style="text-align:left;margin-bottom:12px">
           <label for="ownerEmail">Owner Gmail</label>
@@ -37,9 +42,8 @@
         </div>
         <button type="submit" id="ownerLoginButton" class="btn btn-primary" style="width:100%;min-height:48px">Login as Owner</button>
       </form>
-      <p id="authStatus" class="auth-status" role="status" aria-live="polite">Firebase Authentication ကို စစ်ဆေးနေပါသည်…</p>
-    </div>
-    <div class="auth-card staff-auth-card" aria-labelledby="staffAuthTitle">
+      </section>
+      <section id="staffLoginPanel" class="login-mode-panel" role="tabpanel" aria-labelledby="staffModeTab" hidden>
       <img class="auth-brand" src="./file_000000006da082119bbf212e4f6fad52.png?v=20261018-loginlogo1" alt="Pattaya Dinosaur Kingdom logo">
       <p class="auth-kicker">PATTAYA DINOSAUR KINGDOM</p>
       <h1 id="staffAuthTitle">Staff Login</h1>
@@ -53,6 +57,8 @@
       </form>
       <p id="status" class="notice" role="status" hidden></p>
       <p class="auth-description">Use your assigned department. Access permissions remain enforced by the existing workspace.</p>
+      </section>
+      <p id="authStatus" class="auth-status" role="status" aria-live="polite">Firebase Authentication ကို စစ်ဆေးနေပါသည်…</p>
     </div>
   </section>
   <div class="app-shell">
